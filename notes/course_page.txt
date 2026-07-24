@@ -1,0 +1,131 @@
+Computer Vision and Geometry Group | Robot Learning 
+ Our Team 
+ Research 
+ Publications 
+ Lectures 
+ News 
+ Events 
+ Opportunities 
+ -->
+ Robot Learning 
+ Oier Mees 
+ Course Title: Robot Learning: From Fundamentals to Foundation Models 
+ Semester: 
+Spring 2026 
+ Lecturer : Oier Mees 
+ Teaching assistants : Alexey Gavryushin , Jonas Pai , Liam Achenbach , Nicola Irmiger , Tianxu An , Šimon Sukup , Nicole Damblon , Zador Pataki , Carl Brandner , Aristotelis Sympetheros , Rohan Walia , Rajiv Bharadwaj , David Hohenstatt , Huanyu Guo 
+ Catalogue Link: 
+ 263-5911-00L 
+ Lecture: Mon 16:15-18:00, room NO C 60. 
+ Format: Each session begins with a lecture on the core topic, followed by a paper discussion led by students. On selected weeks, we will also host short guest lectures from experts in the field to conclude the session. 
+ Thursday Practice: Thu 10:15-12:00, room CHN D 29, D 42, D 46, D 48 and IFW A 32.1. 
+ Course GitHub: 
+ mees-robot-learning-course/ethz-course-2026 
+ Course Objectives : 
+ This course provides a comprehensive introduction to modern robot learning, combining classical techniques with the latest advances in large-scale models: Students will start by learning the fundamentals of imitation learning, reinforcement learning, and policy optimization, and gradually progress to advanced topics including Vision-Language-Action (VLA) models and foundation models for robotics
+The objectives of this course are: 
+ Understand the core principles of imitation learning, reinforcement learning, and policy learning. 
+ Implement basic robot learning systems in simulation and on real robots. 
+ Explore state-of-the-art Vision-Language Action and foundation models for robotics. 
+ Design and evaluate scalable robot learning pipelines integrating perception, control, and multi-modal reasoning. 
+ Examination: 
+ Paper Presentation & Moderation (Group): 20 % 
+ Practical Homework (Coding Assignments): 40 % 
+ Final Project (Group): 40 % 
+ Lecture Tentative Schedule 
+ Week 
+ Monday 
+ Paper Discussion 
+ Guest Spotlight 
+ Week 1: Feb 16 
+ Introduction to Robot Learning Slides Recording 
+ No paper discussion. 
+ - 
+ Week 2: Feb 23 
+ Robot Control & MDPs Slides Recording 
+ Simple random search provides a competitive approach to RL (Mania et al., 2018), Deep RL Doesn’t Work Yet (Irpan, 2018), Curiosity-driven Exploration by Self-supervised Prediction (Pathak et al., 2017) 
+ Abishek Gupta (Prof. University of Washington) YouTube Recording 
+ Week 3: Mar 02 
+ Imitation Learning Slides Recording 
+ Causal Confusion in IL (Den Haan et al., 2019), The surprising effectiveness of representation learning for visual imitation (Pari et al. 2021), Transporter Networks: Rearranging the Visual World for Robotic Manipulation (Zeng et al., 2020) 
+ Danfei Xu (Prof. Georgia Tech) YouTube Recording 
+ Week 4: Mar 09 
+ Reinforcement Learning I Slides Recording 
+ Evolution Strategies as a Scalable Alternative to RL (Salimans et al., 2017), Learning Synergies between Pushing and Grasping (Zeng et al., 2018), Precise and Dexterous Robotic Manipulation via Human-in-the-Loop Reinforcement Learning (Luo et al., 2024) 
+ Aviral Kumar (Prof. Carnegie Mellon University & Google DeepMind) YouTube Recording 
+ Week 5: Mar 16 
+ Reinforcement Learning II Slides Recording 
+ End-to-End Training of Deep Visuomotor Policies (Levine et al., 2015), Eureka: Human-Level Reward Design via Coding LLMs (Ma et al., 2023), Latent Plans for Task Agnostic Offline Reinforcement Learning (Rosete-Beas et al., 2022) 
+ Andrew Wagenmaker (Postdoc UC Berkeley) YouTube Recording 
+ Week 6: Mar 23 
+ Generative Models Slides Recording 
+ Planning with Diffusion for Flexible Behavior Synthesis (Janner & Du et al., 2022), Implicit Behavioral Cloning (Florence et al., 2021), Steering Your Diffusion Policy with Latent Space RL (Wagenmaker et al., 2025) 
+ Cheng Chi (Co-Founder Sunday Robotics, Lead of Diffusion Policy & UMI) YouTube Recording 
+ Week 7: Mar 30 
+ Sequence Modeling and Transformers Slides Recording 
+ Decision Transformer: RL via Sequence Modeling (Chen et al., 2021), Learning Fine-Grained Bimanual Manipulation (ALOHA) (Zhao et al., 2023), Humanoid Locomotion as Next Token Prediction (Radosavovic et al., 2024) 
+ Ted Xiao (Co-Founder Prometheus, ex-Google) YouTube Recording 
+ Week 8: Apr 13 
+ World Models Slides Recording 
+ Learning Universal Policies via Text-Guided Video Generation (Du et al, 2023), Training Agents Inside of Scalable World Models (Hafner et al., 2025), World Action Models are Zero-shot Policies (Ye et al., 2026) 
+ Scott Reed (Principal Research Scientist NVIDIA GEAR Lab) YouTube Recording 
+ Week 9: Apr 27 
+ Generalist Robot Policies Slides Recording 
+ Language Conditioned Imitation Learning over Unstructured Data (Lynch et al., 2021), A Generalist Agent (Gato) (Reed et al., 2022), π∗0.6: a VLA That Learns From Experience (Physical Intelligence, 2025) 
+ Quan Vuong (Co-Founder Physical Intelligence) YouTube Recording 
+ Week 10: May 04 
+ Embodied Reasoning and Test-time Scaling Slides Recording 
+ In-Context Imitation Learning via Next-Token Prediction (Fu et al., 2024), VOYAGER: An Open-Ended Embodied Agent with LLMs (Wang et al., 2023), Training Strategies for Efficient Embodied Reasoning (Chen et al., 2025) 
+ Archit Sharma (Research Scientist Google DeepMind, Co-creator Gemini Deep Think series) YouTube Recording 
+ Week 11: May 11 
+ Frontier & Open Problem Slides Recording 
+ A Path Towards Autonomous Machine Intelligence (LeCun, 2022), The Bitter Lesson (Sutton, 2019), Intelligence without Representation (Brooks, 1991) 
+ Lucas Beyer (Meta Superintelligence Labs) YouTube Recording 
+ Week 12: May 18 
+ Guest Lectures 
+ Dieter Fox (Prof. University of Washington & Director AI2) (confirmed) 
+ - 
+ Tutorials 
+ Each session is organized as follows. TAs first give a summary of the relevant course content and introduce the exercises. TAs then remain in the room to assist students in solving the exercises. 
+ Week 
+ Topic 
+ Material 
+ Due Date 
+ Week 1: Feb 19 
+ Pytorch & Numpy Tutorial 
+ Code 
+ March 5 
+ Week 2: Feb 26 
+ Robot Control & MDPs 
+ Code 
+ March 12 
+ Week 3: Mar 02 
+ Imitation Learning 
+ Code 
+ March 26 
+ Week 5: Mar 29 
+ Reinforcement Learning 
+ Code 
+ April 16 
+ -->
+ Contact
+ +41 (0) 44 63 23 105
+ marc.pollefeys@inf.ethz.ch 
+ Universitätstrasse 6, Zürich
+ Newsletter
+ Subscribe our newsletter to get our latest update & news
+ -->
+ Quick Links
+ Lectures 
+ Events -->
+ News 
+ Open Student Projects 
+ Internal 
+ Privacy policy
+ Support 
+ Privacy policy 
+ Terms of condition 
+ -->
+ Copyright ©2023 Computer Vision & Geometry Group. 
+   |  
+ Website created by:

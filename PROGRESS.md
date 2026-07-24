@@ -1,0 +1,100 @@
+# PROGRESS — Robot Learning textbook
+
+Unofficial textbook compiled from ETH Zürich **263-5911-00L, *Robot Learning: From
+Fundamentals to Foundation Models*** (Spring 2026), lectured by **Oier Mees**;
+course mentor **Marc Pollefeys**.
+
+- Course page: <https://cvg.ethz.ch/lectures/Robot-Learning/>
+- Main playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZJx3_d901-GD6BGpeWwE2vx>
+- Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
+- Course GitHub: `mees-robot-learning-course/ethz-course-2026`
+
+**Current status: Phase 2 BLOCKED — waiting on slide PDF password.**
+
+---
+
+## Phase checklist
+
+- [x] **Phase 0 — Setup.** Dirs, git, tooling.
+- [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
+- [ ] **Phase 2 — Slides.** ⛔ All 11 PDFs are AES-256 encrypted with a *user*
+      password. Downloaded but unreadable. **Asked the user for the password.**
+- [ ] **Phase 3 — Per-lecture notes** (one lecture per session; needs slides)
+- [ ] **Phase 4 — Notation pass**
+- [ ] **Phase 5 — Chapters** (checkpoint: approve ch. 1 voice before writing more)
+- [ ] **Phase 6 — Front/back matter**
+- [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
+- [ ] **Phase 8 — PDF build**
+- [ ] **Phase 9 — Verification**
+
+## Per-lecture progress
+
+| # | Lecture | Transcript | Slides | Notes | Chapter |
+|---|---------|-----------|--------|-------|---------|
+| 1 | Introduction to Robot Learning | ✅ 9,480 w | 🔒 locked | ☐ | ☐ |
+| 2 | Robot Control & MDPs | ✅ 7,085 w | 🔒 locked | ☐ | ☐ |
+| 3 | Imitation Learning | ✅ 7,842 w | 🔒 locked | ☐ | ☐ |
+| 4 | Reinforcement Learning I | ✅ 7,651 w | 🔒 locked | ☐ | ☐ |
+| 5 | Reinforcement Learning II | ✅ 7,482 w | 🔒 locked | ☐ | ☐ |
+| 6 | Generative Models | ✅ 7,437 w | 🔒 locked | ☐ | ☐ |
+| 7 | Sequence Modeling & Transformers | ✅ 8,104 w | 🔒 locked | ☐ | ☐ |
+| 8 | World Models | ✅ 9,791 w | 🔒 locked | ☐ | ☐ |
+| 9 | Generalist Robot Policies | ✅ 9,107 w | 🔒 locked | ☐ | ☐ |
+| 10 | Embodied Reasoning & Test-time Scaling | ✅ 7,491 w | 🔒 locked | ☐ | ☐ |
+| 11 | Frontier & Open Problems | ✅ 9,700 w | 🔒 locked | ☐ | ☐ |
+
+Total cleaned transcript: **91,170 words** across 10 h 25 min of recording.
+
+---
+
+## Phase 1 notes
+
+Only **automatic** captions exist — no human-written subtitles for any of the 11
+videos (`yt-dlp --list-subs` shows an "automatic captions" section only). The
+`en` and `en-orig` tracks were byte-identical; the `en` duplicates were deleted.
+
+`scripts/clean_vtt.py` strips the WEBVTT header, cue timings and inline
+`<c>`/`<00:00:00.000>` tags, collapses the rolling window (a line is dropped if it
+matches one of the last 3 emitted lines), unescapes HTML entities, and writes a
+`[MM:SS]` marker every ~60 s.
+
+De-duplication verified two ways: the raw-to-clean ratio is 2.96–2.98× on every
+lecture (uniform, as expected from a 3-way rolling repeat), and the resulting
+speaking rate is 135–156 wpm, which is a natural lecture pace. A failed de-dup
+would show ~400 wpm.
+
+**Caption reliability is poor for technical terms**, as expected. Confirmed
+manglings so far: "Oier Mees" → "Oyer Mes"/"Oyer"; "Freiburg" → "Framework".
+Slides are ground truth for all notation and terminology (hard rule #4).
+
+## Phase 2 notes — BLOCKED
+
+All 11 decks downloaded from `https://cvg.ethz.ch/lectures/Robot-Learning/lectures/`
+(HTTP 200, 0.8–5.2 MB each, stored in `slides/`). Every one reports:
+
+```
+$ qpdf --show-encryption slides/lecture4_rl_I.pdf
+Incorrect password supplied
+R = 6
+P = -1340
+```
+
+`R = 6` is AES-256. The empty string is not the user password, so the files
+cannot be opened, and `pdftotext` fails with "Incorrect password". Per the task's
+hard rules, no cracking was attempted — the password was requested from the user.
+
+Everything downstream (Phases 3–9) depends on this.
+
+---
+
+## Layout
+
+```
+transcripts/  NN_slug.txt (cleaned) + NN_*.en-orig.vtt (raw)
+slides/       lectureN_*.pdf (encrypted) -> lectureN.txt once unlocked
+slides_png/   lectureN/page-NN.jpg rasterised slides
+notes/        lectureNN.md, notation.md, course_page.txt
+chapters/     NN-slug.md
+build/        robot-learning.pdf, course_page.html
+scripts/      clean_vtt.py
+```
