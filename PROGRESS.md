@@ -15,7 +15,7 @@ course mentor **Marc Pollefeys**.
 
 ## Phase checklist
 
-- [x] **Phase 0 — Setup.** Dirs, git, tooling.
+- [x] **Phase 0 — Setup.** Dirs, git, tooling. Build chain smoke-tested end to end.
 - [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
 - [ ] **Phase 2 — Slides.** ⛔ All 11 PDFs are AES-256 encrypted with a *user*
       password. Downloaded but unreadable. **Asked the user for the password.**
@@ -86,6 +86,35 @@ hard rules, no cracking was attempted — the password was requested from the us
 Everything downstream (Phases 3–9) depends on this.
 
 ---
+
+## Phase 0 notes — toolchain
+
+No passwordless `sudo`, so `apt install` was unavailable. Worked around entirely
+in userspace:
+
+| Need | Source | Status |
+|---|---|---|
+| `pdftotext`, `pdftoppm` | system poppler | already present |
+| `yt-dlp`, `pypdf` | pip | ✅ |
+| `qpdf`, `pandoc` 3.10 | mamba / conda-forge | ✅ |
+| XeLaTeX (TeX Live 2026) | TinyTeX → `~/.TinyTeX` | ✅ |
+| `algorithm2e`, `titlesec`, `sidenotes`, Libertinus, TeX Gyre | `tlmgr` | ✅ |
+
+`tlmgr` fonts are not on the system font path by default, so
+`~/.config/fontconfig/fonts.conf` was added to expose `~/.TinyTeX/.../fonts` and
+`fc-cache -f` run. Without this, `fontspec` fails with "The font *Libertinus
+Serif* cannot be found".
+
+Add to PATH when building: `export PATH="$HOME/.TinyTeX/bin/x86_64-linux:$PATH"`.
+
+Smoke test (`pandoc → xelatex`, book class, Libertinus Serif + Libertinus Math,
+`algorithm2e` ruled/vlined/numbered box, display math) builds and renders
+correctly. Phase 8 is de-risked.
+
+## Phase 6 groundwork (done early, not blocked by slides)
+
+`notes/reading_list.md` — all **30** assigned papers (3 × weeks 2–11) and the
+guest roster, transcribed from the course page. Note the brief estimated ~33.
 
 ## Layout
 
