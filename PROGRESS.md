@@ -43,9 +43,14 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
       collisions found across the notes. §7 is the Phase-9 slide-deviation checklist.
 - [x] **Phase 5 — Chapters.** All 11 written. Full book builds clean: **224 pp**,
       zero overfull boxes, banned-word grep clean, all cross-references resolved.
-- [ ] **Phase 6 — Front/back matter**
+- [x] **Phase 6 — Front/back matter.** `chapters/00-preface.md` (what the book is, who
+      it is for, and a full disclosure of how the sources were obtained), plus unnumbered
+      `12-notation.md`, `13-glossary.md` (158 terms), `14-bibliography.md` (every work
+      named, by chapter, with an *Unresolved* section) and `15-index.md`, generated from
+      the rendered PDF by `scripts/make_index.py`.
 - [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
-- [ ] **Phase 8 — PDF build**
+- [x] **Phase 8 — PDF build.** `build/robot-learning.pdf` — **272 pages**, zero overfull
+      boxes, no LaTeX warnings, all cross-references resolved.
 - [ ] **Phase 9 — Verification**
 
 ## Per-lecture progress
@@ -114,6 +119,21 @@ Everything downstream (Phases 3–9) depends on this.
 `\SetKwInOut`-defined `\Input` / `\Output`. The latter aligns its colon in a fixed-width
 box that wraps in this 7in geometry, leaving a stray `:` on its own line. `\KwIn`/`\KwOut`
 print "Input:" / "Output:" inline and render correctly.
+
+**pandoc-crossref injects chapter numbers into chapter titles** when
+`numberSections: true`, which duplicated LaTeX's own `CHAPTER N` label and went off by one
+as soon as an unnumbered preface was added. Fixed by `numberSections: false` in
+`build/crossref.yaml`; figure and equation numbering stays per-chapter via `chapters: true`.
+
+**Unnumbered chapters need three things**, not one: `{.unnumbered}` on the H1 *and* on every
+subheading (otherwise they render as 0.1, 0.2 …), plus a raw `\markboth{...}{...}` line,
+because `\chapter*` does not update the running head and the previous chapter's title
+otherwise persists across the whole appendix.
+
+**The index reports printed folios, not physical page indices** — there is a 6-page offset
+from the front matter. `scripts/make_index.py` derives it from the running heads rather than
+hard-coding it, and matches acronyms case-sensitively so that SIMPLER, FAST and CLIP do not
+match the ordinary English words.
 
 **Glyph support.** Libertinus Serif *and* Libertinus Math lack ✓ ✗ ✅ ❌ (U+2713/2717/2705/274C)
 and `$\checkmark$` maps to a missing glyph too. Comparison tables use **+** / **--** instead.

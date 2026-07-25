@@ -8,5 +8,5 @@ tblPrefix: ["Table", "Tables"]
 secPrefix: ["Section", "Sections"]
 chapters: true
 chaptersDepth: 1
-numberSections: true
+numberSections: false
 linkReferences: true
