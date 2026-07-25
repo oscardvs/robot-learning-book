@@ -1,0 +1,315 @@
+# Generalist Robot Policies
+
+The methods of Chapters 3 through 8 produce specialists. ACT and Diffusion Policy are excellent at the task they were trained on, and to move to a new task or a new robot you retrain. That is not the goal. The stated ambition of this field — the North Star — is a single model that controls **many robots**, in **many environments**, performing **many tasks**, alongside people. Stated as a user experience: you download your favourite robot brain, and out of the box your particular robot does something reasonable.
+
+This chapter is about the serious attempts at that, and it is organized the way the lecture is, around three ingredients. **Large datasets**, since one model needs data from many robots. **Large models**, meaning architectures that can absorb heterogeneous data and, later, internet-scale priors. **Scalable evaluation**, because the moment a policy claims to do many tasks on many robots, checking whether it does becomes the expensive part. The chapter also contains the most practical material in the book — a section of engineering advice about training these models that has no equivalent in the earlier chapters, because at this scale the engineering *is* the method.
+
+## Why the recipe from language does not transfer
+
+The template is familiar from Chapter 7: train one large model on a large diverse dataset covering many tasks, and it beats the specialists built for each task. That happened in language, where translation, question answering and code completion stopped being separate systems, and in vision, where object detection and captioning did the same.
+
+Four things break when you try it on robots.
+
+**Robot data is scarce.** There is no robotics corpus remotely comparable to the text a frontier model trains on, because every hour of robot data is produced by a person teleoperating a machine. Chapter 1 made this argument with the ninety-thousand-year reading-time comparison; here it is a hard constraint on ingredient one.
+
+**Robot data is heterogeneous and multimodal.** Interacting with the physical world is a multi-sensory business, and **every embodiment has different observation and action spaces** — different cameras, different numbers of them, different actuators, different control rates. Text is one stream; this is not.
+
+**Control is real-time.** As the lecture puts it, we do not get to send a query to a chat API and wait a minute for the next action. Chapter 2's control-frequency floor and Chapter 7's inference-cost discussion apply directly.
+
+**Evaluation cost explodes.** A specialist is evaluated on its task. A generalist claiming many tasks in many environments must be evaluated across all of them, on hardware, one slow trial at a time.
+
+The three ingredients are the responses to the first, second, and fourth of these. The third constrains every design decision throughout.
+
+## Ingredient one: aggregating the data that already exists
+
+Teleoperating a robot is expensive for every new task, and no single lab can produce enough. The idea that unlocked the first generalist policies is that **the data already exists, distributed and unusable.**
+
+Every robotics lab in the world collects data. A lab studying tactile sensing collects teleoperation data with tactile sensors; a lab studying door opening collects door-opening trajectories. It is small-scale, collected to support a paper, and it never goes online, because nobody thinks anyone else would want it. Efforts to release datasets existed, but not in a form that permitted **co-training** — training one model on several of them at once.
+
+So: ask everyone, and convert everything into a common format. **Open X-Embodiment** is the result.
+
+| | |
+|---|---|
+| Real robot episodes | **more than 1,000,000** |
+| Robot embodiments | **22** |
+| Research labs | **34** |
+| Scenes | **more than 300** |
+
+The result that mattered was not the dataset but what training on it showed. A single model trained across all of these datasets **beat the best previously published method on each individual setup** — the first evidence that co-training across embodiments helps rather than hurts. The numbers, as success-rate percentages for the original per-setup method, RT-1 trained on the pooled data, and RT-1-X, the cross-embodied model:
+
+| Setup | Original method | RT-1 | RT-1-X |
+|---|---|---|---|
+| Kitchen manipulation | 43 | 48 | **63** |
+| Cable routing | 24 | 18 | **56** |
+| NYU door opening | 53 | 65 | **80** |
+| Autolab UR5 | **53** | 25 | 45 |
+| Task-agnostic play | 33 | 68 | **72** |
+| **Mean** | 41 | 44 | **63** |
+
+Read the Autolab row before the mean. **Cross-embodied training lost on one of the five setups**, 45 against 53, and the headline is an average rather than a uniform improvement. That pattern — better on aggregate, worse somewhere — recurs in this chapter and is worth expecting.
+
+> **Editor's note.** Open X-Embodiment ("Open X-Embodiment: Robotic Learning Datasets and RT-X Models", Open X-Embodiment Collaboration, ICRA 2024) won the best conference paper award out of 1,765 submissions. The lecturer contributed the continuous evaluations during model development, on the robot setup he had built for his PhD in Freiburg — the "task-agnostic play" column above. Most of the work in the rest of this chapter is trained on this dataset.
+
+![The scale of Open X-Embodiment, and the institutions that contributed to it. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_005.jpg){#fig:oxe width=78%}
+
+The dataset's importance is that it made a research programme possible. Before it, nobody could train on a million diverse cross-embodied trajectories, so nobody could find out what happens when you do (@fig:sparks).
+
+![The first evidence of a generalist robot policy: one cross-embodied model against the best prior method on each setup. Note the Autolab column, where cross-embodiment training loses. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_007.jpg){#fig:sparks width=82%}
+
+## The modelling problem, and the reframing that solves it
+
+Aggregating the data leaves the harder question: how do you train one network on inputs and outputs that do not even have the same shape? One robot has a single third-person camera, another has three; one is controlled in Cartesian end-effector space, another in joint space; one runs at 5 Hz, another at 50 Hz. Robot data is heterogeneous in **sensors, actuators, and control frequencies** simultaneously (@fig:hetero).
+
+![Robot data is heterogeneous along three axes at once — sensors, actuators, and control frequencies — which is why a generalist architecture cannot assume a fixed input or output shape. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_010.jpg){#fig:hetero width=78%}
+
+The reframing that makes progress possible is the one Chapter 7 developed. A robot policy takes an image and an instruction and emits a sequence of end-effector displacements. Squint: replace the robot image with an internet photo and the instruction with "caption the scene", and it is a vision-language model. **Robotics is multimodal sequence modelling** — language tokens, image tokens, action tokens in one stream — and with that framing every advance in general sequence modelling becomes available.
+
+## Octo: a generalist policy trained from scratch
+
+The first open-source generalist policy is a large transformer trained on **800,000 trajectories** from Open X-Embodiment. The idea is the one from Gato: tokenize all the heterogeneous inputs and outputs, and train one transformer over them.
+
+**The architecture.** Language instructions go through a pre-trained T5 encoder to become **task tokens** $\mathcal{T}_T$. Image observations are patchified and passed through a shallow convolutional network to become **observation tokens** $\mathcal{T}_o$, with positional embeddings added. Both are concatenated and run through a transformer that resembles a plain vision transformer, over multiple timesteps.
+
+Two structural choices matter. The attention is **block-wise causal**: task tokens attend among themselves but not to observation tokens; observation tokens attend to the task tokens and to observation tokens at the current and earlier steps, never to future ones. And a set of **readout tokens** — placeholders that carry no input information — attend to everything and summarize it for the output head. The head itself is a **diffusion** decoder, chosen because in experiments it handled multimodal behavior far better than the alternatives, which is Chapter 6's argument arriving inside a large model.
+
+> **Editor's note.** The automatic captions garble the description of the attention mask into a self-contradiction ("all the task tokens cannot attend to each other, but they can't look at the observation tokens"). The reading above is reconstructed from the following sentence about observation tokens and from the slide's Task / Observation / Readout block structure. Readers implementing this should check the paper's mask specification rather than trusting the reconstruction.
+
+**The objective** is the one Chapter 3 argued for:
+
+$$\pi_\theta\big(a_t \mid s_t, s_g\big)$$ {#eq:goalbc}
+
+**In words.** Given the current situation and a specification of the goal, produce a sequence of actions that reaches it.
+
+**The symbols.** $a_t$ is the action at time $t$; $s_t$ the current state, comprising the image observations and proprioception; $s_g$ the **goal**; $\theta$ the model parameters. The slide labels this "goal state conditioned behavior cloning".
+
+**Why this shape.** The flexibility is entirely in $s_g$, and it is what makes one model usable for many tasks: the goal can be supplied as a **goal image** or as a **natural-language instruction**, because both are embedded into the same conditioning slot. Chapter 3 argued for goal-conditioning on the grounds that task success is not well defined and tasks are continuous rather than discrete; @eq:goalbc is that argument at a million trajectories (@fig:octo).
+
+![The Octo architecture: task tokens from a language encoder, observation tokens from a shallow convolutional encoder, block-wise causal attention, readout tokens, and a diffusion action head, trained as goal-conditioned behavior cloning. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_018.jpg){#fig:octo width=82%}
+
+### Two design decisions, one of them regretted
+
+**Put the parameters in the transformer and train from scratch.** Prior designs used large per-image ResNet encoders and fused their outputs late; Octo instead invested its capacity in the transformer itself. The reasoning at the time was that with this much data, training everything from scratch should work. The lecturer's own retrospective assessment is worth quoting for what it says about the field's pace: "in hindsight, maybe it was not the best idea, but at the time that's what we thought." Chapter 7's pre-trained backbones are the alternative that won.
+
+**Align the gripper action, and nothing else.** Coordinate frames across the datasets were deliberately *not* aligned, as a scalability choice — reconciling them is per-dataset work that does not generalize. The gripper dimension *was* aligned, because early failures were disproportionately gripper-related, with the model grasping too early. The four conventions found in the pooled data:
+
+| Convention | Datasets |
+|---|---|
+| Absolute, $+1$ open / $0$ closed | Taco Play, Austin Sailor, Austin Sirius, NYU Franka Play |
+| Absolute, $0$ open / $1$ closed — **inverted** | RoboTurk, Viola, Stanford Hydra, BC-Z |
+| Relative deltas, $+1$ opening / $-1$ closing | RT-1, Kuka, Jaco Play, Berkeley AutoLab UR5 |
+| Continuous, with ramps during opening and closing | Bridge |
+
+All four were mapped to one target: **absolute, $+1$ open, $0$ closed.** This table is the most concrete illustration in the book of what "heterogeneous data" means in practice. Two datasets recording the identical physical motion — open, close to grasp, open to release — disagree about the sign, the reference, and whether the value is even discrete. And note the failure mode this caused: not an error message, but a model that grasped slightly too early, because half its training data told it that 1 meant close (@fig:gripper).
+
+![The four gripper conventions found across Open X-Embodiment, and the single convention Octo maps them all to. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_019.jpg){#fig:gripper width=82%}
+
+### What it achieved, and how it felt
+
+Evaluation split into zero-shot and fine-tuning tests across many labs, using one fine-tuning recipe for new sensors and action spaces. Octo controlled multiple embodiments out of the box, outperformed RT-1-X trained on similar data, and **matched RT-2-X, a 55-billion-parameter closed-source model** — which was, at the time, the first vision-language-action model.
+
+The lecture shows the moment the project turned, and it is worth recording because it is an honest picture of how this research is done. The first successful grasp the team ever saw came from a Google robot in Mountain View, operated **over a remote server** from Berkeley, with the guest lecturer of that week — then at Google — physically present to help. Two details make it instructive. Robot evaluation is hard, and harder when you are not next to the robot and depend on other people's time. And the evaluation was **out of distribution despite the training data including Google's own**, because Google had moved buildings since collecting it. Simple tasks still worked, which was the point.
+
+### Adaptability, which is what a foundation model is for
+
+A generalist policy should be useful for a robot it never trained on, and Octo's answer is architectural. A new input — force-torque readings, an extra wrist camera — is **slotted in as a few extra tokens**, and the model is fine-tuned. Because most parameters live in the transformer rather than in per-sensor encoders, most of the learned knowledge survives the change.
+
+The finding that came out of fine-tuning across labs is the chapter's most transferable claim: **fine-tuning from a generalist robot policy beat every state-of-the-art visual-representation backbone they compared against.** Not a better vision encoder, but a policy that has already learned to act, is the better starting point. Adoption bore it out — researchers fine-tuned Octo to their own robots with around **50 demonstrations**, including an unseen Spot quadruped and a Japanese company's humanoid, from a two-line model load.
+
+## CrossFormer: how generalist is a single arm?
+
+The lecture asks the obvious question about Octo. If all it does is control 7-degree-of-freedom arms, how generalist is it? Robotics has drones, quadrupeds, self-driving cars and humanoids, and a method that learns from all of them can consume much more data. The transfer argument is concrete: navigation data could teach obstacle avoidance to a drone, since avoiding obstacles is a shared behavior whether the platform is a floor-cleaning robot or an indoor quadcopter.
+
+**CrossFormer** adds bimanual manipulation, navigation and locomotion to Octo's mixture — **900,000 trajectories** — and trains one transformer with **embodiment-specific action heads**. The specification on the slide states the range it covers:
+
+- **Flexible observation spaces**
+- **Flexible action spaces**, dimension in $[2, \ldots, 1400]$
+- **Control frequencies** in $[5\ \mathrm{Hz}, \ldots, 50\ \mathrm{Hz}]$
+
+**Why separate heads.** The reason is the control-frequency spread, and the arithmetic makes it clear. A WidowX arm at 5 Hz and a bimanual dexterous robot at 50 Hz do not need action chunks of the same length: covering one second of motion means 5 actions for the first and 50 for the second. A single fixed-size output cannot serve both, so each embodiment gets a head sized for it. The side benefit is that **no action-space alignment is needed at all** — the gripper reconciliation of the previous section becomes unnecessary, because nothing forces different embodiments through a shared output.
+
+To get transfer despite the separate heads, **parameter sharing is maximized elsewhere**: image-encoder weights are shared across camera views of the same type, so a wrist camera on one robot and a wrist camera on another use the same encoder.
+
+Architecturally, a language encoder conditions a ResNet image tokenizer through **FiLM** — Chapter 6's feature-wise modulation — and the observation tokens are grouped by role: workspace image, navigation image, wrist image, quadruped proprioception, bimanual proprioception, plus readout tokens. These feed one cross-embodied transformer and fan out to four heads: quadruped, single arm, navigation, bimanual (@fig:crossformer).
+
+![CrossFormer: one transformer over role-grouped observation tokens, with embodiment-specific action heads sized for each platform's control frequency and action dimension. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_028.jpg){#fig:crossformer width=82%}
+
+The demonstration is a set of rollouts — a quadruped walking, a Franka manipulating, indoor and outdoor navigation, and the long-horizon bimanual sushi-cutting task from Chapter 2 — with the property that all of them come from **one checkpoint**. The same weights, no per-robot selection.
+
+Quantitatively it matches or beats specialists, with the same caveat as before. Reading approximate values from the chart, the average success rate is about 0.70 for CrossFormer against 0.52 for the best prior method and 0.62 for single-robot training — and on the Franka, CrossFormer scores about 0.41 against the best prior method's 0.52. **The aggregate wins and one embodiment loses**, exactly as in the Open X-Embodiment table.
+
+## Does pre-training actually help? A study worth reading
+
+CrossFormer asked whether one policy could control many embodiments. A study from the Toyota Research Institute asked something more basic that the community had been assuming: **does multi-task pre-training help post-training?**
+
+The design is what makes it worth attention. Diffusion transformer policies pre-trained on roughly **1,700 hours** of data including Open X-Embodiment, then fine-tuned to single bimanual tasks on their own Frankas, evaluated in simulation and reality — with **blind A/B testing**, so the human operators scoring the rollouts did not know which policy they were watching. In a field where evaluation is the acknowledged weak point, that is unusual rigor. The demonstration task was cutting an apple, roughly two minutes long.
+
+Three findings:
+
+**Yes, pre-training helps** — post-training to a single task becomes **three to five times more sample-efficient**.
+
+**The benefit is largest when post-training data is scarce**, which is the regime anyone adapting a released model is actually in.
+
+**How you normalize your data often mattered more than architectural or algorithmic changes.** That result deserves to be uncomfortable. The community's attention goes to architectures; this study says a preprocessing choice can dominate them. It is also consistent with Chapter 7's finding that quantile normalization beats min-max normalization for action tokenization — the same lesson from a different direction.
+
+> [UNCLEAR: lecture 9, 30:55–33:49 — the slide for this study was not recoverable from the recording, so the paper's title and authors are not established here. The lecture identifies it only as "this work from TRI".]
+
+## Ingredient two, continued: internet-scale priors
+
+Everything so far trains on robot data from scratch, and Open X-Embodiment — a million trajectories — is minuscule beside what a language or vision-language model consumes. So: **do internet-scale priors transfer to control?**
+
+Chapter 7 supplied the mechanism. LLaVA prepends image tokens to text tokens and lets a pre-trained language model run one ordinary self-attention pass over the result. The question is whether robot actions can be treated the same way, and the answer is how the first vision-language-action models were built.
+
+**Tokenize the actions and inject them into the language model's vocabulary.** Concretely: take the **256 least-frequent tokens** of the existing vocabulary and overwrite them with action tokens, so a model whose architecture is unchanged can now emit motion. Train with next-token prediction and the same cross-entropy loss as text. Decoding runs backwards: token IDs to bins, bins to normalized values, normalized values to $[\Delta x, \Delta y, \Delta z, \Delta\theta, \text{grip}]$. The first approaches — RT-2, OpenVLA — used the naive per-dimension, per-timestep binning that Chapter 7 showed breaks down past about 5 Hz (@fig:vla).
+
+![Turning a vision-language model into a vision-language-action model: same vision encoder, same vocabulary, same weights fine-tuned, with 256 reused token IDs standing in for discretized actions. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_033.jpg){#fig:vla width=82%}
+
+## Training these models: what the lecture actually recommends
+
+This section has no counterpart elsewhere in the book. It is the practical knowledge of people who have trained these systems, and the lecture presents it explicitly for students about to do the same. It generalizes beyond vision-language-action models to any large-scale robot training, world models included.
+
+### When has it converged?
+
+For an autoregressive vision-language-action model, the rule of thumb is to **wait until action-token accuracy reaches about 95%** before attempting any real-world rollout. Two caveats come with it. The accuracy is computed under **teacher forcing**, so it does not represent rollout performance. And it measures only whether the exact discretized bin was chosen, which is a strict and slightly artificial target.
+
+Alongside it, track **L1 and L2 action error** — the distance between the predicted continuous actions, after de-tokenizing and un-normalizing, and the ground truth. The point of tracking both is that they answer different questions: token accuracy asks "did we pick the right bin", and the L1/L2 errors ask "how far off are we in units that matter", which a single-bin miss and a fifty-bin miss both fail identically on the first metric (@fig:convergence).
+
+![Convergence diagnostics for an autoregressive vision-language-action model: action-token accuracy against a 95% target, plus L1 and L2 error on the de-tokenized continuous actions. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_035.jpg){#fig:convergence width=82%}
+
+### Batching data whose shapes disagree
+
+Datasets in the mixture have different observation spaces — one embodiment has a single third-person camera, another adds two wrist cameras for three — so examples cannot simply be stacked into a batch.
+
+**Padding is the easy answer.** Pad to the largest number of observation inputs and mask the attention accordingly. This is what Octo and CrossFormer did, it takes an afternoon to implement, and it has a cost the lecture states bluntly: **half your batch can be zeros.** Concretely, in a mixture where single-camera and three-camera datasets appear equally often, padding every example to three images means a third of the image slots are empty on the single-camera half — and those zeros are pushed through the GPU at full cost.
+
+**Sequence packing is the efficient answer.** Concatenate everything into one long sequence, so each example contributes exactly the tokens it has and throughput is maximized. It costs implementation complexity in two specific places:
+
+**Attention must be block-diagonal.** Tokens in example $i$ may attend only to other tokens in example $i$. Without the mask, the first example in the packed sequence attends to the third example's images — a bug that produces a model that trains fine and is quietly wrong.
+
+**Positional encodings must reset at each boundary.** Token 0 of every example gets position 0, not its offset in the packed sequence. Otherwise a late example sees positions like "24 and up" that, for a model whose examples are all short, are out of distribution.
+
+Bookkeeping is a cumulative-length array. For four examples of lengths 8, 8, 16 and 16, packed in that order:
+
+$$\texttt{cu\_seqlens} = [0,\ 8,\ 16,\ 32,\ 48],$$
+
+the prefix sums of the example lengths, from which every boundary can be recovered (@fig:packing).
+
+![Sequence packing with its two requirements: a block-diagonal attention mask so examples cannot see each other, and positional encodings that reset at every boundary. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_037.jpg){#fig:packing width=82%}
+
+### How you load data changes how well the model generalizes
+
+This is the part of the section that is least expected and most useful. Two strategies:
+
+| | Sequential reads with a shuffle buffer | True random reads |
+|---|---|---|
+| Used by | Octo, OpenVLA | index-based samplers |
+| I/O pattern | sequential reads ✅ | random seeks, seek-bound ❌ |
+| Throughput | very high ✅ | lower, a bottleneck at scale ❌ |
+| Randomness | approximate ❌ | exact, no buffer bias ✅ |
+| Memory | a large buffer in RAM ❌ | index only, lightweight ✅ |
+| Observation history | free — adjacent on disk ✅ | extra seeks, cost scales with window ❌ |
+
+The left column streams from shards into a shuffle buffer and samples batches from it. The essential property: **the degree of randomness is proportional to the buffer size**, so a buffer that is too small produces correlated batches. The right column keeps a flat index over the dataset and performs random seeks, which gives exact unbiased sampling and makes I/O speed the binding constraint, since the dataset does not fit in memory.
+
+**The war story is the lesson.** Octo began with a shuffle buffer of **20,000 samples** combined with trajectory-level interleaving — meaning consecutive samples in the buffer came from the same trajectory and were therefore near-duplicates. Generalization was poor. The fix was to shuffle and interleave **frames** from different trajectories *before* decoding the images, which is cheaper per item and allowed the buffer to grow to **500,000 samples**. Nothing else changed — same data mixture, same architecture, same hyperparameters — and the model improved substantially.
+
+Sit with that. A twenty-five-fold increase in a data-loading buffer produced a change in generalization that would ordinarily be attributed to a modelling advance. It is the same lesson as the Toyota study's finding about normalization, and it is the reason this section exists.
+
+### Different robots, different action spaces
+
+Two established designs, and the choice has consequences at test time (@fig:heads).
+
+**Embodiment-specific heads**, as in CrossFormer: a shared backbone routing to separate output heads. The benefit is variable-length outputs matched to each platform's control frequency. The cost is that a new embodiment needs a new head, and fine-tuning.
+
+**A single action expert with a padded action space**, as in the $\pi_0$ family: a shared backbone feeding one output module that emits into a unified space. Take the **maximum action dimension across all embodiments** and zero-pad every robot's action to fit. Much simpler architecturally. The cost is a **fixed-length action chunk for every embodiment regardless of control frequency**, which the previous section's arithmetic says is a real compromise.
+
+![Two designs for heterogeneous action spaces: embodiment-specific heads with user-specified routing, and a single action expert emitting into a zero-padded unified action space. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_041.jpg){#fig:heads width=82%}
+
+### The question the lecture puts to the room
+
+Given either design, **how does the model know which embodiment to produce actions for at test time?** One model, one set of weights, and it must emit 7 numbers for an arm or 14 for a bimanual robot. The lecture pauses for the students to discuss it, which is worth reproducing because the two answers are genuinely different.
+
+**With embodiment-specific heads, the user decides.** You specify which head to use as part of the prompt or the configuration — "use the bimanual head", "use the quadruped head". **The routing is hard-coded by the user**, and the model has no say in it.
+
+**With a single action expert, the model infers it from the observations.** There is no explicit selection, so the model must work out which body it is driving from three cues. The **camera views**, since different view types are characteristic of different platforms. The **proprioception**, which is also an input to the action head and is a very strong signal. And often the **language instruction**, because the same tasks are not available to every embodiment — the lecturer's example being that telling a floor-cleaning robot to cut the sushi will not go well. The backbone learns to pick up on these cues and route information through the action expert accordingly.
+
+The distinction is worth keeping because it is a preview of Chapter 11's confidence-graded architecture: one design puts a decision in the user's hands, the other asks the model to infer it, and inference requires the model to be right about something nobody checked.
+
+## The current recipe
+
+The lecture closes ingredient two with the recipe that most labs have converged on, drawn from the $\pi_{0.5}$ and knowledge-insulation papers. Two bullets, and the structure is worth reading closely because it combines pieces from three earlier chapters (@fig:recipe).
+
+**The vision-language backbone is trained with next-token prediction on a mixture of FAST-tokenized robot actions and web data.** Co-training on web data **preserves the backbone's capabilities and prevents catastrophic forgetting** — the model does not stop being a vision-language model in order to become a policy. The FAST tokens, from Chapter 7, also serve representation learning: predicting compressed action tokens is a useful task in itself.
+
+**A single action expert is trained with flow matching, with a stop gradient to the backbone.** The expert produces continuous actions using Chapter 6's flow matching. Besides not attending to the FAST tokens, it applies a **stop gradient**: it *reads* from the backbone but cannot *update* it. This is called knowledge insulation, and the reasoning is that the semantic capabilities of a pre-trained vision-language model are the valuable thing, and gradients from an action-prediction task are exactly what would erode them. It also helps convergence and training speed.
+
+![The current vision-language-action recipe: next-token prediction over image, language and FAST action tokens in the backbone, and a flow-matching action expert that reads from the backbone behind a stop gradient. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_042.jpg){#fig:recipe width=82%}
+
+Notice the shape of this design. Two output pathways — discrete tokens through the backbone, continuous actions through the expert — and a deliberate one-way information flow between them. Chapter 7's Flamingo gate was the same instinct: add a capability to a pre-trained model without letting the new task damage what it already knows.
+
+## Ingredient three: evaluation that does not require a robot farm
+
+The last ingredient is the one that gets least attention and, by the lecture's account, deserves more.
+
+Real-robot evaluation is **tedious, expensive, and hard to reproduce**, and the failure modes are mundane. Somebody **bumps the third-person camera**, its pose changes, the policy is out of distribution, and it stops working — so you collect new data and fine-tune. **Hardware fails**, you replace motors to save the robot, and now **proprioception reads differently** from the data the policy was trained on. **Grippers get stuck.** And it is simply slow: low-frequency control means waiting two minutes to find out whether a grasp succeeded.
+
+Simulation helps two ways. It **makes research accessible** to people who do not own your robot, and it is **reproducible** — no bumped cameras, no changed proprioception.
+
+**SIMPLER** is the attempt to make that work for policies **trained exclusively on real-world data**: evaluate a real-world policy in simulation in a way that tells you something about its real-world performance, so you can run many evaluations cheaply. It requires two things.
+
+**Accurate control dynamics, via system identification.** The **control gap** must be closed first: the same open-loop action sequence has to move the simulated end-effector the way it moves the real one. That is achieved by a system-identification procedure on a small number of real samples — in effect, matching the low-level controller in simulation to the low-level controller on the robot. This is Chapter 2's PID layer reappearing as a prerequisite for evaluating a learned policy.
+
+**Visual matching.** Rather than pursuing photorealism, do two cheap things. **Green screening**: segment out the interactive simulated assets and composite them onto **real-world backgrounds**. **Texture matching**: project the textures of real objects onto their simulated counterparts — take a photograph of a real drink can and wrap it around the simulated can.
+
+Does it work? Real and simulated success rates correlate strongly across four different models, and — more usefully — the correlation survives distribution shifts. SIMPLER reproduces the *ranking* of a policy's sensitivity to each kind of shift:
+
+| Distribution shift | $\Delta$ real success rate | $\Delta$ SIMPLER success rate |
+|---|---|---|
+| Camera pose | $-0.38$ | $-0.39$ |
+| Table texture | $-0.17$ | $-0.19$ |
+| Background | $-0.17$ | $-0.12$ |
+| Distractors | $-0.08$ | $-0.06$ |
+| Lighting | $-0.04$ | $-0.07$ |
+
+Camera pose is by far the most damaging shift in reality, and by far the most damaging in simulation. Lighting matters least in both. The ordering is preserved, and the magnitudes are close.
+
+**The caveat is the important part, and it is easy to lose.** SIMPLER gives **correlated, not absolute** performance. A 50% success rate in simulation does not predict any particular real-world number. What it gives you is **pairwise comparison**: if policy A beats policy B in SIMPLER, that ordering also holds on the real robot. For choosing between checkpoints — which is what evaluation is usually for — that is sufficient, and it is all you get (@fig:simpler).
+
+![SIMPLER's two requirements: system identification so that the same open-loop actions produce the same motion, and visual matching by green screening and texture transfer rather than photorealism. Credit: course slides, Lecture 9.](../slides_png/lecture09/slide_051.jpg){#fig:simpler width=82%}
+
+Follow-up work has continued along this line — PolaRiS, which provides tools for generating real-to-sim environments at scale along with a dataset for bridging the gap and a hub for sharing environments; RobotArena, which does benchmarking through real-to-sim translation; and RoboLab, a high-fidelity benchmark for analyzing generalist policies. The value is that a practitioner without twenty robot setups can still test whether a generalist policy is generalist.
+
+## The three ingredients, completed
+
+| Large datasets | Large models | Scalable evaluation |
+|---|---|---|
+| Aggregate the robot data that already exists into a common format that permits co-training — Open X-Embodiment | Cross-embodied policies, then internet-scale priors — Octo, CrossFormer, vision-language-action models | Real-to-sim evaluation with correlated, reproducible results — SIMPLER and its successors |
+
+## Where this breaks
+
+**Cross-embodiment training wins on average and loses in places.** Both headline tables in this chapter contain a column where the generalist is beaten by a specialist. Nobody has explained which setups lose or why, so the honest statement of the result is "better on aggregate", not "better".
+
+**Padded action spaces ignore control frequency.** The single-action-expert design predicts a fixed-length chunk for every embodiment, while the platforms it serves span 5 Hz to 50 Hz. One second of motion is 5 actions or 50, and a fixed chunk cannot be right for both.
+
+**The model inferring its own embodiment is an unchecked assumption.** With a padded action space, nothing verifies that the backbone identified the body correctly. It infers from camera views, proprioception and language, and when those cues are ambiguous — two similar arms, a generic instruction — there is no mechanism that notices.
+
+**Evaluation gives you rankings, not numbers.** SIMPLER's correlation is enough to compare policies and not enough to answer "will this work in my kitchen". Combined with the expense of real evaluation, this means the field's claims about absolute capability rest on small numbers of real trials.
+
+**Nothing here escapes imitation.** Every model in this chapter is behavior cloning at scale. The ceiling of Chapter 3 applies unchanged: a model trained on teleoperation cannot exceed teleoperation, which is exactly the gap Chapters 4 and 5 attacked and Chapter 11 names as one of the field's central problems.
+
+**The engineering advice is not yet theory.** A shuffle buffer of 20,000 versus 500,000 changed generalization; normalization outweighed architecture. These are empirical findings from specific projects, presented as such. That they are the most actionable content in the chapter is a fair statement of the field's maturity.
+
+**The unrecoverable slide is a gap in this chapter.** The Toyota pre-training study is reported from the transcript alone, without a citable reference. Readers should treat its numbers — three to five times sample efficiency — as reported speech.
+
+## What this connects to
+
+**Backwards.** @eq:goalbc is Chapter 3's goal-conditioned formulation at scale, and the diffusion head is Chapter 6's answer to multimodality inside a large model. The whole architecture is Chapter 7: tokenize everything, one transformer, next-token prediction, with FAST as the tokenizer and LLaVA-style early fusion as the recipe for adding vision. The gripper table is Chapter 2's end-effector discussion turning into a data-engineering problem, and system identification for SIMPLER is Chapter 2's control layer becoming a prerequisite for evaluation. The tension with Chapter 8 is deliberate: both chapters respond to data scarcity, one by scaling policies and the other by scaling models of the world.
+
+**Forwards.** Chapter 10 adds reasoning to exactly these models and finds a 30% generalization gain at a sixteen-fold cost in inference speed — the trade this chapter's real-time constraint makes unavoidable. Chapter 11 takes the whole picture apart: the backbone question this chapter answered with "a vision-language model" is presented there as one of three live positions, and this chapter's evaluation section is the beginning of a longer argument about lifelong learning and the data flywheel.
+
+One thread deserves naming. This chapter's most-repeated finding is that **the boring parts decide the outcome** — gripper sign conventions, shuffle-buffer size, normalization, whether your attention mask lets one training example see another. Chapters 4 through 8 are about ideas. This chapter is about what happens when the ideas are correct and the implementation is where the performance lives.
+
+## Further reading
+
+- **C. Lynch, A. Wahid, J. Tompson et al., "Interactive Language: Talking to Robots in Real Time" and the earlier "Language Conditioned Imitation Learning over Unstructured Data" (2021).** The assigned reading, and the origin of the goal-conditioning-by-language idea that @eq:goalbc rests on. Read it for how little language annotation is actually needed when most of the control can be learned from unlabeled play.
+- **S. Reed, K. Zolna, E. Parisotto et al., "A Generalist Agent" (2022).** Gato, and the direct ancestor of Octo's approach: tokenize everything — text, images, button presses, joint torques — into one sequence and train one transformer on all of it. Read it for the strongest statement of the tokenize-everything position, and note that its author gave the guest lecture arguing that the backbone may not matter if you have enough data.
+- **Physical Intelligence, "$\pi^*_{0.6}$: a VLA That Learns From Experience" (2025).** The assigned paper closest to this chapter's unresolved problem. It is the current attempt to get past the imitation ceiling for exactly the architecture this chapter builds, by learning from the robot's own experience rather than only from demonstrations — which makes it the bridge to Chapter 11's data flywheel.
