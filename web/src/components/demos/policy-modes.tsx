@@ -28,12 +28,14 @@ function seeded(seed: number) {
   };
 }
 
+// The two modes clear the obstacle with room to spare: every demonstration is a run
+// that worked. Only their average fails, which is the whole point.
 const DEMOS = (() => {
   const rand = seeded(7);
   const out: Array<{ ctrl: Point; up: boolean }> = [];
   for (let i = 0; i < 5; i++) {
-    out.push({ ctrl: { x: 250 + (rand() - 0.5) * 60, y: 44 + (rand() - 0.5) * 34 }, up: true });
-    out.push({ ctrl: { x: 250 + (rand() - 0.5) * 60, y: 256 + (rand() - 0.5) * 34 }, up: false });
+    out.push({ ctrl: { x: 250 + (rand() - 0.5) * 56, y: 16 + (rand() - 0.5) * 24 }, up: true });
+    out.push({ ctrl: { x: 250 + (rand() - 0.5) * 56, y: 284 + (rand() - 0.5) * 24 }, up: false });
   }
   return out;
 })();
@@ -91,17 +93,21 @@ export function PolicyModes({ caption }: { caption?: string }) {
   const collided = Math.hypot(head.x - OBSTACLE.x, head.y - OBSTACLE.y) < OBSTACLE.r;
   const arrived = t >= 1 && !collided;
 
+  const BINS = 15;
+  const SPAN = 120; // degrees, centred on straight ahead
+  const toFraction = (angle: number) => (angle + SPAN / 2) / SPAN;
+
   const histogram = useMemo(() => {
-    const bins = new Array(21).fill(0);
+    const bins = new Array(BINS).fill(0);
     for (const demo of DEMOS) {
-      const angle = heading(demo.ctrl);
-      const bin = Math.round(((angle + 55) / 110) * 20);
-      bins[Math.min(20, Math.max(0, bin))] += 1;
+      const bin = Math.floor(toFraction(heading(demo.ctrl)) * BINS);
+      bins[Math.min(BINS - 1, Math.max(0, bin))] += 1;
     }
     return bins;
   }, []);
 
-  const meanBin = Math.round(((heading(MEAN_CTRL) + 55) / 110) * 20);
+  const peak = Math.max(...histogram, 1);
+  const meanPercent = toFraction(heading(MEAN_CTRL)) * 100;
 
   return (
     <figure className="my-9 w-full">
@@ -146,12 +152,18 @@ export function PolicyModes({ caption }: { caption?: string }) {
                 />
               ))}
 
+              <defs>
+                <pattern id="pm-hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink-faint)" strokeWidth="2" opacity="0.5" />
+                </pattern>
+              </defs>
               <circle
                 cx={OBSTACLE.x}
                 cy={OBSTACLE.y}
                 r={OBSTACLE.r}
-                fill="var(--raise)"
-                stroke="var(--line)"
+                fill="url(#pm-hatch)"
+                stroke="var(--ink-faint)"
+                strokeWidth={1.5}
               />
 
               {/* the policy's own route */}
@@ -185,26 +197,25 @@ export function PolicyModes({ caption }: { caption?: string }) {
           {/* the action distribution at the moment of decision */}
           <div className="flex flex-col justify-between bg-surface p-4">
             <p className="u-label mb-3">Expert heading, leaving the start</p>
-            <div className="flex h-28 items-end gap-[3px]">
+            <div className="relative flex h-32 items-end gap-[2px] border-b border-line">
               {histogram.map((count, i) => (
-                <div key={i} className="relative flex-1">
-                  <div
-                    className="w-full bg-demo/70"
-                    style={{ height: `${(count / 5) * 96}px` }}
-                  />
-                  {i === meanBin ? (
-                    <span
-                      className="absolute -top-24 left-1/2 h-24 w-px -translate-x-1/2 bg-reward"
-                      aria-hidden
-                    />
-                  ) : null}
-                </div>
+                <div
+                  key={i}
+                  className="flex-1 bg-demo/70"
+                  style={{ height: `${(count / peak) * 100}%` }}
+                />
               ))}
+              {/* Where least squares lands: between the modes, on nothing. */}
+              <span
+                aria-hidden
+                className="absolute inset-y-0 w-px bg-reward"
+                style={{ left: `${meanPercent}%` }}
+              />
             </div>
             <div className="mt-2 flex justify-between">
-              <span className="u-readout text-[0.625rem] text-ink-faint">−55°</span>
+              <span className="u-readout text-[0.625rem] text-ink-faint">−60°</span>
               <span className="u-readout text-[0.625rem] text-reward">mean</span>
-              <span className="u-readout text-[0.625rem] text-ink-faint">+55°</span>
+              <span className="u-readout text-[0.625rem] text-ink-faint">+60°</span>
             </div>
             <p className="mt-4 font-body text-[0.8125rem] leading-relaxed text-ink-dim">
               Two peaks: go over, or go under. The average of the two headings is straight

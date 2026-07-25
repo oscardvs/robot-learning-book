@@ -20,11 +20,10 @@ interface FigureProps {
  */
 export function Figure({ id, number, src, scale, videoUrl, timecode, lecture, children }: FigureProps) {
   return (
-    <figure id={id} className="my-9 scroll-mt-24">
-      <div
-        className="u-ticks relative mx-auto border border-line bg-surface p-1.5"
-        style={{ maxWidth: scale ?? '100%' }}
-      >
+    // The plate and its caption share one column so the label lines up with the
+    // image's left edge rather than floating in the middle of the text measure.
+    <figure id={id} className="mx-auto my-9 scroll-mt-24" style={{ maxWidth: scale ?? '100%' }}>
+      <div className="u-ticks relative border border-line bg-surface p-1.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -35,7 +34,7 @@ export function Figure({ id, number, src, scale, videoUrl, timecode, lecture, ch
         />
       </div>
 
-      <figcaption className="mx-auto mt-3 flex max-w-[62ch] flex-col gap-2 text-[0.8125rem] leading-relaxed text-ink-dim">
+      <figcaption className="mt-3 flex max-w-[62ch] flex-col gap-2 text-[0.8125rem] leading-relaxed text-ink-dim">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {number ? (
             <span className="u-label border border-policy/35 px-1.5 py-1 text-policy">

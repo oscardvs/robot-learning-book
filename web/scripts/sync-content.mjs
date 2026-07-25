@@ -184,12 +184,15 @@ async function buildChapters(slideIndex) {
 
     const heading = title ?? lecture?.title ?? `Chapter ${number}`;
     const description = firstSentence(raw);
+    // 00 is the preface and 12+ is back matter; only 1–11 pair with a lecture.
+    const kind = lecture ? 'chapter' : number === 0 ? 'front' : 'back';
 
     const frontmatter = [
       '---',
       `title: ${escapeYaml(heading)}`,
       `description: ${escapeYaml(description)}`,
       `chapter: ${number}`,
+      `kind: ${kind}`,
       ...(lecture ? [`lecture: ${number}`, `video: ${escapeYaml(lecture.video)}`] : []),
       '---',
       '',
@@ -197,8 +200,8 @@ async function buildChapters(slideIndex) {
 
     const target = path.join(OUT.book, `${String(number).padStart(2, '0')}-${slug}.mdx`);
     await writeFile(target, frontmatter + body);
-    written.push({ number, slug, title: heading, description, file: path.basename(target) });
-    log(`chapter ${number}: ${heading}`);
+    written.push({ number, slug, kind, title: heading, description, file: path.basename(target) });
+    log(`${kind.padEnd(7)} ${String(number).padStart(2, '0')}  ${heading}`);
   }
 
   return written;
@@ -271,7 +274,7 @@ async function buildStatus(slideIndex, chapters) {
   }
 
   const lectures = LECTURES.map((lecture) => {
-    const chapter = chapters.find((c) => c.number === lecture.n);
+    const chapter = chapters.find((c) => c.number === lecture.n && c.kind === 'chapter');
     const slides = slideIndex.get(lecture.n)?.slides ?? [];
     const transcript = transcripts.some((f) => f.startsWith(String(lecture.n).padStart(2, '0')) && f.endsWith('.txt'));
     return {
@@ -288,8 +291,11 @@ async function buildStatus(slideIndex, chapters) {
     generatedAt: new Date().toISOString().slice(0, 10),
     transcriptWords: words,
     slideCount: lectures.reduce((sum, l) => sum + l.slideCount, 0),
-    chaptersWritten: chapters.length,
+    // Only the eleven lecture chapters count towards progress; the preface and the
+    // back matter are not lectures and would push this past the total.
+    chaptersWritten: lectures.filter((l) => l.chapter).length,
     lectureCount: LECTURES.length,
+    frontMatter: chapters.filter((c) => c.kind !== 'chapter').length,
     lectures,
   };
 }
@@ -365,7 +371,8 @@ async function main() {
   await runImageJobs();
 
   log(
-    `done — ${chapters.length}/${LECTURES.length} chapters, ${status.slideCount} slides, ` +
+    `done — ${status.chaptersWritten}/${status.lectureCount} chapters ` +
+      `(+${status.frontMatter} front/back matter), ${status.slideCount} slides, ` +
       `${status.transcriptWords.toLocaleString('en-US')} transcript words`,
   );
 }

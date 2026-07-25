@@ -1,45 +1,84 @@
-# web
+# web — the Robot Learning site
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+The reading site for the book in this repo. Next.js + Fumadocs, deployed on Vercel.
 
-Run development server:
+Nothing here writes to `chapters/`, `slides_png/`, `notes/` or `transcripts/`. Those
+are the book; this directory only reads them.
+
+## Adding a chapter to the site
+
+Write the chapter as usual in `../chapters/NN-slug.md`, then:
 
 ```bash
-npm run dev
-# or
-pnpm dev
-# or
-yarn dev
+npm run sync     # read the book, regenerate the site's content
+npm run build    # check it
+git add -A && git commit -m "site: chapter NN"
 ```
 
-Open http://localhost:3000 with your browser to see the result.
+`npm run sync` is the only step. It picks up any `NN-slug.md` in `../chapters/`, works
+out the chapter number from the filename, and writes everything the site needs.
+Nothing has to be registered anywhere.
 
-## Explore
+## What sync does
 
-In the project, you can see:
+| Reads | Writes |
+|---|---|
+| `../chapters/*.md` | `content/docs/book/*.mdx` + `meta.json` |
+| `../slides_png/*/manifest.json` | `src/data/slides.json` |
+| `../slides_png/*/slide_*.jpg` | `public/slides/…` (re-encoded, plus thumbnails) |
+| `../notes/reading_list.md` | `content/docs/appendix/reading-list.mdx` |
+| `../transcripts/*.txt` | `src/data/status.json` (word counts, progress) |
 
-- `lib/source.ts`: Code for content source adapter, [`loader()`](https://fumadocs.dev/docs/headless/source-api) provides the interface to access your content.
-- `lib/layout.shared.tsx`: Shared options for layouts, optional but preferred to keep.
+Its output is **committed**, which is what lets Vercel build from `web/` alone without
+needing the book sources. `npm run build` runs sync first but skips it harmlessly if
+the book is not there.
 
-| Route                     | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
-| `app/(home)`              | The route group for your landing page and other pages. |
-| `app/docs`                | The documentation layout and pages.                    |
-| `app/api/search/route.ts` | The Route Handler for search.                          |
+`npm run sync -- --fast` skips image processing, which is most of the time.
 
-### Fumadocs MDX
+## The pandoc translation
 
-A `source.config.ts` config file has been included, you can customise different options like frontmatter schema.
+The book targets a pandoc → LaTeX build, so the chapters use four constructs MDX does
+not understand. `scripts/lib/pandoc-to-mdx.mjs` converts them:
 
-Read the [Introduction](https://fumadocs.dev/docs/mdx) for further details.
+| In the book | On the site |
+|---|---|
+| `$x$`, `$$x$$ {#eq:id}` | KaTeX rendered at build time; display equations are numbered `1.1` and become link targets |
+| `![cap](p){#fig:id width=70%}` | a figure plate, numbered, captioned, **linked to the second of the recording where that slide was up** |
+| `@fig:id`, `@eq:id` | "Figure 1.2" / "Equation (1.1)", linked |
+| `> **Editor's note.** …` | the amber editor's-note aside |
 
-## Learn More
+LaTeX never reaches the Markdown parser — it is lifted out of the source first and put
+back as a component afterwards, so braces in maths cannot be mistaken for JSX.
 
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
+## Writing directly for the site
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.dev) - learn about Fumadocs
+Chapters can use these components inline; sync passes them through untouched:
+
+```mdx
+<ValueIteration caption="Value iteration on a 10×7 grid." />
+<PolicyModes />
+<Mermaid chart={`graph LR; obs-->policy-->action`} />
+```
+
+## Numbers on the site are measured
+
+The chapter count, slide count, transcript word count and per-lecture status all come
+from `status.json`, which sync computes from the repo. Lectures without a chapter say
+so. Do not hand-edit those numbers — write the chapter and re-run sync.
+
+## Local development
+
+```bash
+npm install
+npm run dev      # http://localhost:3000
+```
+
+Node 22 or newer.
+
+## Attribution
+
+The course is [263-5911-00L *Robot Learning: From Fundamentals to Foundation
+Models*](https://cvg.ethz.ch/lectures/Robot-Learning/), ETH Zürich, taught by Oier
+Mees with Marc Pollefeys as course mentor. Slide images are frames from the public
+recordings. The site states on the front page, in the footer and in the preface that it
+is an unofficial companion and not endorsed by the course.

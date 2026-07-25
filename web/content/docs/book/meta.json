@@ -1,6 +1,21 @@
 {
   "title": "The book",
   "pages": [
-    "01-introduction"
+    "00-preface",
+    "01-introduction",
+    "02-control-mdps",
+    "03-imitation-learning",
+    "04-reinforcement-learning-i",
+    "05-reinforcement-learning-ii",
+    "06-generative-models",
+    "07-sequence-modeling",
+    "08-world-models",
+    "09-generalist-robot-policies",
+    "10-embodied-reasoning",
+    "11-frontier-open-problems",
+    "12-notation",
+    "13-glossary",
+    "14-bibliography",
+    "15-index"
   ]
 }

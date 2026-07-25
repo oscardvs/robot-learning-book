@@ -106,11 +106,21 @@ function liftMath(source) {
 
 const attr = (name, value) => ({ type: 'mdxJsxAttribute', name, value });
 
+/**
+ * A JS string literal for an attribute expression.
+ *
+ * `|` is written as `|` rather than left as itself. An attribute expression is
+ * opaque to the Markdown serialiser, so it cannot escape a pipe for a table cell —
+ * and a bare `|` inside one ends the cell early, cutting the expression in half.
+ * `$D_{\mathrm{KL}}(p\,\|\,q)$` in a notation table is exactly that case.
+ */
+const jsString = (value) => JSON.stringify(value).replace(/\|/g, '\\u007C');
+
 /** An attribute whose value is a JS expression, so arbitrary text stays literal. */
 const exprAttr = (name, value) => ({
   type: 'mdxJsxAttribute',
   name,
-  value: { type: 'mdxJsxAttributeValueExpression', value: JSON.stringify(value) },
+  value: { type: 'mdxJsxAttributeValueExpression', value: jsString(value) },
 });
 
 const jsx = (name, attributes = [], children = [], flow = false) => ({
@@ -350,13 +360,26 @@ export function pandocToMdx(markdown, { chapter, resolveImage }) {
   parser.runSync(tree);
   bindImageAttributes(tree);
 
-  // Lift the H1 out: Fumadocs renders the title from frontmatter.
+  // Lift the H1 out: Fumadocs renders the title from frontmatter. Pandoc heading
+  // attributes such as `# Preface {.unnumbered}` are for the LaTeX build only.
   let title = null;
   const firstHeading = tree.children.findIndex((n) => n.type === 'heading' && n.depth === 1);
   if (firstHeading !== -1) {
-    title = nodeToString(tree.children[firstHeading]);
+    title = nodeToString(tree.children[firstHeading])
+      .replace(/\s*\{[^}]*\}\s*$/, '')
+      .trim();
     tree.children.splice(firstHeading, 1);
   }
+
+  // Section headings carry the same attributes; strip them so they do not show up
+  // in the page or in the table of contents.
+  visit(tree, 'heading', (node) => {
+    const last = node.children[node.children.length - 1];
+    if (last?.type === 'text') {
+      last.value = last.value.replace(/\s*\{[^}]*\}\s*$/, '');
+      if (!last.value) node.children.pop();
+    }
+  });
 
   const labels = collectLabels(tree, store, chapter);
 

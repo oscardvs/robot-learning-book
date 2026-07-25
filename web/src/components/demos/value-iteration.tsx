@@ -195,6 +195,14 @@ export function ValueIteration({ variant = 'full', caption }: ValueIterationProp
               );
             }
 
+            // Before the first sweep the robot has no estimate at all, so the board
+            // must read as cold rather than as a solved mid-range value.
+            const heat =
+              state.sweeps === 0 && !isTerminal(kind) ? 0 : scale(state.values[s]);
+            // Low-value cells are nearly black, so the glyph on them has to invert.
+            const onDark = heat < 0.42;
+            const glyphColor = onDark ? 'rgb(233 238 249 / 0.85)' : 'rgb(5 10 20 / 0.78)';
+
             return (
               <Cell
                 key={s}
@@ -204,18 +212,18 @@ export function ValueIteration({ variant = 'full', caption }: ValueIterationProp
                     ? undefined
                     : () => dispatch({ type: 'toggleCell', index: s, params })
                 }
-                style={{ backgroundColor: valueColor(scale(state.values[s])) }}
+                style={{ backgroundColor: valueColor(heat) }}
               >
                 {isAgent ? (
                   <span className="absolute inset-1.5 rounded-full bg-ink shadow-[0_0_0_2px_var(--ground)]" />
-                ) : kind === 'goal' ? (
-                  <span className="u-readout text-[0.6rem] font-bold text-[#0b1120]">GOAL</span>
-                ) : kind === 'pit' ? (
-                  <span className="u-readout text-[0.6rem] font-bold text-[#0b1120]">PIT</span>
+                ) : kind === 'goal' || kind === 'pit' ? (
+                  <span className="u-readout text-[0.6rem] font-bold" style={{ color: glyphColor }}>
+                    {kind === 'goal' ? 'GOAL' : 'PIT'}
+                  </span>
                 ) : showArrow && arrow >= 0 ? (
                   <span
-                    className="text-[0.95rem] leading-none text-[#050a14]/70"
-                    style={{ opacity: 0.35 + 0.65 * scale(state.values[s]) }}
+                    className="text-[0.95rem] leading-none"
+                    style={{ color: glyphColor, opacity: onDark ? 0.75 : 0.45 + 0.55 * heat }}
                   >
                     {ACTION_GLYPH[arrow]}
                   </span>

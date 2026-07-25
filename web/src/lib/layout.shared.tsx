@@ -9,8 +9,9 @@ function Wordmark() {
         aria-hidden
         className="inline-block size-2.5 rotate-45 border border-policy bg-policy/25"
       />
-      <span className="u-display text-[0.95rem] font-semibold tracking-tight">{appName}</span>
-      <span className="u-label hidden sm:inline">{status.course.institution}</span>
+      <span className="u-display whitespace-nowrap text-[0.95rem] font-semibold tracking-tight">
+        {appName}
+      </span>
     </span>
   );
 }

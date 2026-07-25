@@ -1,0 +1,380 @@
+---
+title: 'Frontier and Open Problems'
+description: 'Every week, somebody declares robotics solved.'
+chapter: 11
+kind: chapter
+lecture: 11
+video: 'eL4lcy1KNzE'
+---
+Every week, somebody declares robotics solved. In the weeks around this lecture: a company announcing that we are approaching the end game for robotics; a founder who had tweeted two years earlier that robotics was about to have its ChatGPT moment, and that the moment was happening tomorrow; others promising road maps to general physical intelligence. The lecture's position on these is not that they are dishonest but that they should be taken with salt, and it offers a test: how much weight can any of them carry, when somebody else declared robotics solved the week before?
+
+The useful question is what happens when you ask one of these systems to generalize. Take a humanoid, or a mobile manipulator, out of the lab and into a kitchen it has not seen — new lighting, new objects, new camera viewpoints — and **things break very quickly.** Put the same robot running the same impressive demo in the next room, outside its training distribution, and it will probably fail badly.
+
+So how are the demos made? The lecture offers what it calls the not-so-secret recipe for a convincing real-robot demonstration:
+
+1. **Collect the training data yourself,** on your target platform, as much of it as possible. Rely on nobody else's.
+2. **Train a behavior-cloning policy, and keep collecting data until extrapolation becomes interpolation** for your policy.
+3. **If possible, train and test on the same day** — no change in lighting, camera viewpoint, or table height. No distribution shift whatsoever.
+
+"And it turns out you can get a lot of money from venture capitalists for following this very simple recipe."
+
+The recipe is worth taking seriously as a diagnostic rather than a joke, because each step names a thing this book has established is load-bearing. Step 1 is Chapter 9's data problem. Step 2 is Chapter 3's compounding-error bound, evaded by making the training distribution cover everything. Step 3 is the admission that distribution shift, not capability, is what actually breaks these systems. A demo built this way is not fake; it is a correct demonstration of a policy inside its training distribution, presented as though the distribution were the world.
+
+<Aside>
+  \[UNCLEAR: lecture 11, 02:29–05:03 — no stable slide could be recovered from the recording for this passage, because autoplaying demo videos and tweet screenshots prevented the frame extraction described in the preface. The three-step recipe and the named announcements above come from the transcript alone.]
+</Aside>
+
+## The problem, stated as scope
+
+What is the actual objective? The lecture draws it as four nested regions: **one object, one room, one building, the world.** The most impressive demonstrations operate between the first two. More ambitious work reaches toward a building. The goal is the world.
+
+The reason to think that is achievable, rather than a slogan, is that people do it. **You do not need to have cooked in every kitchen to cook in a new one**, or to have grasped every mug to grasp an unfamiliar one. You stitch existing knowledge together, reason about the novel parts, and compose what you know in new ways. That is not interpolation, and the honest summary of the field's position is that this capability — call it intelligent reasoning — **remains elusive for robot policies.** Chapter 10 is the field's most serious attempt at it, and Chapter 10's own results say the attempt is partial.
+
+The gap is visible as a division of the available systems into two camps, each with the other's missing half (<XRef kind="fig" anchor="fig-bothworlds" number="11.1" />).
+
+| Non-embodied foundation models   | Specialist embodied models            |
+| -------------------------------- | ------------------------------------- |
+| **+** Internet-scale data        | **+** Physical grounding              |
+| **+** Broad generalization       | **+** Embodied sensing                |
+| **--** **No physical grounding** | **--** **Narrow, task-specific data** |
+| **--** **Non-embodied sensing**  | **--** **Poor generalization**        |
+
+The left column's defect is worth making concrete, because it is easy to be misled by fluency. A vision-language model can describe an image containing a glass on a table, and it does not understand what happens if the glass is pushed off the edge. The same holds for generative video: a video model can synthesize convincing liquid pouring and objects falling, and if you look closely the results **violate basic physics.** These models are very good at making things look like the world without modelling what makes the world behave as it does.
+
+<Figure id="fig-bothworlds" number="11.1" src="/slides/lecture11/slide_004.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=498s" timecode="8:18" lecture="11">
+  The two camps and their complementary defects. The quest is for a system with the left column's generalization and the right column's grounding. Credit: course slides, Lecture 11.
+</Figure>
+
+The path the lecture proposes is to move beyond the **passive** data foundation models are trained on and ground them in the physical world with **embodied data** — data that is inherently multimodal, spatial and temporal — so that the result is an agent that does not merely describe the world but reasons about it and acts in it.
+
+What follows is that programme decomposed into open problems. They are presented here in the lecture's order, which runs roughly from the choices you make before training to the capabilities nobody has yet.
+
+## Which backbone?
+
+Three camps, all with serious proponents, and the lecture is explicit that the jury is out.
+
+**A vision-language model.** It already carries rich semantic knowledge and can reason about scenes, so fine-tuning it on robot data gets object-level semantic generalization for free. This is Chapter 9's recipe.
+
+**A generative video model.** It understands **temporal dynamics** — how the world evolves — and its pre-training is closer to what a policy must do, namely reason about the consequences of actions. This is Chapter 8's video-backbone argument, and Chapter 8's oracle experiment is the strongest evidence for it.
+
+**Neither, particularly.** The provocative position: the backbone does not matter much if you have enough real robot data, so forget internet pre-training and train from scratch. Chapter 9's Octo was built on a version of this belief, and its own authors have since partly recanted; the guest lecturer who argued the position most directly is the author of the tokenize-everything work Chapter 9 cites.
+
+Note that these are not three flavors of the same choice. They imply different data, different pre-training objectives, and different things the robot data has to teach. Chapter 8 and Chapter 9 are, in effect, the second and first camps argued at chapter length.
+
+## Which data recipe?
+
+Closely related, and drawn as four pyramids with the largest, cheapest layer at the bottom.
+
+| Recipe | Layers, bottom to top                                     | Argument                                                                                                                                          |
+| ------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A      | web data → simulation → real-world data                   | Web for world knowledge and language grounding, simulation for cheap scalable experience, a little real data on top to close the sim-to-real gap. |
+| B      | web data → real-world data                                | Simulating the world accurately is very hard and engineering-heavy; that effort is better spent collecting real data.                             |
+| C      | internet video → human egocentric video → real-world data | **Video as a first-class citizen**: video is a far richer prior for embodied tasks than visual question answering could ever be.                  |
+| D      | real-world data all the way down                          | All in on real data, varying only in annotation type and granularity.                                                                             |
+
+Recipe C is Chapter 8's position; recipe D is the third backbone camp. The disagreement between B and A is narrower and more practical, and it is a real dispute in industry rather than a matter of taste.
+
+## How do you collect real data at scale?
+
+Whatever recipe you pick, the top layer is real robot data, and there are many ways to produce it — each trading scalability against how closely the data matches the robot you will deploy on. The interfaces the lecture surveys: handheld grippers of the kind used by the universal-manipulation-interface work, gloves for dexterous hands, static and mobile bimanual puppeteering rigs, and virtual-reality teleoperation.
+
+The comparisons are specific. **Handheld grippers scale better than teleoperating a robot** — a person can carry one around a kitchen — but the data is not from the robot, so you now have a cross-embodiment learning problem. **Puppeteering gives higher-quality data than VR teleoperation** and is the most expensive, because it needs leader-follower arm pairs, "which means you will now also have more hardware to break."
+
+Plotted, the trade-off is close to a straight line (<XRef kind="fig" anchor="fig-scalability" number="11.2" />):
+
+| Interface                | Data available                    | Alignment with deployment hardware       |
+| ------------------------ | --------------------------------- | ---------------------------------------- |
+| Egocentric video         | <InlineMath tex={"10^7"} /> hours | worst — human data, large embodiment gap |
+| Wearables such as gloves | <InlineMath tex={"10^5"} /> hours | middle                                   |
+| Teleoperation            | <InlineMath tex={"10^3"} /> hours | best — the robot is in the loop          |
+
+Four orders of magnitude of data separate the ends, and so does the entire embodiment gap. Finding a way around this trade-off — for instance by using a humanoid, whose morphology makes human egocentric video more directly usable — is itself one of the open problems.
+
+<Figure id="fig-scalability" number="11.2" src="/slides/lecture11/slide_010.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=893s" timecode="14:53" lecture="11">
+  Data scalability against hardware alignment. The abundant data is the least aligned, and the aligned data is the least abundant. Credit: course slides, Lecture 11.
+</Figure>
+
+## Dexterity and generalization want different things
+
+Here is a structural tension that no system has resolved. State the goal as **dexterous generalist policies** and then notice that the two words have historically required different ingredients (<XRef kind="fig" anchor="fig-dexvenn" number="11.3" />).
+
+| Dexterity needs                                                                                         | Generalization needs                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **High-frequency control** — at odds with running a large foundation model, which is slow and expensive | **Foundation models**                                                                                                                      |
+| **Heterogeneous sensing**, including touch — which most foundation models do not consume at all         | **Mobility** — a robot that moves between environments accumulates more varied experience than one bolted to a table seeing the same scene |
+
+Both columns are well supported by this book. The left is Chapter 2's control-frequency floor and Chapter 10's inference-cost table. The right is Chapter 9's entire argument. And they pull in opposite directions: the model that generalizes is the one too slow to be dexterous.
+
+Most systems sit in one column. Getting into the intersection is the open problem, and the lecture treats it as the central one for manipulation.
+
+<Figure id="fig-dexvenn" number="11.3" src="/slides/lecture11/slide_011.jpg" scale="72%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=981s" timecode="16:21" lecture="11">
+  Dexterity and generalization require different ingredients, and the goal is their intersection. Credit: course slides, Lecture 11.
+</Figure>
+
+### The mug, again
+
+The lecture makes the dexterity half concrete with a video from the lecturer's own PhD, and it is the same failure this book opened with. He had spent considerable time training a model to predict 3D shape and object pose from a single RGB image — necessary because the depth camera saw objects only partially, occluded. The point was to locate a mug's handle precisely enough to grasp it. In the video the robot **misses the handle, grasps the mug body, and destroys it**, because it has no touch or force feedback: a blind grasp, far too strong.
+
+The assessment he draws from it is not a historical note:
+
+<Aside>
+  Our current vision-language-action models are probably still annihilating objects, because we have not made much progress on this front. Our robots are still blind most of the time when they make contact.
+</Aside>
+
+Chapter 1 used this mug to introduce the field. Eleven chapters later, the same failure is offered as unresolved. That is the honest arc of the book.
+
+## The long tail of robot sensing
+
+If touch is what is missing, add touch. Chapter 7's native multimodal models suggest how: rather than bolting sensors onto a vision model, train one transformer over all modalities jointly from scratch — throw in touch, force, proprioception, and be done.
+
+Attempting it runs into what the lecture calls the **long tail of robot sensing**, three obstacles that compound:
+
+**Scarcity.** The modalities that matter most for dexterity — tactile sensing, force — are **not available at scale.** The hardware is expensive, fragile, and not standardized; it remains, in his word, researchy.
+
+**Pairing.** Even where individual modalities exist, **cross-modal paired data is nearly nonexistent.** RGB plus depth plus tactile plus force, recorded simultaneously on the same interaction, is a dataset almost nobody has.
+
+**Heterogeneity.** Sensors vary across embodiments, so transfer is hard **even when the data exists.**
+
+Given that, the interesting question becomes: **can language act as the bridge between modalities never seen together?** We have large amounts of vision-language data, some audio, a little touch — and nothing pairing them all.
+
+The lecturer's initial answer is to use language as the semantic glue that **binds** heterogeneous modalities, fine-tuning a pre-trained generalist policy with joint generative and contrastive losses that ground each new modality in language. What it unlocks is cross-modal reasoning the policy was never explicitly trained for: _"push the button that plays piano"_, _"pick the object that feels squishy"_, _"grasp the object that feels like a pineapple but is brown."_ The example that best shows why this is more than a demo: a robot reaching into a shopping bag where the camera sees nothing, grasping something, and **describing what it thinks it is holding from the tactile signal alone** — which is what a person would do (<XRef kind="fig" anchor="fig-fuse" number="11.4" />).
+
+<Figure id="fig-fuse" number="11.4" src="/slides/lecture11/slide_016.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=1370s" timecode="22:50" lecture="11">
+  Giving a policy senses it was never trained on, by grounding each new modality in language rather than pairing modalities with each other. Credit: course slides, Lecture 11.
+</Figure>
+
+## When should a robot reason?
+
+Chapter 10 established that reasoning helps and costs. The open question it left is _when_ to pay. The lecture's answer is a spectrum governed by the policy's own confidence, and it is the chapter's most useful single figure (<XRef kind="fig" anchor="fig-whenreason" number="11.5" />).
+
+|          | **In distribution**                      | **Near distribution**                                                                      | **Out of distribution**                  |
+| -------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Trigger  | known objects, scene, goal               | novelty, or low confidence                                                                 | novel goal, or a failure mode            |
+| Response | **reactive policy**, no reasoning tokens | **detect the uncertainty**, then scale test-time compute — lower frequency, more reasoning | **escalate**: pause, defer, ask for help |
+| Rate     | a \~50 Hz control loop                   | slower, deliberately                                                                       | stopped                                  |
+
+And test-time compute here can take several forms, not only the one Chapter 10 developed: **more thinking tokens**, or **falling back to a larger specialist model**, or **a human in the loop** for teleoperation, correction or a label.
+
+The framing device is a domestic robot. In distribution — a known object, a task it has done before — **do not reason**: run the policy as fast as possible and do not waste computation. When something is novel, spend tokens on it. When nothing will help, stop and ask.
+
+<Figure id="fig-whenreason" number="11.5" src="/slides/lecture11/slide_017.jpg" scale="85%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=1453s" timecode="24:13" lecture="11">
+  Reasoning as a spectrum governed by policy confidence: reactive control in distribution, adaptive test-time compute near it, escalation outside it. Credit: course slides, Lecture 11.
+</Figure>
+
+## Introspection: how does a model know what it does not know?
+
+The architecture above has a load-bearing assumption. Scaling compute when uncertain and escalating when out of distribution both require **a reliable way to detect that the model is uncertain**, and the lecture is blunt that this is a very big assumption for current models.
+
+This is the problem of **introspection**, and two things make it hard in a way that scale does not fix.
+
+**Large models are good at pattern completion and poorly calibrated about their own competence.** Having seen so much data, a genuinely novel situation can look superficially familiar, which makes out-of-distribution detection very difficult — the model has a plausible-looking response to almost anything.
+
+**In robotics, failure can arise along many dimensions at once** — objects, environments, embodiments, tasks, sensor noise — so a policy can appear confident while being wrong for entirely different reasons in different cases.
+
+This problem has been accumulating throughout the book. Chapter 3 raised it as "how do you know when to intervene?" Chapter 9 raised it as the unchecked assumption that a padded-action-space model infers the right embodiment. Chapter 10's confidence-graded architecture depends on it entirely. It is one of the central problems in machine learning, and the lecture's assessment is that it becomes **harder as models scale**, which is an unusual and unwelcome property.
+
+## Breaking the imitation ceiling
+
+The next problem is the one this book has returned to most often, and the lecture states it with a three-node example that is worth carrying because of how little it needs.
+
+Current robot models rely on imitation learning, so **the policy is bounded by the demonstrations in the dataset.** Suppose the data contains trajectories from state 1 to state 2, and from state 2 to state 3. Then **no matter how large your model is**, it has no way to learn that going directly from 1 to 3 might be better — or that the task might be solvable in a way no human operator would demonstrate.
+
+Reinforcement learning is the answer in principle, and the reason is precisely the property Chapter 4 established: it **learns near-optimal policies from suboptimal data by stitching trajectories together.** Offline reinforcement learning on that dataset discovers the 1-to-3 edge that nobody demonstrated.
+
+In practice, **scaling reinforcement learning for real robots has been very challenging and still needs algorithmic innovation, not just more compute.** The lecturer's assessment of where to spend effort is explicit: getting reinforcement learning to work at scale for robotics is probably one of the highest-impact things anyone could work on right now.
+
+## The data flywheel, and why the obvious version fails
+
+The prize that reinforcement learning would unlock is a compounding loop. Chapter 7's bitter lesson says more data means better models; better models mean more capable robots; more capable robots get deployed more widely; more deployments generate more data. The cycle compounds.
+
+The obvious way to start it is to co-train on expert teleoperation data and on the robot's own autonomous rollouts. It turns out to be much harder than it sounds, because the two distributions barely resemble each other:
+
+| Expert trajectories               | Autonomous rollouts            |
+| --------------------------------- | ------------------------------ |
+| **+** High quality                | **+** Cheap and scalable       |
+| **+** **On-manifold states**      | **+** **Cover failure modes**  |
+| **+** Short, smooth, dense        | **--** Noisy, suboptimal       |
+| **--** Expensive, limited scale   | **--** **Off-manifold states** |
+| **--** **Bounded by human skill** | **--** Longer, jerky, variable |
+
+There are two named mismatches between them. A **distribution mismatch** — the state spaces do not overlap. And a **temporal mismatch** — different frequency, length and smoothness, because a policy that takes a suboptimal route simply takes longer to do the same task. Mix them naively with imitation learning and the model is confused by the disagreement in quality, frequency and distribution.
+
+So **new algorithms are required** — weighting, alignment, joint learning — and the requirement is stated in a form worth quoting: methods that can **learn from everything a robot experiences, no matter how good or bad, and extract useful signal from it.** The principle behind it is that real-world data is precious and expensive, so **never throw data away.**
+
+## Lifelong learning
+
+Broaden the same problem in time. A robot should **improve over its lifetime by accumulating and learning from all its experience**, the way an intelligent creature does.
+
+The dominant paradigm does the opposite: train a model, **freeze its weights**, deploy it, and then ask it to generalize to situations its pre-training never prepared it for. The lecture's plot shows the two futures diverging from the moment of deployment — a lifelong-learning curve rising, and "reality today" declining — with the gap between them labelled and the caption asking how we get there.
+
+Beyond learning from mixed-quality deployment data, this requires avoiding **catastrophic forgetting**: fine-tuning on new experience must not destroy the model's original capabilities. Chapter 9's knowledge insulation, with its stop gradient protecting a pre-trained backbone, is the closest thing in this book to a working answer, and it protects a backbone during training rather than during a robot's working life.
+
+## Rapid adaptation, for when the policy fails right now
+
+There is a more immediate version. **What do you do when your policy fails in the middle of deployment?** Retraining is not an answer on the timescale of a person standing in their kitchen waiting.
+
+What is wanted is adaptation from whatever signal is available, without retraining (<XRef kind="fig" anchor="fig-adaptation" number="11.6" />):
+
+| Route                                       | Signal                        |
+| ------------------------------------------- | ----------------------------- |
+| Corrective instruction                      | language feedback             |
+| A demonstration in context                  | same embodiment               |
+| A cross-embodiment demonstration in context | a human, or a different robot |
+
+The example: you unpack a robot at home and ask it to bring you a drink from the fridge. It struggles with the handle. Perhaps **language feedback is enough** — "grasp a bit more to the left" — placed into the model's context. Perhaps it does not know how to open a fridge at all, in which case **you demonstrate it yourself** and that demonstration goes into the context. This is in-context learning for robotics: few-shot adaptation from whatever is at hand, with no gradient step.
+
+<Figure id="fig-adaptation" number="11.6" src="/slides/lecture11/slide_024.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=2118s" timecode="35:18" lecture="11">
+  Rapid adaptation as in-context learning: a failure is corrected by language, a demonstration, or a cross-embodiment demonstration, with no retraining. Credit: course slides, Lecture 11.
+</Figure>
+
+## A unified model for mobile manipulation
+
+To generalize, robots need to expose themselves to more varied data, which means moving. And today's mobile manipulation has a seam in the middle of it (<XRef kind="fig" anchor="fig-mobile" number="11.7" />).
+
+The current stack is: **SLAM and a metric map → a localization stack → a navigation planner → a hard handoff → a vision-language-action policy for manipulation only.** The manipulation half is learned; everything before it is classical. And the classical half carries an assumption the lecture flags on the slide: **maps are static, the world changes, and you cannot precompute everything.**
+
+The open questions here are unusually concrete, which is what makes this section useful:
+
+**Whole-body control.** One model handling navigation and manipulation together, rather than two systems with a switch between them.
+
+**Which environment representation?** The candidates on the slide are a metric map, a Gaussian splat, a topological map, a scene graph, a bird's-eye-view projection — or **a walkthrough video**, someone simply filming the office on a phone and putting the video into the model's context. Whether the last of these is enough is genuinely unknown, and the constraint on all of them is flagged as a **context-length bottleneck: you cannot fit a city map into a context window.**
+
+**Implicit or explicit state estimation?** If SLAM is replaced by a learned model, does localization become implicit in the weights, and what happens to loop closure?
+
+**How do you handle environment change** when the representation is in the model's context, given that the world does not hold still?
+
+**Can it navigate locally without a map** at all?
+
+<Figure id="fig-mobile" number="11.7" src="/slides/lecture11/slide_025.jpg" scale="85%" videoUrl="https://www.youtube.com/watch?v=eL4lcy1KNzE&t=2217s" timecode="36:57" lecture="11">
+  Today's mobile-manipulation stack with its hard handoff, against a unified model — and the open question of which environment representation makes that possible. Credit: course slides, Lecture 11.
+</Figure>
+
+## Memory at scale
+
+The last problem in the list follows from the previous two. A robot operating over long periods generates a **continuous stream of multimodal experience** — video, depth, language, touch, audio, detections — all potentially useful. The questions are **what to store, and at what timescale.**
+
+At short horizons, dense video. At longer horizons, experience compressed into **semantic events**, which also serves the practical purpose of remembering what has already been done and tracking task progress. Then: **when to write to memory, and what to forget.** And extended to years: how to store it, how to **retrieve** from it, and how to align across modalities.
+
+<Aside>
+  \[UNCLEAR: lecture 11, 39:31–41:01 — this section was spoken over a duplicate of the preceding slide, so there is no slide of its own for memory at scale; the material above is from the transcript.]
+</Aside>
+
+## First steps
+
+The lecture closes the problem list with early work on some of these, all from the lecturer's own group.
+
+**Fusing vision-language embeddings into 3D spatial maps**, which enables zero-shot navigation to open-vocabulary targets with no training at all — out of the box. And **learning mapless navigation entirely from internet video**, where the reported scaling is that the more video is used, the better open-vocabulary mapless navigation gets.
+
+<Aside>
+  \[UNCLEAR: lecture 11, 41:01–41:50 — the slide naming these two systems was not recoverable from the recording. The transcript names them only approximately, so no citation is given here; readers should consult the course page for the references.]
+</Aside>
+
+**Autonomous improvement without human intervention**, by having foundation models **propose tasks** based on what the environment affords and **detect the reward** for them, feeding an offline and an online dataset in a continuous loop. This is the flywheel of the earlier section with foundation models supplying the two things it was missing: something to try, and a way to tell whether it worked.
+
+**Adaptation from human feedback**, in the form of a non-parametric method that searches in language space — decomposing a task with a vision-language model — so that a generalist policy adapts to a new long-horizon task from as few as **5 demonstrations**, matching what full fine-tuning needs about **100** demonstrations to reach. That twenty-fold ratio is the most concrete number in the chapter, and it is the strongest available evidence that adaptation is a better lever than retraining.
+
+## The four pillars
+
+Everything above distils into four:
+
+| Intelligent embodied reasoning | Dexterous mobile manipulation | Lifelong learning | Rapid adaptation |
+| ------------------------------ | ----------------------------- | ----------------- | ---------------- |
+
+These, in the lecturer's assessment, are what will need to be solved to make robotics work — "not just for a demo video, but in general." And then, closing the loop on the lecture's own opening: _maybe this is my end game for robotics._
+
+## How to do research in robot learning
+
+The second half of the final lecture is unlike anything else in the course. It is advice on how to do the work, offered by someone who says he learned it the hard way, and it belongs in this book because a list of open problems is only half of what a reader needs.
+
+### Four uncomfortable facts
+
+**Most research is incremental,** and that is not a criticism — it is how science works. The slide's example: today's self-driving cars rest on roughly **40 years** of accumulated work, from Pomerleau's ALVINN in 1986 through the DARPA Challenge to modern end-to-end learning. Nobody solved it in a paper.
+
+**Most research ideas never become papers.** The lecturer's own accounting: ten ideas, five experiments run, two interesting results, one published paper — and that, he says, would be a good ratio. Most ideas do not work. That is the process, not failure.
+
+**Most papers do not stand the test of time.** The field moves fast enough that today's breakthrough can be a footnote in two years.
+
+**The most impactful ideas are often the simplest, because simple ideas can be scaled.** If your idea needs seventeen moving parts to work, ask whether a simpler version gets 80% of the way. This is the bitter lesson as career advice.
+
+### What makes a good research problem
+
+Four ingredients, and the lecture builds them up one at a time.
+
+**An important problem.** **A plan for how to tackle it.** You need both, and the two failure modes are instructive. "Cure cancer" is important, and without a plan it is not something to start on. "An algorithm that improves 1% on the LIBERO benchmark" has a plan and no problem — LIBERO being, in his description, a narrow and saturated simulated benchmark where a percent does not move the needle on anything that matters. The sweet spot is an important problem where you have an angle of attack. Worth asking alongside it: **if you succeed, what does it unlock, and how does it help anyone?**
+
+**Excitement.** Research takes a great deal of time and effort, experiments fail, deadlines hurt and papers get rejected. If you find the problem genuinely interesting, the hard parts feel worth it. If you do not, it just feels like work.
+
+**Be your own reviewer number two.** Before committing months to an idea, ask: **what is the most likely reason this will fail?** If you can answer honestly and still believe in it, proceed. The reason to do this is not intellectual hygiene — it is that your time is your most valuable research resource, and this is how you protect it.
+
+### Two styles, and which is safer
+
+| Method-driven                                                                               | Problem-driven                                                   |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| You start with an idea and need to find the problem for it.                                 | You start with a problem and need to find the method for it.     |
+| _"Video diffusion models just dropped — let me apply them to robot manipulation, somehow."_ | _"How can I make my policy work with a novel camera viewpoint?"_ |
+
+Both produce good research. **Problem-driven is safer for a PhD**, and the reason is asymmetric downside: if the method does not pan out you can try another one and still be attacking something that matters, whereas if a method-driven project's method fails, there is nothing to fall back on.
+
+### Practical advice
+
+On **debugging your research**: start with something that **should** work and make it incrementally harder — run an overfitting experiment before trying to solve everything at once, because if you start at full complexity and it fails you have no idea which part is wrong. **Visualize your model's inputs and outputs**, both. **Talk to people** — colleagues, advisors, the authors of the papers you are building on — which can save weeks. And **revisit your initial assumptions** after the experiments come back.
+
+On **sharing it**: sharing findings is how you find the people who care about the same problems, and some of them become collaborators. **Open-source the code and data**, which is the most direct way for the work to be useful to anyone but you. **Polish your figures** — someone should understand a figure immediately, without reading the caption or the paper, because if they have to work at it they will move on. **Adapt to your audience**, since even experts know nothing about your specific topic. And **if nobody knows about your research, it did not happen**: a paper nobody reads has zero impact.
+
+The last piece of advice closes the lecture's own circle. Find the line between making people curious about your work and overhyping it — illustrated with the tweet from the opening, reproduced on the slide under a large red cross: _"we just had an AI breakthrough in our lab / robotics is about to have its ChatGPT moment / and that moment is happening tomorrow."_ Posted in January 2024, 2.4 million views. Two years later, the lecture notes, we are still waiting.
+
+### The backstory
+
+The advice is illustrated with the lecturer's own PhD, told as a sequence of accidents.
+
+Early on he was drowning in the classical pipeline: a thousand ROS nodes, disjoint models for perception, planning and control, errors accumulating through all of it. Then, **a week before a major deadline, the robot broke** — it would not finish self-calibrating at startup, so none of his code would run. "As any decent computer scientist would ask in such a situation: what do you do? You try turning it off and on again." He did that for several days. It finally calibrated, he thinks on the night of the deadline, and he pulled an all-nighter to run every experiment.
+
+The frustration became the research question: **could he ditch all of this and learn everything end to end** — motor skills and language together — in one model? He wrote a proposal with some loose ideas, it was funded for several years, and he convinced his advisor to buy him a Franka.
+
+Then a year of infrastructure: a custom metal table, writing the VR teleoperation code, mounting cameras, 3D-printing the wrist-camera mounts, making the low-level controller smooth. Once he started doing research with it, he realized that **iterating in the real world would take forever** and he wanted to graduate, so he built a simulation environment using the same teleoperation stack. Polishing the simulator, he noticed that **no benchmark or dataset existed** for training long-horizon language-conditioned policies that required generalization — so he thought he would tidy his simulator up and make a small paper of it, in case it was useful to anyone.
+
+That afterthought became the **CALVIN** benchmark, which he describes as still one of his most-cited papers and an award winner. And building all that infrastructure — in a lab focused primarily on SLAM — is what let him iterate quickly on the problem he actually cared about. **About five years** after the broken robot, the end-of-PhD demonstration ran no ROS at all and performed **over 25 manipulation tasks**, all specified in language, generalizing to unseen combinations of them.
+
+The moral is not that infrastructure work is glamorous. It is that the detour was the contribution, and that the thing which made his research possible was a by-product he nearly did not write up.
+
+<Aside>
+  \[UNCLEAR: lecture 11, 56:54–59:25 — the slides for the second half of this story, covering the robot setup, the simulator and CALVIN, were shown as videos and could not be recovered as frames; the narrative above is from the transcript.]
+</Aside>
+
+## Where this breaks
+
+This chapter is a list of things that do not work, so the usual section inverts: what follows is what to be careful about in the chapter itself.
+
+**The problem list is the lecturer's, and so are most of the first steps.** The early work cited on nearly every problem is from his own group. That is honest — he says so — and a reader should understand this as one well-placed researcher's map rather than a survey of the field's best attempts on each front.
+
+**Several problems are stated without a proposed attack.** Introspection, memory at scale, and the unified mobile-manipulation model are described as open, with no candidate method. That is the correct thing to do and it means these sections are less actionable than the rest of the book.
+
+**The four pillars overlap.** Intelligent embodied reasoning and rapid adaptation are not independent; the confidence-graded architecture requires introspection, which is a prerequisite for both. The pillars are a way of organizing attention, not a decomposition.
+
+**Three passages rest on the transcript alone.** The demo recipe, the memory-at-scale discussion, and the two navigation systems have no recoverable slide, for reasons the preface explains. They are flagged where they occur, and the two unnamed systems are deliberately left uncited.
+
+**Nothing here is quantified except in four places** — the <InlineMath tex={"10^3"} /> to <InlineMath tex={"10^7"} /> hour data range, the \~50 Hz control loop, the 40 years of self-driving work, and the 5-versus-100 demonstration ratio. This is a qualitative chapter, and the temptation to manufacture numbers to make it look like the technical chapters has been resisted.
+
+## What this connects to
+
+This chapter is where the book's threads are collected and, mostly, left untied.
+
+**The mug from Chapter 1 returns unresolved,** and the lecturer's assessment — that current policies are probably still destroying objects because robots are blind at contact — is the fairest one-sentence summary of the field's state.
+
+**Chapter 3's imitation ceiling gets its cleanest statement** in the three-node example, and its answer, offline reinforcement learning, is Chapters 4 and 5 pointed at a problem they can solve in principle and not yet at scale.
+
+**Chapter 8 and Chapter 9 appear here as competing positions** rather than as complementary chapters, which is how the field actually holds them: the backbone question has three camps and no resolution, and the data-recipe question has four.
+
+**Chapter 10's two-level architecture becomes a three-level one** in the confidence-graded table, with escalation to a human as the third level — and the whole structure is revealed to depend on introspection, which nobody can do.
+
+**Chapter 2's control layer is still there at the bottom.** The hard handoff in mobile manipulation is a seam between a classical stack and a learned policy, and the reason the seam persists is that the classical stack works.
+
+The one thread that runs from the first chapter to the last without changing shape is **data scarcity**. Every open problem in this chapter is either a way to get more data, a way to need less of it, or a way to keep learning from the data a robot generates by itself.
+
+## Further reading
+
+The three papers assigned for this week are unusual for the course in being old, short, and argumentative rather than technical. They are the right reading for a chapter about open problems.
+
+- **Y. LeCun, "A Path Towards Autonomous Machine Intelligence" (2022).** A position paper proposing an architecture for machines that learn world models and plan in them, and the direct intellectual source of the joint-embedding approach in Chapter 8. Read it as the most fully worked-out answer to this chapter's question about what is missing, and note that it disagrees with the generative approaches that currently dominate.
+- **R. Sutton, "The Bitter Lesson" (2019).** Two pages, invoked by name in Chapters 7 and 9 and by implication in this chapter's data flywheel. Read it, then read this chapter's list of problems and ask which of them are bets on structure and which are bets on scale — the field is currently making both.
+- **R. Brooks, "Intelligence without Representation" (1991).** The oldest item in the course and the sharpest counterweight to everything in this book. Brooks argues that intelligent behavior needs no explicit world model at all, only tight coupling between perception and action in a real environment. Read it against Chapter 8, and against this chapter's question about which environment representation a mobile manipulator needs, where "none" is a position with a serious pedigree.

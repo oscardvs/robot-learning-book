@@ -21,8 +21,9 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 
   const MDX = page.data.body;
   const markdownUrl = getPageMarkdownUrl(page).url;
-  const chapter = (page.data as { chapter?: number }).chapter;
-  const lecture = chapter ? status.lectures.find((l) => l.n === chapter) : undefined;
+  const { chapter, kind } = page.data as { chapter?: number; kind?: string };
+  const isChapter = kind === 'chapter';
+  const lecture = isChapter ? status.lectures.find((l) => l.n === chapter) : undefined;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -33,7 +34,12 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       ) : null}
 
       <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
+      {/* A chapter opens with its own lede paragraph, so repeating it as a subtitle
+          would just say the same sentence twice. The preface and the back matter do
+          not, so they keep theirs. The description still goes out in page metadata. */}
+      {isChapter ? null : (
+        <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
+      )}
 
       <div className="flex flex-row flex-wrap items-center gap-2 border-b border-line pb-6">
         {lecture ? (

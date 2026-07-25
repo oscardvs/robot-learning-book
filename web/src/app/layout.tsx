@@ -41,7 +41,11 @@ export default function Layout({ children }: LayoutProps<'/'>) {
       suppressHydrationWarning
     >
       <body className="flex flex-col min-h-screen">
-        <RootProvider>{children}</RootProvider>
+        {/* Dark is the default: the figures are slide frames and the demos are
+            heatmaps, and both were designed against the dark ground. */}
+        <RootProvider theme={{ defaultTheme: 'dark', enableSystem: false }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

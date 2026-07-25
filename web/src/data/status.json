@@ -12,8 +12,9 @@
   "generatedAt": "2026-07-25",
   "transcriptWords": 92242,
   "slideCount": 484,
-  "chaptersWritten": 1,
+  "chaptersWritten": 11,
   "lectureCount": 11,
+  "frontMatter": 5,
   "lectures": [
     {
       "n": 1,
@@ -37,7 +38,11 @@
       "slideCount": 46,
       "duration": 2769,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "control-mdps",
+        "title": "Robot Control and Markov Decision Processes",
+        "description": "A quadruped, a five-fingered hand solving a Rubik's cube, and a quadcopter have almost nothing in common as machines."
+      }
     },
     {
       "n": 3,
@@ -47,7 +52,11 @@
       "slideCount": 49,
       "duration": 3036,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "imitation-learning",
+        "title": "Imitation Learning",
+        "description": "Suppose you already have someone who can do the task."
+      }
     },
     {
       "n": 4,
@@ -57,7 +66,11 @@
       "slideCount": 48,
       "duration": 3151,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "reinforcement-learning-i",
+        "title": "Reinforcement Learning I: Value Functions",
+        "description": "Imitation learning has a ceiling, and the ceiling is the person who provided the data."
+      }
     },
     {
       "n": 5,
@@ -67,7 +80,11 @@
       "slideCount": 33,
       "duration": 3142,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "reinforcement-learning-ii",
+        "title": "Reinforcement Learning II: Policy Gradients",
+        "description": "Chapter 4 learned what actions are worth and read a policy off the answer, and every difficulty it ran into came from the same operation: $\\arg\\maxa$."
+      }
     },
     {
       "n": 6,
@@ -77,7 +94,11 @@
       "slideCount": 37,
       "duration": 3063,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "generative-models",
+        "title": "Generative Models",
+        "description": "Chapter 3 identified a failure that no amount of data fixes: when several actions are equally correct, a policy trained to output the correct action outputs their average, and the average of \"go lef"
+      }
     },
     {
       "n": 7,
@@ -87,7 +108,11 @@
       "slideCount": 40,
       "duration": 3311,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "sequence-modeling",
+        "title": "Sequence Modeling and Transformers",
+        "description": "Everything up to here has treated a policy as a function of the present: $\\pi(a \\mid ot)$, one observation in, one action out."
+      }
     },
     {
       "n": 8,
@@ -97,7 +122,11 @@
       "slideCount": 45,
       "duration": 4306,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "world-models",
+        "title": "World Models",
+        "description": "A major-league fastball reaches the plate in about 400 milliseconds."
+      }
     },
     {
       "n": 9,
@@ -107,7 +136,11 @@
       "slideCount": 55,
       "duration": 3807,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "generalist-robot-policies",
+        "title": "Generalist Robot Policies",
+        "description": "The methods of Chapters 3 through 8 produce specialists."
+      }
     },
     {
       "n": 10,
@@ -117,7 +150,11 @@
       "slideCount": 44,
       "duration": 3340,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "embodied-reasoning",
+        "title": "Embodied Reasoning and Test-time Scaling",
+        "description": "Chapter 9 ended with a working recipe and an implicit promise: collect more teleoperation data, scale the model, and the policies get better."
+      }
     },
     {
       "n": 11,
@@ -127,7 +164,11 @@
       "slideCount": 43,
       "duration": 3724,
       "hasTranscript": true,
-      "chapter": null
+      "chapter": {
+        "slug": "frontier-open-problems",
+        "title": "Frontier and Open Problems",
+        "description": "Every week, somebody declares robotics solved."
+      }
     }
   ]
 }

@@ -1,0 +1,261 @@
+---
+title: 'World Models'
+description: 'A major-league fastball reaches the plate in about 400 milliseconds.'
+chapter: 8
+kind: chapter
+lecture: 8
+video: 'cTTmUZlOF2s'
+---
+A major-league fastball reaches the plate in about 400 milliseconds. The visual signal takes roughly 100 milliseconds to travel from the retina to the parts of the brain that could act on it, and a swing takes longer than the 300 milliseconds that leaves. Arithmetic says the batter cannot see the ball and then decide to hit it. And yet people hit 160-kilometre-per-hour fastballs, which means they are not reacting to where the ball is. They are acting on a prediction of where it will be — running an internal model of the ball's flight forward in time and swinging at the output.
+
+That is the capability this chapter is about. Every policy so far in this book has been a reflex: observation in, action out, no representation of what will happen next. A **world model** is the other thing — a learned model of consequences. With one, an agent can imagine the results of actions it has not taken, score them, and act on the winner. Without one, it is blind to physical causality in the way the previous chapters' policies are: they know what an expert did in situations like this, and nothing about what happens if they do otherwise.
+
+## Policy and world model
+
+The distinction is cleanest as two conditional distributions.
+
+A policy asks: given where I am and what I want, what should I do?
+
+<BlockMath tex={"\\pi_\\theta\\big(a_t \\mid s_t, s_g\\big)"} />
+
+A world model asks: given where I am and what I do, what happens?
+
+<BlockMath tex={"p\\big(s_{t+1} \\mid s_t, a_t\\big), \\qquad\\text{and with memory,}\\qquad p\\big(s_{t+1} \\mid s_t, a_t, h_t\\big)"} id="eq-worldmodel" number="8.1" />
+
+**In words.** A world model predicts the next state of the world from the current state, the action taken, and whatever the model remembers of the past.
+
+**The symbols.** <InlineMath tex={"s_t"} /> is the state (in practice an observation or a latent encoding of one), <InlineMath tex={"a_t"} /> the action, and <InlineMath tex={"h_t"} /> a memory or recurrent state carrying information from earlier steps. This is the **transition function** — the same <InlineMath tex={"P(s_{t+1}\\mid s_t,a_t)"} /> that Chapter 2 introduced as part of the MDP and that Chapter 4's model-free methods went to such lengths to avoid needing.
+
+**Why this shape.** The whole chapter is variations on <XRef kind="eq" anchor="eq-worldmodel" number="8.1" />, and the three places variation happens are worth flagging now: **how the state is represented** (pixels, a compact latent, video tokens, an embedding), **where the actions live** (an input that conditions the prediction, or an output the model generates), and **what data it can be trained on** (robot trajectories with action labels, or internet video without them). The <InlineMath tex={"h_t"} /> matters more than it looks: an observation is not a state, so a single frame does not determine the future, and memory is what closes some of that gap.
+
+The reason to want one is a change in the economics of trial and error. Chapter 5 ended with sample efficiency as the field's binding constraint, because every rollout costs real time on real hardware. With a world model you can run <InlineMath tex={"N"} /> **imagined** rollouts, score them, and execute only the best — exploring many hypothetical futures for the price of none. That is what a batter does in 300 milliseconds, and it is what a planner does with a simulator (<XRef kind="fig" anchor="fig-policyvswm" number="8.1" />).
+
+<Figure id="fig-policyvswm" number="8.1" src="/slides/lecture08/slide_010.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=883s" timecode="14:43" lecture="8">
+  A policy maps state and goal to an action; a world model maps state and action to the next state. The second is a model of consequences, which the first has no representation of. Credit: course slides, Lecture 8.
+</Figure>
+
+### A learned simulator, and what makes it one
+
+Robotics already has simulators, so it is worth being precise about the difference. A physics engine is **hand-built**: someone wrote the contact model, and it is exact for the phenomena that were modelled and silent about everything else — cloth, granular media, deformable objects, the particular way that particular gripper slips. A world model is **learned from data**, so it can in principle model anything that appears in its training data, including phenomena nobody has written equations for, and it is bounded by that data rather than by the modeller's foresight. The trade is fidelity guarantees for coverage.
+
+One requirement separates a world model from a merely impressive video generator, and the lecture is emphatic about it. A model must be **action-conditioned**. A text-to-video model <InlineMath tex={"p(\\text{video}\\mid\\text{text})"} /> is not a world model, however realistic its output, because you cannot ask it what happens _if you do this_. Without an action input there is no counterfactual, and without counterfactuals there is no planning.
+
+## Family one: predicting pixels
+
+The most direct reading of <XRef kind="eq" anchor="eq-worldmodel" number="8.1" /> is to let <InlineMath tex={"s_t"} /> be the image and predict the next image. Doing that naively — generate every pixel of the next frame — is hard and prone to hallucination, so the first successful version changed the target.
+
+Rather than generating a frame, **predict how the current frame should move.** The model outputs an action-conditioned **flow field** — a per-pixel displacement — and the next frame is produced by warping the current one accordingly, with a convolutional-recurrent architecture doing the prediction.
+
+**Why this shape.** Predicting _motion_ rather than _appearance_ is much easier and much safer. The pixels in the next frame mostly exist already in the current one; what changed is where they are. A model that can only move existing pixels cannot invent an object that is not there, which is precisely the failure mode of unconstrained frame generation.
+
+With a predictive model in hand, control becomes planning. **Visual foresight**, or visual model-predictive control, plans directly in pixel space using the **cross-entropy method** from Chapter 4: sample action sequences, roll them forward through the model, score the predicted final image against a goal, keep the elites, re-sample. The goal can be specified by clicking a pixel and saying where it should end up, or by a classifier. Data collection is autonomous, since random interaction is enough to learn dynamics — there is no expert to imitate.
+
+Three limits ended this line. The **L2 loss blurs**: when the future is uncertain, the prediction that minimizes squared error is the average over possible futures, which is a blur — the same mode-averaging failure as Chapter 3, now in image space. **Errors compound**: feeding a slightly wrong prediction back in as input degrades the next one, and the horizon over which the model is trustworthy is short. And **planning in pixel space is expensive**, because every candidate action sequence requires generating images.
+
+## Family two: predicting in a latent space
+
+The fix for all three is to stop predicting pixels. Compress the observation to a compact latent, do the dynamics and the planning there, and never render an image unless a human wants to look at it.
+
+<BlockMath tex={"z_t = \\mathrm{enc}_\\phi(o_t), \\qquad z_{t+1} \\sim p\\big(z_{t+1} \\mid z_t, a_t, h_t\\big), \\qquad a_t = \\pi_\\theta(z_t, h_t)"} id="eq-latentwm" number="8.2" />
+
+**In words.** Encode what you see into a small vector, predict how that vector evolves under your actions, and choose actions from the vector rather than from the image.
+
+**The symbols.** <InlineMath tex={"z_t"} /> is the latent state, <InlineMath tex={"\\mathrm{enc}_\\phi"} /> the encoder, <InlineMath tex={"h_t"} /> the recurrent memory, and <InlineMath tex={"\\pi_\\theta"} /> a policy over latents. An imagined reward model is also learned, so that imagined rollouts can be scored.
+
+**Why this shape.** The consequence is the sentence that defines this family: **you can train a policy entirely in imagination.** Freeze the encoder and dynamics, roll the latent forward for <InlineMath tex={"H"} /> steps from a starting latent, compute the imagined return, and optimize the policy against it — with no environment interaction at all. Every step of that loop is a small network on a small vector, which is why it is affordable in a way pixel-space planning is not (<XRef kind="fig" anchor="fig-latentwm" number="8.2" />).
+
+<Figure id="fig-latentwm" number="8.2" src="/slides/lecture08/slide_017.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=1542s" timecode="25:42" lecture="8">
+  The general structure of a latent action-conditioned world model: encode, predict forward in latent space, and act from the latent — with the policy trainable entirely on imagined rollouts. Credit: course slides, Lecture 8.
+</Figure>
+
+### The original: three modules
+
+The 2018 paper that named this field built it from three parts, and the division is still instructive. **V** is a vision module — a variational autoencoder, exactly Chapter 6's — that compresses a frame to a latent <InlineMath tex={"z"} />. **M** is a memory module: a recurrent network predicting <InlineMath tex={"p(z_{t+1}\\mid a_t, z_t, h_t)"} /> as a **mixture of Gaussians**, because the next latent is genuinely multimodal and a single Gaussian would average the possibilities — Chapter 3's problem again, and the same solution. **C** is a controller, and it is deliberately tiny: a single fully connected layer mapping <InlineMath tex={"(z_t, h_t)"} /> to an action.
+
+Two details are worth keeping. The controller is trained by **CMA-ES**, a gradient-free evolutionary method, because stochastic rollouts through the recurrent model make end-to-end differentiation awkward. And the smallness of the controller is the point: **if the world model does the heavy lifting, the policy can be trivial.** The system solved car racing and a first-person shooter from pixels, trained purely in imagination.
+
+### The drift problem
+
+The architecture has a defect that the next model fixed, and understanding it is the most useful thing in this chapter.
+
+The vision module is trained separately from the memory module, to encode _real observations_. Nothing trains it to encode the model's own beliefs, and — the specific gap — **there is no prior <InlineMath tex={"p(z_t \\mid h_t)"} />**: no way to produce a plausible latent from memory alone. In imagination there is no real observation to encode, so the recurrent model must feed its own predicted latents back into itself. Those predictions are slightly off, the next ones are further off, and the imagined trajectory drifts away from anything the model understands. This is exposure bias, the same compounding-error mechanism as Chapter 3's imitation drift, arising here inside the model rather than on the robot (<XRef kind="fig" anchor="fig-drift" number="8.3" />).
+
+<Figure id="fig-drift" number="8.3" src="/slides/lecture08/slide_022.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=1975s" timecode="32:55" lecture="8">
+  Why imagination drifts. With no prior over latents given memory, the model must feed its own hallucinated latents back in, and sampling error accumulates. Credit: course slides, Lecture 8.
+</Figure>
+
+### RSSM: splitting the latent state
+
+The **recurrent state-space model** repairs it by splitting the state into two parts with different jobs.
+
+<BlockMath tex={"h_t = f\\big(h_{t-1}, z_{t-1}, a_{t-1}\\big) \\quad\\text{(deterministic, never sampled)}, \\qquad z_t \\quad\\text{(stochastic)}"} id="eq-rssm" number="8.3" />
+
+<BlockMath tex={"\\underbrace{q_\\phi\\big(z_t \\mid h_t, o_t\\big)}_{\\text{posterior: training, sees the real observation}} \\qquad\\qquad \\underbrace{p_\\theta\\big(z_t \\mid h_t\\big)}_{\\text{prior: imagination, needs only memory}} \\qquad\\qquad \\mathcal{L}_{\\mathrm{KL}} = D_{\\mathrm{KL}}\\big(q_\\phi \\,\\\u007C\\, p_\\theta\\big)"} id="eq-rssmkl" number="8.4" />
+
+**In words.** Keep one part of the state that is computed deterministically and never sampled, so it cannot be corrupted; keep another that captures uncertainty; and train a version of the uncertain part that works without an observation to match the version that has one.
+
+**The symbols.** <InlineMath tex={"h_t"} /> is the deterministic recurrent state, carrying memory; <InlineMath tex={"z_t"} /> the stochastic state, carrying uncertainty about the current situation. <InlineMath tex={"q_\\phi"} /> is the posterior, used in training, which sees the real observation <InlineMath tex={"o_t"} />; <InlineMath tex={"p_\\theta"} /> is the prior, used in imagination, which sees only <InlineMath tex={"h_t"} />.
+
+**Why this shape.** Each half fixes something. The **deterministic path is never sampled**, so no sampling error enters it and it acts as a clean anchor that keeps long rollouts from wandering — the drift of the previous section came from stochasticity compounding, and this path is immune to it. The **stochastic path** exists because the world is genuinely uncertain and a purely deterministic model would predict the average future. And the **prior** is exactly what was missing before: a way to produce a plausible latent from memory alone, which is what imagination requires. The KL term is what makes the prior usable — it forces the observation-free prior to agree with the observation-informed posterior, so latents produced during imagination stay in the region the model understands.
+
+The result is **closed-loop imagination** with no observations anywhere: the policy reads <InlineMath tex={"(h_t, z_t)"} /> and emits <InlineMath tex={"a_t"} />; the model advances <InlineMath tex={"h_{t+1} = f(h_t, z_t, a_t)"} /> and samples <InlineMath tex={"z_{t+1} \\sim p_\\theta(z_{t+1}\\mid h_{t+1})"} />; repeat. Nothing in that loop touches the real world (<XRef kind="fig" anchor="fig-rssm" number="8.4" />).
+
+<Figure id="fig-rssm" number="8.4" src="/slides/lecture08/slide_023.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=2077s" timecode="34:37" lecture="8">
+  The recurrent state-space model: a deterministic path that is never sampled, a stochastic path for uncertainty, and a prior trained by a KL term to match the observation-conditioned posterior so that imagination stays on the manifold. Credit: course slides, Lecture 8.
+</Figure>
+
+### Dreamer: amortizing the planner
+
+The model built on RSSM still planned by running the cross-entropy method from scratch at every timestep, which — as Chapter 4's arithmetic showed — costs thousands of forward passes per control step. **Dreamer** removes that cost by learning the planner instead of running it.
+
+The observation is that the RSSM is **differentiable**. If you can backpropagate through the imagined rollout, you can train an actor and a critic on imagined returns by gradient descent, exactly as in Chapter 5, and then at deployment simply run the actor. Training alternates two phases: collect real data and fit the RSSM by maximizing its evidence lower bound; then freeze the model and train the actor <InlineMath tex={"\\pi_\\theta(h_t,z_t)"} /> and critic <InlineMath tex={"V_\\phi(h_t,z_t)"} /> on rollouts generated inside it.
+
+**Why this shape.** Chapter 5's gradients came from the environment via the log-derivative trick, because the dynamics were unknown and non-differentiable. Here the dynamics are a neural network, so the gradient of the imagined return with respect to the actions is available directly — a much richer signal than a scalar reward. This is Chapter 5's actor-critic with the environment replaced by a differentiable stand-in, and it is the strongest form of the pattern that has recurred throughout this book: one learned model supplying gradients to another.
+
+**DayDreamer** is the result that matters for robotics. Dreamer, same algorithm and same hyperparameters, applied to real robots: **one hour of real quadruped interaction was enough to learn to walk from scratch**, with days of imagined training extracted from that hour. The engineering contribution was asynchronous training and inference, so the robot keeps moving while the model learns. Set that hour against Chapter 4's QT-Opt — 580,000 real grasps across a robot farm — and the case for world models is made in one comparison.
+
+<EditorNote>
+  The lecture's analogy for training in imagination is Neo learning kung fu in _The Matrix_, and the lecturer also notes in passing that the question of who invented what in this lineage is contested — his advice on the priority dispute around the 2018 paper is "ask Schmidhuber." The 2018 attribution is the standard one.
+</EditorNote>
+
+### The lineage, and where it stops
+
+The line from 2018 to now is a good short history of the field (<XRef kind="fig" anchor="fig-lineage" number="8.5" />). The 2018 model was the first agent trained inside its own imagination. **PlaNet** (2019) introduced RSSM and reported roughly two hundred times better sample efficiency. **Dreamer** (2020) added the differentiable actor-critic. **Dreamer V2** switched to categorical latents and balanced KL terms, matching DQN on Atari. **Dreamer V3** was the first system to obtain diamonds in Minecraft from pixels — a task requiring tens of thousands of actions in sequence — with one set of hyperparameters. **Dreamer V4** works offline, getting diamonds from a fixed dataset with no environment interaction, and it does so by borrowing from the previous two chapters: pre-train the dynamics on **unlabeled video using flow matching**, then fine-tune with actions, and replace the recurrent hidden state with a **transformer KV cache** for longer memory.
+
+<Figure id="fig-lineage" number="8.5" src="/slides/lecture08/slide_026.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=2505s" timecode="41:45" lecture="8">
+  The lineage from the 2018 world model through PlaNet and RSSM to Dreamer V1–V4, with what each step added. Credit: course slides, Lecture 8.
+</Figure>
+
+The limitation that ends the family is one of scope rather than technique. **Dreamer's latents are domain-specific** — one model for Minecraft, another for one robot in one lab. Nothing in the recipe produces a model that understands the visual world in general, because nothing in the training data is the visual world in general. To get that, you need internet video, and internet video is very large.
+
+## Interlude: video is expensive
+
+Before the families that consume internet video, the cost has to be confronted, because it is what shapes their architectures.
+
+**Worked example: the token budget for ten seconds of video.** Take a <InlineMath tex={"256\\times256"} /> frame tokenized as a vision transformer would, at <InlineMath tex={"16\\times16"} /> patches:
+
+<BlockMath tex={"\\frac{256}{16}\\times\\frac{256}{16} = 16 \\times 16 = 256\\ \\text{tokens per frame}."} />
+
+Ten seconds at 20 frames per second is 200 frames, so
+
+<BlockMath tex={"256 \\times 200 = 51{,}200\\ \\text{tokens}"} />
+
+for one short clip — near the context limit of GPT-4-era models, for a single ten-second video, before anything else is in the prompt. And Chapter 7 established that attention is quadratic in sequence length, so this is not a linear inconvenience.
+
+Compression works along three composable axes. **Spatial**: use a stronger encoder or a larger patch stride, so each frame becomes fewer tokens. **Temporal**: merge information across frames, either non-causally into space-time tubelets or causally, aggregating past frames — and for control the causal version is required, since a policy cannot attend to frames that have not happened. **Adaptive**: spend more tokens on complex frames and fewer on static ones.
+
+Combining the first two is what makes video models trainable. NVIDIA's Cosmos tokenizer uses <InlineMath tex={"8\\times"} /> spatial and <InlineMath tex={"8\\times"} /> temporal compression. Spatially, <InlineMath tex={"8\\times"} /> in each of two dimensions divides the per-frame count by 64:
+
+<BlockMath tex={"\\frac{256}{64} = 4\\ \\text{tokens per frame},"} />
+
+and temporally, <InlineMath tex={"8\\times"} /> divides the 200 frames to 25 effective frames, giving
+
+<BlockMath tex={"4 \\times 25 = 100\\ \\text{tokens}"} />
+
+for the same ten-second clip — a <InlineMath tex={"512\\times"} /> reduction. That factor is the difference between video-based robot models being a research direction and being arithmetic (<XRef kind="fig" anchor="fig-tokenization" number="8.6" />).
+
+<Figure id="fig-tokenization" number="8.6" src="/slides/lecture08/slide_029.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=2890s" timecode="48:10" lecture="8">
+  The three composable axes of video compression — spatial, temporal, adaptive — and the effect of combining them. Credit: course slides, Lecture 8.
+</Figure>
+
+## Families three and four: where do the actions live?
+
+At internet scale, the scarce thing is not video but **action labels**. Nobody annotated YouTube with joint torques. Two families answer this differently, and the difference is where actions sit in the model.
+
+**World action models** make actions an **output**. A single model jointly generates the future video _and_ the actions that would produce it, initialized from a pre-trained video backbone. The lecture's example is **DreamZero**: one causal diffusion transformer over video latents, noisy action tokens, proprioception and language, which **jointly denoises video and actions by flow matching** with teacher forcing, generating chunk by chunk with a KV cache. Its neatest trick addresses the compounding-error problem that ended family one — after each action, **replace the generated frames in the KV cache with the real observations.** The model's context is then anchored to reality rather than to its own output, which sidesteps the drift of pure autoregressive video generation. It runs a 14-billion-parameter model in real time.
+
+**Video action models** make actions an output too, but keep the video model frozen. Take an internet-pretrained **video backbone**, extract its features, and train a lightweight **inverse dynamics model** — a head that reads the predicted video and says which action produced it — on robot data only. The lecture's example is the lecturer's own mimic-video.
+
+### Why a video backbone rather than a vision-language model
+
+This is the argument that motivates both families, and it is the chapter's best case for its own subject.
+
+A vision-language model is trained on **static** image-text pairs. It knows what "cutting a carrot" means semantically and has **no model of temporal dynamics or physical causality** — it has never seen one thing cause another. So converting a vision-language model into a vision-language-action model, as Chapter 9 does, requires the robot data to teach both the dynamics _and_ the control, and teleoperation data is the most expensive kind there is.
+
+A **video backbone** already has visual dynamics. Fine-tuning it needs to teach only the mapping from features to actions — control alone. The reported gain is a **10% improvement in sample efficiency** over a comparable vision-language-action model, on the same robot data.
+
+The experiment that makes the case sharpest is an oracle. Decode actions not from the model's _predicted_ future latents but from the _ground-truth_ future latents, and success is near-perfect regardless of how much robot fine-tuning was done. So the pre-trained video model already contains enough information to act; **the bottleneck is video-prediction quality, not action decoding.** The conclusion the lecture draws from it — "the path to better robots is better video models" — is a strong claim, and it follows from the oracle result rather than from enthusiasm.
+
+The engineering that makes this affordable is a **partial-denoising** strategy on a Cosmos backbone: run the video diffusion only part-way, to an intermediate flow time, extract the resulting latent visual plan, and condition a light flow-matching action decoder on it, with video and action given independent flow schedules. You never finish generating the video, because you never needed to look at it (<XRef kind="fig" anchor="fig-vam" number="8.7" />).
+
+<Figure id="fig-vam" number="8.7" src="/slides/lecture08/slide_034.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=3516s" timecode="58:36" lecture="8">
+  Sample efficiency from a video backbone: fine-tuning a model that already has temporal dynamics needs only to learn control, not dynamics and control together. Credit: course slides, Lecture 8.
+</Figure>
+
+### The trade-offs between the two groups
+
+The four families so far split into two groups with complementary strengths, and the comparison is the practical content of the chapter (<XRef kind="fig" anchor="fig-tradeoffs" number="8.8" />).
+
+Action-conditioned world models — families one and two — win on **data**, because they can consume _any_ robot data: play, failures, autonomous rollouts, anything with actions attached. And because the action is an input, they support **reinforcement learning in imagination** and gradient-based planning, which is behavior beyond imitation. Their weaknesses are that cross-embodiment transfer is an open problem, and that conditioning on actions during pre-training can damage the abilities the backbone had.
+
+World and video action models — families three and four — win on **cross-embodiment**, because the backbone is robot-agnostic and only the decoder needs robot data, and they **retain the pre-trained model's capabilities**, since the video model is not asked to change. Their weaknesses are needing instruction labels, and being limited to imitation — the only planning available is best-of-<InlineMath tex={"N"} /> over text prompts.
+
+<Figure id="fig-tradeoffs" number="8.8" src="/slides/lecture08/slide_039.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=3949s" timecode="1:05:49" lecture="8">
+  Trade-offs between action-conditioned world models and video-based models: data breadth and planning against cross-embodiment transfer and preserved pre-trained capability. Credit: course slides, Lecture 8.
+</Figure>
+
+## Family five: do we need pixels at all?
+
+The last family asks the question that the previous four assumed away. Prediction is being trained on pixels, and a great deal of a pixel is irrelevant to control — the exact texture of the tabletop, the shadow of a passing cloud. Why not predict at the level of _representation_ instead?
+
+A **joint-embedding predictive architecture** does exactly that. Encode both frames, predict the next frame's embedding from the current one and the action, and train on the distance in embedding space. There is no decoder and no pixel loss:
+
+<BlockMath tex={"z_t = \\mathrm{enc}(o_t), \\qquad \\hat z_{t+1} = \\mathrm{pred}(z_t, a_t), \\qquad z_{t+1} = \\mathrm{enc}(o_{t+1}), \\qquad \\mathcal{L} = \\big\\\u007C\\hat z_{t+1} - z_{t+1}\\big\\\u007C^2"} id="eq-jepa" number="8.5" />
+
+**In words.** Predict what the next observation will _mean_ rather than what it will look like.
+
+**The symbols.** <InlineMath tex={"\\mathrm{enc}"} /> is a shared encoder, <InlineMath tex={"\\mathrm{pred}"} /> the predictor, and <InlineMath tex={"\\hat z_{t+1}"} /> the predicted embedding.
+
+**Why this shape.** It is cheaper, and no capacity is spent on rendering detail that no controller uses. There is one catch, and it is fatal if unaddressed: **representation collapse.** If the encoder maps every observation to the same vector, then <InlineMath tex={"\\hat z_{t+1} = z_{t+1}"} /> trivially and the loss is zero. The objective as written actively rewards learning nothing.
+
+Three fixes are in use, and each is a different bargain. An **exponential-moving-average target encoder** — a slowly-updated copy of the encoder that the predictor chases, the overbar trick of Chapters 4 and 5 in a new role — makes the target a moving object that cannot be trivially matched; this is V-JEPA 2. A **frozen pre-trained encoder** makes collapse impossible by construction, since the encoder cannot change, at the price of giving up end-to-end learning; this is DINO-WM. A **Gaussian regularizer** on the latent distribution forces the representation to spread out, which **provably** prevents collapse and adds one hyperparameter (<XRef kind="fig" anchor="fig-jepa" number="8.9" />).
+
+<Figure id="fig-jepa" number="8.9" src="/slides/lecture08/slide_043.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=4127s" timecode="1:08:47" lecture="8">
+  JEPA and the three strategies against representation collapse: an EMA target encoder, a frozen pre-trained encoder, and an explicit regularizer on the latent distribution. Credit: course slides, Lecture 8.
+</Figure>
+
+## The five families in one table
+
+This is the chapter's organizing figure and the thing to remember from it (<XRef kind="fig" anchor="fig-families" number="8.10" />).
+
+| Family                    | State representation                          | Actions                          | Planning                              | Data                                        | Example                                 |
+| ------------------------- | --------------------------------------------- | -------------------------------- | ------------------------------------- | ------------------------------------------- | --------------------------------------- |
+| Pixel action-conditioned  | pixels <InlineMath tex={"o_t"} />             | input                            | visual MPC with CEM                   | robot data with action labels               | flow-field prediction, visual foresight |
+| Latent action-conditioned | compact latent <InlineMath tex={"z_t"} />     | input                            | reinforcement learning in imagination | robot data with action labels               | Dreamer V1–V4, DayDreamer               |
+| World action model        | video tokens, full frames                     | **output**, jointly generated    | generate video and extract actions    | internet video plus robot fine-tuning       | DreamZero                               |
+| Video action model        | video tokens, frozen backbone                 | **output**, via inverse dynamics | generate latent video, then decode    | internet video plus robot data for the head | mimic-video                             |
+| JEPA                      | latent <InlineMath tex={"z_t"} />, no decoder | input                            | latent MPC                            | robot data with action labels               | V-JEPA 2, DINO-WM                       |
+
+Read the columns rather than the rows. The **state representation** column is a story of increasing abstraction, from pixels to latents to embeddings with no decoder at all. The **actions** column is the sharpest divide in the chapter: input means you can plan and do reinforcement learning; output means you can use data that has no action labels. Nobody has both.
+
+<Figure id="fig-families" number="8.10" src="/slides/lecture08/slide_044.jpg" scale="85%" videoUrl="https://www.youtube.com/watch?v=cTTmUZlOF2s&t=4259s" timecode="1:10:59" lecture="8">
+  The five-family summary of world models: how each represents state, where actions enter, how planning is done, and what data it can consume. Credit: course slides, Lecture 8.
+</Figure>
+
+## Where this breaks
+
+**The open questions the lecture ends on are genuinely open.** Can one model be **flexibly conditioned** — on text _or_ on actions — so that it can both consume internet video and support planning? Should prediction happen in **pixels or latents**, and does pixel prediction actually help cross-embodiment transfer or is it wasted computation? **Can JEPA scale**, or do its anti-collapse mechanisms become harder to balance at scale? None has an accepted answer.
+
+**Compounding error is contained rather than solved.** RSSM's deterministic path limits drift, DreamZero's cache replacement anchors context to real observations, and both are mitigations. Every long imagined rollout eventually leaves the region where the model is trustworthy, and no method here tells you when that happened — which connects directly to Chapter 11's introspection problem.
+
+**A policy trained in imagination is optimized against a model's mistakes.** This is Chapter 5's warning about the actor exploiting the critic, at a larger scale: if the world model has a region where it wrongly predicts free reward, the policy will find it and exploit it, and the failure appears only on real hardware.
+
+**Learned simulators are bounded by their data in ways that are hard to see.** A physics engine is wrong in documented ways. A world model is wrong wherever its training distribution was thin, and nothing in the model announces which regions those are.
+
+**Video prediction is the bottleneck, and it is not close to solved.** The oracle experiment says the ceiling on this family of methods is prediction quality. Chapter 11's blunter version of the same point: video models produce convincing footage that violates basic physics, so they are good at making things look right without understanding what makes them right.
+
+**Action-labelled data remains the scarce resource.** Families three and four exist to work around it and pay for the workaround in planning ability. The trade-off table has no row that is good at everything, and that is the honest state of the art.
+
+## What this connects to
+
+**Backwards.** <XRef kind="eq" anchor="eq-worldmodel" number="8.1" /> is Chapter 2's transition function, learned instead of assumed — the object Chapter 4's model-free methods were built to avoid, brought back deliberately once it became learnable. The cross-entropy planner is Chapter 4's, now searching over imagined futures instead of over a critic. Dreamer's actor-critic is Chapter 5's, with a differentiable model in place of the environment. The mixture-of-Gaussians dynamics head, the variational autoencoder in module V, the flow matching in Dreamer V4 and DreamZero, and the video tokenizers throughout are all Chapter 6. The token arithmetic and the KV cache are Chapter 7. This chapter is where the book's separate threads are all load-bearing at once.
+
+**Forwards.** Chapter 9 takes the opposite bet — scale up policies rather than models of the world — and the comparison is worth holding in mind, since both chapters are responses to the same data scarcity. Chapter 10's test-time compute is planning by another name, with reasoning tokens in place of imagined rollouts and a verifier in place of a reward model. Chapter 11 places world models among the three candidate backbones for robotics and reports the dispute as unresolved.
+
+Two threads specifically. **Training in imagination** is the most direct answer the book contains to the sample-efficiency problem that Chapters 4 and 5 left open, and DayDreamer's one hour against QT-Opt's 580,000 grasps is the number to remember. And **the video-backbone argument** — that dynamics should be learned from video and only control from robot data — is the strongest competitor to Chapter 9's vision-language-action recipe, which learns both from teleoperation.
+
+## Further reading
+
+- **D. Hafner, J. Pasukonis, T. Lillicrap et al., "Training Agents Inside of Scalable World Models" (2025).** The Dreamer V4 paper, and the current state of the latent action-conditioned family: diamonds in Minecraft from offline data alone, dynamics pre-trained on unlabeled video by flow matching, and a transformer replacing the recurrent state. Read it as the point where this chapter's first two families absorb the machinery of Chapters 6 and 7.
+- **S. Ye, et al., "World Action Models are Zero-shot Policies" (2026).** The DreamZero paper. Read it for the joint denoising of video and actions, and specifically for the KV-cache replacement trick, which is the most elegant available answer to the compounding-error problem that has followed this chapter from its first family to its last.
+- **Y. Du, S. Yang, B. Dai et al., "Learning Universal Policies via Text-Guided Video Generation" (2023).** Assigned for this week and not deep-dived in the lecture. It is the clearest case of the text-conditioned approach that the chapter's own definition excludes — generate a video of the task from a text prompt, then extract actions — and reading it against <XRef kind="eq" anchor="eq-worldmodel" number="8.1" /> is the best way to understand why action conditioning was made part of the definition.

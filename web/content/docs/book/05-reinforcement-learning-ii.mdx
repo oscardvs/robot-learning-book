@@ -1,0 +1,365 @@
+---
+title: 'Reinforcement Learning II: Policy Gradients'
+description: 'Chapter 4 learned what actions are worth and read a policy off the answer, and every difficulty it ran into came from the same operation: $\arg\maxa$.'
+chapter: 5
+kind: chapter
+lecture: 5
+video: 'AdTGz8YnnlE'
+---
+Chapter 4 learned what actions are worth and read a policy off the answer, and every difficulty it ran into came from the same operation: <InlineMath tex={"\\arg\\max_a"} />. Maximizing over a continuous action space is not something you can do, so the chapter spent its second half on three workarounds — discretize, sample, or train a network to guess the maximizer — none of which is clean. This chapter takes the other road. Rather than learning a value and deriving behavior from it, **parameterize the policy and push its weights directly toward higher reward.** There is no maximization over actions anywhere in what follows, because the policy is the thing being optimized rather than the thing being extracted.
+
+The chapter is one long derivation with corrections applied along the way. It starts with an estimator that is correct and unusable, and each section fixes the reason it is unusable: too much variance, then too much data, then too large a step. The endpoint, soft actor-critic, is the algorithm most often used on real robots today, and it is worth seeing that it is not a different idea from the beginning but the beginning with six repairs.
+
+## Starting from the same objective
+
+Nothing changes about what we are maximizing. The objective and the trajectory distribution are those of Chapter 2, with the policy's parameters made explicit:
+
+<BlockMath tex={"J(\\theta) = \\mathbb{E}_{\\tau \\sim p_\\theta(\\tau)}\\Big[\\sum_{t\\ge0} R(s_t,a_t)\\Big], \\qquad p_\\theta(\\tau) = \\rho_0(s_0)\\prod_{t\\ge0}\\pi_\\theta(a_t\\mid s_t)\\,P(s_{t+1}\\mid s_t,a_t)"} id="eq-pgobjective" number="5.1" />
+
+**In words.** Score the policy by the average total reward of the trajectories it produces, where a trajectory's probability is the chance of its starting state times, at every step, the chance the policy picks that action and the chance physics produces that next state.
+
+**The symbols.** <InlineMath tex={"\\theta"} /> are the policy's parameters — the weights of a neural network. <InlineMath tex={"\\tau"} /> is a trajectory, <InlineMath tex={"\\rho_0"} /> the initial-state distribution, <InlineMath tex={"P"} /> the transition probability, and <InlineMath tex={"R(s_t,a_t)"} /> the reward at step <InlineMath tex={"t"} />. The discount factor is suppressed here to keep the derivation readable and reappears where it matters.
+
+**Why this shape.** Two features of <XRef kind="eq" anchor="eq-pgobjective" number="5.1" /> are about to become the whole argument. First, <InlineMath tex={"\\theta"} /> appears in the _distribution_ being averaged over, not in the thing being averaged — which is why differentiating it is not straightforward. Second, the factorization separates terms that depend on <InlineMath tex={"\\theta"} /> from terms that do not, and by the end of the next section every term without a <InlineMath tex={"\\theta"} /> in it will have vanished, taking the unknown physics with it.
+
+The first difficulty is just evaluating <XRef kind="eq" anchor="eq-pgobjective" number="5.1" />. The expectation is over a distribution we cannot write down, since it contains the world's dynamics. The answer is the obvious one: **Monte Carlo**. Roll out the policy <InlineMath tex={"N"} /> times and average what you get,
+
+<BlockMath tex={"J(\\theta) \\approx \\frac{1}{N}\\sum_{i=1}^{N}\\sum_t r_{i,t}."} />
+
+This works, and it comes with a restriction that shapes the rest of the chapter: the rollouts must come from the _current_ policy, because <XRef kind="eq" anchor="eq-pgobjective" number="5.1" /> is an expectation under <InlineMath tex={"p_\\theta"} />. Data collected by any other policy is not a sample from the right distribution. That restriction is what **on-policy** means, and it is expensive.
+
+## The policy gradient theorem
+
+We want <InlineMath tex={"\\nabla_\\theta J(\\theta)"} />. The obstacle is that we cannot differentiate through the world: <InlineMath tex={"P"} /> is unknown, and even if it were known, a physics simulator is not something you would want in a backward pass. So write the expectation as an integral and take the gradient inside, which linearity permits:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) = \\nabla_\\theta \\int p_\\theta(\\tau)\\, R(\\tau)\\,\\mathrm{d}\\tau = \\int \\nabla_\\theta p_\\theta(\\tau)\\; R(\\tau)\\,\\mathrm{d}\\tau"} />
+
+This is progress and also a dead end. The result is an integral of the _gradient of a density_, which is not an expectation of anything and therefore cannot be estimated by sampling. The repair is a piece of calculus so useful it has a name, the **log-derivative trick**. Since <InlineMath tex={"\\nabla \\log x = \\frac{1}{x}\\nabla x"} />, we have <InlineMath tex={"\\nabla_\\theta p_\\theta(\\tau) = p_\\theta(\\tau)\\,\\nabla_\\theta \\log p_\\theta(\\tau)"} /> — multiplying and dividing by <InlineMath tex={"p_\\theta(\\tau)"} />, which changes nothing and changes everything. Substituting:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) = \\mathbb{E}_{\\tau\\sim p_\\theta(\\tau)}\\big[\\, \\nabla_\\theta \\log p_\\theta(\\tau)\\; R(\\tau) \\,\\big]"} id="eq-pgtheorem" number="5.2" />
+
+**In words.** The gradient of the expected return equals the average, over trajectories the policy produces, of how much more likely the policy would make that trajectory, weighted by how good the trajectory was.
+
+**The symbols.** <InlineMath tex={"R(\\tau) = \\sum_t R(s_t,a_t)"} /> is the total return of trajectory <InlineMath tex={"\\tau"} />; <InlineMath tex={"\\nabla_\\theta \\log p_\\theta(\\tau)"} /> is the score function of the trajectory distribution.
+
+**Why this shape.** The right-hand side is an expectation over a distribution we can _sample from_ — just run the robot — so it can be estimated without knowing the dynamics. There is a point of confusion worth clearing up here, because the lecture pauses on it too: the sampling operation is not differentiable, and that is fine. We are not differentiating through the sampling. <InlineMath tex={"\\theta"} /> sits inside the expectation, in the log-probability of actions the policy chose, and that is a differentiable function of <InlineMath tex={"\\theta"} />. This is the same observation Chapter 4 opened with — expectations are smooth even when their contents are not — used a second time (<XRef kind="fig" anchor="fig-pgtheorem" number="5.1" />).
+
+Now expand the log of the trajectory probability, using the factorization in <XRef kind="eq" anchor="eq-pgobjective" number="5.1" />:
+
+<BlockMath tex={"\\log p_\\theta(\\tau) = \\log \\rho_0(s_0) + \\sum_t \\log \\pi_\\theta(a_t\\mid s_t) + \\sum_t \\log P(s_{t+1}\\mid s_t,a_t)"} />
+
+Neither the initial-state distribution nor the transition probabilities depend on <InlineMath tex={"\\theta"} />, so both differentiate to zero and disappear:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) = \\mathbb{E}_{\\tau\\sim p_\\theta(\\tau)}\\Big[\\Big(\\sum_{t=0}^{T-1}\\nabla_\\theta \\log\\pi_\\theta(a_t\\mid s_t)\\Big)\\Big(\\sum_{t=0}^{T-1} R(s_t,a_t)\\Big)\\Big]"} id="eq-pgexpanded" number="5.3" />
+
+**Why this matters more than it looks.** **The dynamics cancelled.** The gradient of the expected return contains no reference to <InlineMath tex={"P"} /> whatsoever — only the policy's own log-probabilities and the rewards observed. We never needed a model, and we never needed to differentiate physics. This is the single most useful fact in the chapter, and it comes free from the structure of <XRef kind="eq" anchor="eq-pgobjective" number="5.1" /> plus one application of the log-derivative trick.
+
+<Figure id="fig-pgtheorem" number="5.1" src="/slides/lecture05/slide_008.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=670s" timecode="11:10" lecture="5">
+  The policy gradient theorem via the log-derivative trick: rewriting the gradient of a density as a density times the gradient of its log turns an unsamplable integral into an expectation. Credit: course slides, Lecture 5.
+</Figure>
+
+## REINFORCE
+
+<XRef kind="eq" anchor="eq-pgexpanded" number="5.3" /> is directly implementable, and the resulting algorithm is the oldest in this chapter.
+
+\begin\{algorithm}\[H]
+\caption\{REINFORCE (vanilla policy gradient)}
+\KwIn\{policy <InlineMath tex={"\\pi_\\theta"} />, learning rate <InlineMath tex={"\\eta"} />, batch size <InlineMath tex={"N"} />}
+\KwOut\{trained policy <InlineMath tex={"\\pi_\\theta"} />}
+initialize <InlineMath tex={"\\pi_\\theta"} />;
+\While\{not converged}\{
+collect <InlineMath tex={"N"} /> rollouts <InlineMath tex={"\\{\\tau^i\\}"} /> by running <InlineMath tex={"\\pi_\\theta"} /> on the environment;
+<InlineMath tex={"\\hat g \\leftarrow \\dfrac{1}{N}\\sum_{i}\\Big[\\Big(\\sum_t \\nabla_\\theta\\log\\pi_\\theta(a_{i,t}\\mid s_{i,t})\\Big)\\Big(\\sum_t R(s_{i,t},a_{i,t})\\Big)\\Big]"} />;
+<InlineMath tex={"\\theta \\leftarrow \\theta + \\eta\\,\\hat g"} />;
+}
+\end\{algorithm}
+
+The plus sign is not a typo: this is gradient _ascent_, because we are maximizing.
+
+The reason to trust the algorithm before analyzing it is an analogy that makes its behavior obvious. Compare the estimator with the gradient of behavior cloning from Chapter 3. Written as a likelihood rather than a squared error, the behavior-cloning gradient is
+
+<BlockMath tex={"\\nabla_\\theta J_{\\text{BC}} = \\frac{1}{N}\\sum_i \\sum_t \\nabla_\\theta \\log \\pi_\\theta(a_{i,t}\\mid s_{i,t}),"} />
+
+which raises the probability of every demonstrated action equally. REINFORCE is the same expression **weighted by the return of the trajectory the action came from.** Good trajectories get their actions made more likely; bad ones get theirs made less likely. That is all it is: behavior cloning on your own experience, with the reward deciding what counts as worth imitating. It also explains immediately why the method works without an expert, and why it is going to be noisy.
+
+## Repair one: causality
+
+The noise is the problem, and the first source of it is a piece of obvious nonsense in <XRef kind="eq" anchor="eq-pgexpanded" number="5.3" />. Look at the weight applied to <InlineMath tex={"\\nabla_\\theta\\log\\pi_\\theta(a_0\\mid s_0)"} />: the _total_ return of the trajectory, including rewards collected long after that action. If a robot executes ten perfect steps and then overshoots at the end, the poor total return penalizes all ten good steps equally with the bad one.
+
+But an action at time <InlineMath tex={"t'"} /> cannot possibly have influenced a reward received at <InlineMath tex={"t < t'"} />. Causality forbids it. So drop those terms:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) = \\mathbb{E}_{\\tau\\sim p_\\theta(\\tau)}\\Big[\\sum_{t=0}^{T-1}\\nabla_\\theta\\log\\pi_\\theta(a_t\\mid s_t)\\underbrace{\\sum_{t'=t}^{T-1}R(s_{t'},a_{t'})}_{\\text{reward-to-go}}\\Big]"} id="eq-rewardtogo" number="5.4" />
+
+**In words.** Weight each action by the reward that came _after_ it, not by the reward of the whole episode.
+
+**The symbols.** The inner sum from <InlineMath tex={"t' = t"} /> to <InlineMath tex={"T-1"} /> is the **reward-to-go** from step <InlineMath tex={"t"} />.
+
+**Why this shape.** The terms removed have expectation zero — an action is uncorrelated with rewards that preceded it — so the estimator is still **unbiased**: it converges to the same gradient. What changes is the variance, which drops, because each gradient term is now multiplied by a smaller and less noisy number. This is the pattern of every repair in this section: leave the expectation alone, shrink the spread (<XRef kind="fig" anchor="fig-causality" number="5.2" />).
+
+<Figure id="fig-causality" number="5.2" src="/slides/lecture05/slide_012.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=1081s" timecode="18:01" lecture="5">
+  Causality: an action cannot affect rewards that came before it, so weighting it by the full-episode return adds noise without adding signal. Credit: course slides, Lecture 5.
+</Figure>
+
+## Repair two: a baseline
+
+The second source of variance is subtler and larger. Suppose two rollouts return 99 and 101. The useful information is that the second is slightly better. But REINFORCE scales one gradient by 99 and the other by 101, so both push in nearly the same direction with nearly the same enormous magnitude, and the difference between them — the actual signal — is about 2% of what is being applied.
+
+Subtract a **baseline** before weighting:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) = \\mathbb{E}\\Big[\\sum_t \\nabla_\\theta\\log\\pi_\\theta(a_t\\mid s_t)\\Big(\\sum_{t'=t}^{T-1}R(s_{t'},a_{t'}) - b\\Big)\\Big], \\qquad b = \\frac{1}{N}\\sum_i R(\\tau^i)"} id="eq-baseline" number="5.5" />
+
+**In words.** Compare each trajectory against the average trajectory, and push toward the ones that beat it and away from the ones that do not.
+
+**The symbols.** <InlineMath tex={"b"} /> is the baseline, in the simplest case the mean return of the batch.
+
+**Why this shape.** With <InlineMath tex={"b = 100"} />, the two returns become <InlineMath tex={"-1"} /> and <InlineMath tex={"+1"} />. The below-average rollout now receives a gradient pointing _away_ from its actions, which it did not before — previously it was reinforced, merely less strongly than the other. And the magnitudes are small, so the update is dominated by the comparison rather than by the offset.
+
+The reason this is legitimate is a short calculation worth reproducing, because it shows that any baseline independent of the action is allowed:
+
+<BlockMath tex={"\\mathbb{E}\\big[\\nabla_\\theta\\log p_\\theta(\\tau)\\, b\\big] = b \\int p_\\theta(\\tau) \\nabla_\\theta \\log p_\\theta(\\tau)\\,\\mathrm{d}\\tau = b \\int \\nabla_\\theta p_\\theta(\\tau)\\,\\mathrm{d}\\tau = b\\,\\nabla_\\theta \\int p_\\theta(\\tau)\\,\\mathrm{d}\\tau = b\\,\\nabla_\\theta 1 = 0."} />
+
+The subtracted term contributes nothing in expectation — the estimator remains **unbiased** — because a probability density integrates to one no matter what <InlineMath tex={"\\theta"} /> is, so the gradient of that integral is zero. We have changed the variance without changing what we are estimating.
+
+### Worked example: how much of the gradient was signal?
+
+Put numbers on the claim. Take a batch of four rollouts with returns 99, 101, 100 and 104, so <InlineMath tex={"b = 101"} />. Write <InlineMath tex={"g_i"} /> for the summed score function of rollout <InlineMath tex={"i"} />.
+
+| Rollout | Return | REINFORCE weight | Weight after baseline     |
+| ------- | ------ | ---------------- | ------------------------- |
+| 1       | 99     | 99               | <InlineMath tex={"-2"} /> |
+| 2       | 101    | 101              | <InlineMath tex={"0"} />  |
+| 3       | 100    | 100              | <InlineMath tex={"-1"} /> |
+| 4       | 104    | 104              | <InlineMath tex={"+3"} /> |
+
+Without the baseline, all four weights lie between 99 and 104: their mean is 101 and their spread is about 2. The update is therefore approximately <InlineMath tex={"101 \\times \\overline{g}"} /> — a large step in the direction of the _average_ score function, which carries no information about which rollout was better — plus a small correction that does. With the baseline, the mean weight is zero by construction, and every unit of magnitude in the update is a comparison between rollouts.
+
+The estimator's variance scales with the square of the weights, so the reduction here is on the order of <InlineMath tex={"(101/2)^2 \\approx 2500"} />-fold in the dominant term. That is why no implementation of a policy gradient omits a baseline, and it is the whole reason the next repair exists (<XRef kind="fig" anchor="fig-variance" number="5.3" />).
+
+<Figure id="fig-variance" number="5.3" src="/slides/lecture05/slide_013.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=1170s" timecode="19:30" lecture="5">
+  The signal-to-noise problem a baseline fixes: when returns are large and similar, almost all of the gradient's magnitude is shared and uninformative. Credit: course slides, Lecture 5.
+</Figure>
+
+## Repair three: the advantage function
+
+The baseline of <XRef kind="eq" anchor="eq-baseline" number="5.5" /> is a single number for the whole batch, which is crude: it compares a rollout that began in an easy state against one that began in a hard state. Chapter 4's value functions give the right correction.
+
+Notice first what the reward-to-go actually is. It is a one-sample Monte Carlo estimate of
+
+<BlockMath tex={"Q^\\pi(s_t,a_t) = \\mathbb{E}_\\pi\\Big[\\sum_{t'\\ge t} R(s_{t'},a_{t'}) \\,\\Big\u007C\\, s_t, a_t\\Big],"} />
+
+the action-value function of Chapter 4. And the ideal baseline — the "average" against which an action should be compared — is the value of the state it was taken in, <InlineMath tex={"V^\\pi(s) = \\mathbb{E}_{a\\sim\\pi(\\cdot\\mid s)}[Q^\\pi(s,a)]"} />. Their difference has a name:
+
+<BlockMath tex={"A^\\pi(s,a) = Q^\\pi(s,a) - V^\\pi(s), \\qquad \\nabla_\\theta J(\\theta) = \\mathbb{E}_{\\tau\\sim p_\\theta(\\tau)}\\Big[\\sum_{t=0}^{T-1}\\nabla_\\theta\\log\\pi_\\theta(a_t\\mid s_t)\\; A^\\pi(s_t,a_t)\\Big]"} id="eq-advantage" number="5.6" />
+
+**In words.** Weight each action by how much better it was than what the policy would typically have done in that state.
+
+**The symbols.** <InlineMath tex={"A^\\pi(s,a)"} /> is the **advantage** of action <InlineMath tex={"a"} /> in state <InlineMath tex={"s"} /> under policy <InlineMath tex={"\\pi"} />; positive means better than average, negative means worse.
+
+**Why this shape.** The advantage is the correct comparison because it is state-relative. In a state where everything goes well, an action that returns a large reward is not impressive — the baseline is high too, and the advantage is small. In a difficult state, a modest reward may be an excellent outcome. Subtracting <InlineMath tex={"V^\\pi(s)"} /> accounts for the difficulty of the situation the policy found itself in, which a batch-mean baseline cannot do. The interpretation is a single readable sentence: _how much better is this action than average here?_ Positive, raise its probability; negative, lower it (<XRef kind="fig" anchor="fig-advantage" number="5.4" />).
+
+This is where the two halves of reinforcement learning join. <XRef kind="eq" anchor="eq-advantage" number="5.6" /> needs <InlineMath tex={"V^\\pi"} />, which is exactly the object Chapter 4 spent its length learning. A policy-gradient method that estimates a value function to compute its advantage is an **actor-critic** method, and every algorithm from here on is one.
+
+<Figure id="fig-advantage" number="5.4" src="/slides/lecture05/slide_016.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=1381s" timecode="23:01" lecture="5">
+  The advantage function as the natural baseline: the reward-to-go estimates 
+
+  <InlineMath tex={""} />
+
+  , the value function is the state's average, and their difference is what should weight the gradient. Credit: course slides, Lecture 5.
+</Figure>
+
+## Repair four: reusing data
+
+The estimator is now well-behaved and still unaffordable. <XRef kind="eq" anchor="eq-advantage" number="5.6" /> is an expectation under <InlineMath tex={"p_\\theta"} />, so as soon as you take one gradient step the data is stale and must be thrown away. On a simulator that is merely wasteful. On a robot, where every rollout costs wear on hardware and a human to reset the scene, discarding a batch after one step is not a viable way to work.
+
+The tool that fixes this is **importance sampling**, a general identity for estimating an expectation under one distribution using samples from another:
+
+<BlockMath tex={"\\mathbb{E}_{x\\sim p}\\big[f(x)\\big] = \\mathbb{E}_{x\\sim q}\\Big[\\frac{p(x)}{q(x)}\\,f(x)\\Big]"} id="eq-is" number="5.7" />
+
+**In words.** You can average using the wrong distribution as long as you reweight each sample by how much more likely it was under the right one.
+
+**The symbols.** <InlineMath tex={"p"} /> is the target distribution, <InlineMath tex={"q"} /> the proposal you actually sampled from, and <InlineMath tex={"p(x)/q(x)"} /> the importance weight.
+
+**Why this shape.** The identity is exact — multiply and divide by <InlineMath tex={"q(x)"} /> inside the integral — with one requirement: <InlineMath tex={"q"} /> must have **non-zero support wherever <InlineMath tex={"p"} /> does**, or the ratio blows up and the estimate is worthless. It also works badly when <InlineMath tex={"p"} /> and <InlineMath tex={"q"} /> are far apart, because then a few samples carry enormous weight and the effective sample size collapses. Both facts will drive the next two sections (<XRef kind="fig" anchor="fig-is" number="5.5" />).
+
+<Figure id="fig-is" number="5.5" src="/slides/lecture05/slide_018.jpg" scale="76%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=1539s" timecode="25:39" lecture="5">
+  Importance sampling: an expectation under the target distribution can be estimated from samples of a proposal distribution, reweighted by the ratio of densities. Credit: course slides, Lecture 5.
+</Figure>
+
+Applying <XRef kind="eq" anchor="eq-is" number="5.7" /> at the level of whole trajectories almost works. The ratio <InlineMath tex={"p_{\\theta}(\\tau)/p_{\\theta_{\\text{old}}}(\\tau)"} /> has the initial-state and transition terms in both numerator and denominator — same MDP — so they cancel, leaving a product of policy ratios, one per timestep. And that product is the problem: multiplying <InlineMath tex={"T"} /> numbers each somewhat below 1 gives something exponentially small in <InlineMath tex={"T"} />, so the weights are astronomically unequal and the variance is unusable.
+
+The fix is to take the expectation over **timesteps** rather than trajectories, which lets the joint ratio be decomposed into a ratio over actions — computable, since we know both policies — and a ratio over states, which would require the global dynamics and is unknown. The state ratio is then **approximated by 1**:
+
+<BlockMath tex={"\\nabla_\\theta J(\\theta) \\approx \\frac{1}{N}\\sum_i\\sum_t \\underbrace{\\frac{\\pi_\\theta(a_{i,t}\\mid s_{i,t})}{\\pi_{\\theta_{\\text{old}}}(a_{i,t}\\mid s_{i,t})}}_{\\rho_t(\\theta)}\\; \\nabla_\\theta\\log\\pi_\\theta(a_{i,t}\\mid s_{i,t})\\Big(\\sum_{t'\\ge t} r(s_{i,t'},a_{i,t'}) - b\\Big)"} id="eq-isgradient" number="5.8" />
+
+**In words.** Reweight each recorded step by how much more likely the current policy is to have taken that action than the policy that recorded it, and otherwise proceed as before.
+
+**The symbols.** <InlineMath tex={"\\theta_{\\text{old}}"} /> are the parameters of the policy that collected the data; <InlineMath tex={"\\theta"} /> the parameters being optimized now; <InlineMath tex={"\\rho_t(\\theta)"} /> the per-step **probability ratio**.
+
+**Why this shape.** Dropping the state ratio is an approximation, not an identity, and it is only defensible when the two policies visit similar states — which is true when they are close in parameter space. **So the approximation that lets us reuse data is valid exactly to the extent that we keep the policy from moving far**, and that is not a coincidence to be noted and forgotten. It is the reason the next two algorithms exist: TRPO and PPO are not general-purpose improvements, they are enforcement mechanisms for the assumption <XRef kind="eq" anchor="eq-isgradient" number="5.8" /> just made. With that assumption in place, you can **collect one batch and take many gradient steps on it**, which is the difference between a method that runs on a robot and one that does not.
+
+## Keeping the policies close
+
+Three mechanisms, in historical order.
+
+**Entropy regularization** addresses the support requirement of <XRef kind="eq" anchor="eq-is" number="5.7" /> directly. If the policy collapses to determinism, it assigns zero probability to everything else, and the ratio in <XRef kind="eq" anchor="eq-isgradient" number="5.8" /> becomes degenerate. Add a bonus for being uncertain:
+
+<BlockMath tex={"L(\\theta) = L_{\\text{PG}}(\\theta) + \\alpha\\, H\\big(\\pi_\\theta(\\cdot\\mid s)\\big)"} id="eq-entropy" number="5.9" />
+
+**In words.** Reward the policy slightly for keeping its options open, so it does not become so decisive that it stops exploring.
+
+**The symbols.** <InlineMath tex={"H"} /> is entropy and <InlineMath tex={"\\alpha"} /> is a **temperature** controlling how much the bonus counts. For a discrete policy, <InlineMath tex={"H = -\\sum_a \\pi(a\\mid s)\\log\\pi(a\\mid s)"} />; for a Gaussian policy over a <InlineMath tex={"d"} />-dimensional action, the differential entropy is <InlineMath tex={"H = \\frac{d}{2}(1 + \\log 2\\pi) + \\sum_j \\log\\sigma_j"} />, so maximizing it means keeping the standard deviations from shrinking to zero.
+
+**Why this shape.** The additive form makes the trade-off explicit and tunable: <InlineMath tex={"\\alpha"} /> buys exploration at a known price in return. Note that the Gaussian expression depends on <InlineMath tex={"\\theta"} /> only through the <InlineMath tex={"\\log\\sigma_j"} /> terms, which is why entropy regularization on a Gaussian policy amounts to a penalty on over-confident variances.
+
+<EditorNote>
+  The lecture writes the entropy weight as <InlineMath tex={"\\beta"} /> here and as <InlineMath tex={"\\alpha"} /> in the soft actor-critic section. This book uses <InlineMath tex={"\\alpha"} /> for the entropy temperature throughout, since they play the same role. See the notation table in the back matter.
+</EditorNote>
+
+**TRPO** enforces closeness as a hard constraint. Maximize the importance-weighted surrogate objective, subject to a bound on how far the policy distribution may move:
+
+<BlockMath tex={"\\max_\\theta\\ \\mathbb{E}_{s,a\\sim\\pi_{\\theta_{\\text{old}}}}\\Big[\\rho_t(\\theta)\\,A^{\\pi_{\\theta_{\\text{old}}}}(s,a)\\Big] \\quad\\text{subject to}\\quad \\mathbb{E}_{s\\sim\\pi_{\\theta_{\\text{old}}}}\\Big[D_{\\mathrm{KL}}\\big(\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid s)\\,\\\u007C\\,\\pi_\\theta(\\cdot\\mid s)\\big)\\Big] \\le \\delta_{\\mathrm{KL}}"} id="eq-trpo" number="5.10" />
+
+**In words.** Improve the policy as much as you can without changing its behavior distribution by more than a fixed amount.
+
+**The symbols.** <InlineMath tex={"D_{\\mathrm{KL}}"} /> is the Kullback–Leibler divergence between the old and new action distributions, averaged over states the old policy visited; <InlineMath tex={"\\delta_{\\mathrm{KL}}"} /> is the trust-region size.
+
+**Why this shape.** Constraining a divergence between _distributions_ rather than a distance between _parameters_ is the important choice, because the same change in weights can mean a trivial or a catastrophic change in behavior depending on where you are in parameter space. The payoff is a **monotonic improvement guarantee** — a rare thing in deep reinforcement learning. The cost is that solving a constrained optimization at every step requires second-order information: the **Fisher information matrix**, whose storage is quadratic and whose inversion is cubic in the number of parameters. Conjugate-gradient approximations bring that down but still leave each step roughly twenty times the cost of an ordinary one, which is why TRPO is respected and rarely used. The lecture notes one striking application: TRPO trained quadruped locomotion at ETH that transferred from simulation to a real robot and walked over rough terrain zero-shot.
+
+**PPO** achieves nearly the same effect with a first-order trick: instead of constraining the divergence, clip the ratio so that a step which moves it too far stops helping.
+
+<BlockMath tex={"L^{\\text{CLIP}}(\\theta) = \\mathbb{E}_{s,a\\sim\\pi_{\\theta_{\\text{old}}}}\\Big[\\min\\Big(\\rho_t(\\theta)\\,A(s,a),\\ \\ \\mathrm{clip}\\big(\\rho_t(\\theta),\\, 1-\\epsilon_{\\text{clip}},\\, 1+\\epsilon_{\\text{clip}}\\big)\\,A(s,a)\\Big)\\Big]"} id="eq-ppo" number="5.11" />
+
+**In words.** Take the improvement the ratio suggests, but never more than the improvement a ratio pinned at the edge of the trust region would suggest.
+
+**The symbols.** <InlineMath tex={"\\rho_t(\\theta)"} /> is the probability ratio of <XRef kind="eq" anchor="eq-isgradient" number="5.8" />, <InlineMath tex={"A"} /> the advantage, and <InlineMath tex={"\\epsilon_{\\text{clip}}"} /> the clip range — typically 0.2. The <InlineMath tex={"\\mathrm{clip}"} /> function bounds its first argument to the interval.
+
+**Why this shape.** The minimum of the clipped and unclipped terms is what makes this work, and it is easy to misread. Consider a positive advantage — an action better than average, so we want to increase its probability. As <InlineMath tex={"\\rho_t"} /> grows past <InlineMath tex={"1 + \\epsilon_{\\text{clip}}"} />, the clipped term stops growing, and since it is now the smaller of the two, the minimum selects it: **the objective flattens, the gradient vanishes, and there is no further incentive to increase that action's probability.** For a negative advantage the situation mirrors, with the clip at <InlineMath tex={"1 - \\epsilon_{\\text{clip}}"} />. The result is a soft trust region that costs one comparison, is first-order, works with Adam, and scales linearly. That combination is why PPO became the default, and why it is the backbone of reinforcement learning from human feedback in language models and of the GRPO algorithm Chapter 10 derives from it (<XRef kind="fig" anchor="fig-ppo" number="5.6" />).
+
+### Worked example: what the clip actually does
+
+With <InlineMath tex={"\\epsilon_{\\text{clip}} = 0.2"} />, suppose an action had advantage <InlineMath tex={"A = +2"} /> and the current policy has become 1.5 times as likely to take it as the policy that collected the data, so <InlineMath tex={"\\rho_t = 1.5"} />.
+
+<BlockMath tex={"\\rho_t A = 1.5 \\times 2 = 3.0, \\qquad \\mathrm{clip}(1.5,\\,0.8,\\,1.2)\\,A = 1.2 \\times 2 = 2.4, \\qquad \\min(3.0,\\,2.4) = 2.4."} />
+
+The objective contributes 2.4 rather than 3.0, and — this is the part that matters — its _derivative with respect to <InlineMath tex={"\\theta"} /> is zero_, because the selected branch does not depend on <InlineMath tex={"\\theta"} /> any more. The optimizer has been told: this action is already as much more likely as I am willing to let it become in one batch.
+
+Now the same action with a negative advantage, <InlineMath tex={"A = -2"} />, and a policy that has become _less_ likely to take it, <InlineMath tex={"\\rho_t = 0.5"} />:
+
+<BlockMath tex={"\\rho_t A = 0.5 \\times (-2) = -1.0, \\qquad \\mathrm{clip}(0.5,\\,0.8,\\,1.2)\\,A = 0.8\\times(-2) = -1.6, \\qquad \\min(-1.0,\\,-1.6) = -1.6."} />
+
+Here the minimum selects the _clipped_ branch again, and again the gradient is zero: the policy has already suppressed this action as much as one batch permits. Finally, a ratio inside the range — <InlineMath tex={"\\rho_t = 1.1"} />, <InlineMath tex={"A = +2"} /> — gives <InlineMath tex={"\\min(2.2, 2.2) = 2.2"} /> from either branch, with a normal gradient. The clip is inactive when the policy has not moved much, which is most of the time.
+
+<Figure id="fig-ppo" number="5.6" src="/slides/lecture05/slide_026.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=2480s" timecode="41:20" lecture="5">
+  PPO's clipped surrogate objective. Once the probability ratio leaves the trust region in the direction the advantage favors, the objective flattens and the gradient disappears. Credit: course slides, Lecture 5.
+</Figure>
+
+Assembling the pieces gives the loop that is actually run, and writing it out makes clear what the data reuse of <XRef kind="eq" anchor="eq-isgradient" number="5.8" /> bought:
+
+\begin\{algorithm}\[H]
+\caption\{PPO (the practical loop)}
+\KwIn\{policy <InlineMath tex={"\\pi_\\theta"} />, critic <InlineMath tex={"V_\\phi"} />, clip range <InlineMath tex={"\\epsilon_{\\text{clip}}"} />, epochs <InlineMath tex={"K"} />, minibatch size <InlineMath tex={"m"} />}
+\KwOut\{trained policy <InlineMath tex={"\\pi_\\theta"} />}
+\While\{not converged}\{
+<InlineMath tex={"\\theta_{\\text{old}} \\leftarrow \\theta"} />;
+collect a batch of transitions by running <InlineMath tex={"\\pi_{\\theta_{\\text{old}}}"} />;
+compute advantages <InlineMath tex={"A(s_t,a_t)"} /> from the rewards and the critic <InlineMath tex={"V_\\phi"} />;
+\For\{<InlineMath tex={"K"} /> epochs}\{
+\ForEach\{minibatch of size <InlineMath tex={"m"} /> from the batch}\{
+compute the ratios <InlineMath tex={"\\rho_t(\\theta) = \\pi_\\theta(a_t\\mid s_t)/\\pi_{\\theta_{\\text{old}}}(a_t\\mid s_t)"} />;
+take a gradient step on the three-term objective \eqref\{eq:ppofull};
+}
+}
+}
+\end\{algorithm}
+
+The inner two loops are the point. REINFORCE would take one step and discard the batch; PPO takes <InlineMath tex={"K"} /> epochs of minibatch steps over the same data, and the clip is what keeps those extra steps honest. Note that <InlineMath tex={"\\theta_{\\text{old}}"} /> is frozen at the top of each outer iteration, so the ratios are all measured against the policy that actually collected the data.
+
+The demonstration that this scales to hard physical problems is **OpenAI's 2019 Rubik's cube result**: PPO, trained entirely in simulation with **domain randomization** — randomizing appearance, friction, and physical parameters so that reality looks like one more variation — transferred to a **24-degree-of-freedom Shadow hand** manipulating a real cube. The setup is worth noting for what it separates: a distinct perception network estimated the cube's pose from cameras and fed it to the policy, so PPO was solving control given state rather than control from pixels. Chapter 9 returns to the sim-to-real question from the evaluation side, where the same randomize-and-hope strategy is replaced by matching simulation to reality deliberately.
+
+## Actor-critic in full
+
+<XRef kind="eq" anchor="eq-ppo" number="5.11" /> trains the actor and assumes an advantage. Computing the advantage needs a value function, and the value function has to be learned too. Collecting everything gives the objective actually optimized in practice:
+
+<BlockMath tex={"L^{\\text{PPO}}(\\theta,\\phi) = \\mathbb{E}_{s,a\\sim\\pi_{\\theta_{\\text{old}}}}\\Big[\\underbrace{L^{\\text{CLIP}}(\\theta)}_{\\text{actor}} \\;-\\; \\underbrace{c_1\\big(V_\\phi(s) - V^{\\text{targ}}\\big)^2}_{\\text{critic}} \\;+\\; \\underbrace{c_2\\,H\\big(\\pi_\\theta(\\cdot\\mid s)\\big)}_{\\text{entropy}}\\Big]"} id="eq-ppofull" number="5.12" />
+
+**In words.** Improve the policy where the advantage says to, fit the value function to its targets, and keep a little uncertainty in the policy — all at once.
+
+**The symbols.** <InlineMath tex={"\\phi"} /> are the critic's parameters, <InlineMath tex={"V_\\phi"} /> the learned value function, <InlineMath tex={"V^{\\text{targ}}"} /> its regression target, and <InlineMath tex={"c_1, c_2"} /> scalar weights balancing the three terms. Note the signs: the critic term is subtracted because it is a loss to be minimized inside an objective to be maximized.
+
+**Why this shape.** The three terms are the three jobs, and separating them makes the division of labor legible. The **actor** chooses continuous actions, which is what value-based methods struggled to do. The **critic** supplies a low-variance baseline, which is what plain policy gradients struggled with. Each covers the other's weakness, which is why actor-critic rather than either alone is the shape of nearly every modern algorithm.
+
+The critic is trained with **temporal-difference** updates — the machinery of Chapter 4 — rather than by waiting for full episode returns, and the reason is the same as it was there: bootstrapping gives a usable target after one step instead of after a thousand, buying sample efficiency at the price of a little bias from the bootstrap. One robotics-specific trick the lecture flags is worth remembering: the critic can be trained with **privileged information** — the true object pose, contact forces, anything a simulator knows and a camera does not — because the critic is discarded at deployment. Only the actor runs on the robot, so only the actor is restricted to what the robot can see (<XRef kind="fig" anchor="fig-ppofull" number="5.7" />).
+
+<Figure id="fig-ppofull" number="5.7" src="/slides/lecture05/slide_028.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=2685s" timecode="44:45" lecture="5">
+  The full PPO objective with its three terms labeled: the clipped policy surrogate, the value-function loss, and the entropy bonus. Credit: course slides, Lecture 5.
+</Figure>
+
+## Soft actor-critic
+
+PPO still throws its data away eventually — the importance-sampling approximation only holds while the policies are close, so after a few epochs the batch is spent. **Soft actor-critic** goes fully off-policy: the critic trains from a replay buffer, exactly as DQN did in Chapter 4, which makes it the most sample-efficient algorithm in this chapter and the usual choice for learning on real hardware.
+
+Two ideas define it. The first is that entropy is not a regularizer bolted onto the objective but part of the objective itself — the policy is asked to maximize reward _and_ stay stochastic:
+
+<BlockMath tex={"L^{\\text{actor}}(\\theta) = \\mathbb{E}_{s\\sim\\mathcal{B},\\; a\\sim\\pi_\\theta}\\Big[\\alpha\\, H\\big(\\pi_\\theta(\\cdot\\mid s)\\big) - Q_\\phi(s,a)\\Big]"} id="eq-sacactor" number="5.13" />
+
+<BlockMath tex={"L^{\\text{critic}}(\\phi) = \\mathbb{E}_{\\tau\\sim\\mathcal{B}}\\Big[\\Big(Q_\\phi(s,a) - \\Big(r + \\gamma\\big(Q_{\\bar\\phi}(s',a') + \\alpha H(\\pi_\\theta)(s')\\big)\\Big)\\Big)^2\\Big]"} id="eq-saccritic" number="5.14" />
+
+**In words.** Train the policy to pick actions the critic likes while remaining as undecided as it can afford to be, and train the critic to predict reward plus the discounted value of the next state — including credit for the uncertainty the policy will have there.
+
+**The symbols.** <InlineMath tex={"\\mathcal{B}"} /> is the replay buffer, <InlineMath tex={"\\alpha"} /> the entropy temperature, <InlineMath tex={"Q_\\phi"} /> the critic and <InlineMath tex={"Q_{\\bar\\phi}"} /> its target network with the frozen-copy overbar of Chapter 4. The minus sign on <InlineMath tex={"Q_\\phi"} /> in <XRef kind="eq" anchor="eq-sacactor" number="5.13" /> is because this is written as a loss to minimize.
+
+**Why this shape.** The entropy term inside the critic's _target_ is what makes this "soft" rather than merely regularized: the value being learned is the value of behaving stochastically, so exploration is not a penalty the policy pays but a quantity the value function accounts for. The consequence is that SAC keeps exploring without hand-tuned noise schedules — compare DDPG's Gaussian <InlineMath tex={"\\sigma"} /> in Chapter 4, which had no good setting.
+
+There is a structural point in <XRef kind="eq" anchor="eq-sacactor" number="5.13" /> worth noticing. The states come from the replay buffer, so they were visited by old policies; but the actions are drawn from the _current_ policy, and the critic is asked to evaluate them. Those state-action pairs may never have occurred. **The critic is being used as a learned simulator** — asked what would have happened had the current policy acted in a state it never reached. That is what makes off-policy actor-critic possible, and it is the same idea Chapter 8 scales up when a learned world model, rather than a learned critic, is asked to imagine.
+
+The second idea is mechanical. <XRef kind="eq" anchor="eq-sacactor" number="5.13" /> requires differentiating through <InlineMath tex={"a \\sim \\pi_\\theta"} />, and sampling is not differentiable. The **reparameterization trick** moves the randomness outside the parameters:
+
+<BlockMath tex={"a = f_\\theta(s,\\epsilon) = \\mu_\\theta(s) + \\sigma_\\theta(s)\\odot\\epsilon, \\qquad \\epsilon\\sim\\mathcal{N}(0,\\mathbf{I})"} id="eq-reparam" number="5.15" />
+
+**In words.** Rather than drawing an action from a distribution whose parameters you want gradients for, draw a fixed standard noise sample and transform it with those parameters.
+
+**The symbols.** <InlineMath tex={"\\mu_\\theta(s)"} /> and <InlineMath tex={"\\sigma_\\theta(s)"} /> are the network's outputs, <InlineMath tex={"\\epsilon"} /> is noise from a fixed distribution independent of <InlineMath tex={"\\theta"} />, and <InlineMath tex={"\\odot"} /> is elementwise multiplication.
+
+**Why this shape.** With the randomness in <InlineMath tex={"\\epsilon"} />, the action is a deterministic differentiable function of <InlineMath tex={"\\theta"} /> and gradients flow straight through it to <InlineMath tex={"\\mu_\\theta"} /> and <InlineMath tex={"\\sigma_\\theta"} />. This is the same trick that makes variational autoencoders trainable, and Chapter 6 derives it properly and shows precisely how much variance it saves against the alternative. Its appearance in two unrelated places in the same book is not coincidence: any time a learned distribution must be sampled inside an objective, this is the move (<XRef kind="fig" anchor="fig-sac" number="5.8" />).
+
+<Figure id="fig-sac" number="5.8" src="/slides/lecture05/slide_030.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=2813s" timecode="46:53" lecture="5">
+  Soft actor-critic's actor and critic losses. Entropy appears inside the critic's target, so the value learned is the value of behaving stochastically. Credit: course slides, Lecture 5.
+</Figure>
+
+SAC has been used on real hardware for Lego stacking, quadruped manipulation and dexterous hands, and it is the algorithm to reach for when the constraint is the number of real interactions rather than the amount of compute.
+
+## The chain in one line
+
+Everything in this chapter is one estimator with six repairs, and it is worth being able to recite the sequence:
+
+**REINFORCE** — correct but very noisy → **causality** (weight by reward-to-go, not total return) → **baseline** (compare against the average) → **advantage** (compare against the state's own average, which requires a critic) → **importance sampling** (reuse a batch for many steps, valid only if policies stay close) → **entropy** (keep support so the ratio behaves) → **TRPO** (bound the divergence, monotone but second-order) → **PPO** (clip the ratio, first-order and cheap) → **SAC** (fully off-policy with entropy in the value, most sample-efficient).
+
+Each step fixes the specific defect the previous one left. None of them changes the objective in <XRef kind="eq" anchor="eq-pgobjective" number="5.1" />.
+
+## Where this breaks
+
+**On-policy methods are data-hungry in a way that hardware cannot pay for.** PPO's practical success in simulation rests on millions of environment steps. That is fine for a physics engine at 10,000 steps per second and impossible for an arm at 20 Hz. SAC is much better and is still measured in hours of real interaction. Chapter 8 is, in part, a response to this: if interaction is the bottleneck, learn a model of the world and interact with that.
+
+**The importance-sampling approximation is an approximation, and nobody checks it.** <XRef kind="eq" anchor="eq-isgradient" number="5.8" /> dropped the state ratio on the grounds that the policies are close. TRPO and PPO enforce closeness in the _action_ distribution, which is not the same as closeness in the state distribution, and the gap is where the guarantee actually lives. In practice this shows up as PPO working well until it suddenly does not.
+
+**PPO has no monotonic-improvement guarantee.** TRPO's theorem was the reason to accept its cost; PPO discarded both. What is left is a heuristic that works remarkably well and can collapse, which is why practitioners speak about PPO in terms of hyperparameter recipes rather than properties.
+
+**Entropy is a knob with no principled setting.** In <XRef kind="eq" anchor="eq-entropy" number="5.9" /> and <XRef kind="eq" anchor="eq-sacactor" number="5.13" />, <InlineMath tex={"\\alpha"} /> trades exploration against exploitation, and both extremes fail: too little and the policy commits early to a mediocre behavior, too much and it never commits at all. Automatic temperature tuning exists and is not discussed in the lecture; the honest position is that this is one of several parameters whose values come from experience rather than theory.
+
+**Everything still assumes a reward function.** This chapter inherits Chapter 4's dependence on <InlineMath tex={"r(s,a)"} /> and adds a sharper failure mode: a policy-gradient method with a well-shaped reward will find whatever that reward literally rewards, and with the sample efficiency of SAC it will find it quickly. The Eureka paper in this chapter's reading list is one response — have a language model write the reward function — and Chapter 10's use of binary verifiable outcomes is another.
+
+**The critic can be wrong in a way that the actor cannot detect.** In <XRef kind="eq" anchor="eq-sacactor" number="5.13" /> the actor climbs the critic's landscape, including in regions where the critic has never seen data and is extrapolating. The actor will happily find the critic's mistakes and exploit them. This is the same pathology Chapter 6 identifies for latent-variable models — a decoder asked about a latent it never trained on — and it is the reason offline reinforcement learning, where no new data can correct the critic, is its own research area.
+
+## What this connects to
+
+**Backwards.** This chapter and Chapter 4 attack the same objective, <XRef kind="eq" anchor="eq-pgobjective" number="5.1" />, from opposite directions, and they meet at the advantage function: <XRef kind="eq" anchor="eq-advantage" number="5.6" /> is built from the <InlineMath tex={"Q^\\pi"} /> and <InlineMath tex={"V^\\pi"} /> of Chapter 4, so a policy gradient with a learned baseline is a value method in disguise. The REINFORCE-as-weighted-behavior-cloning reading connects directly to Chapter 3: reinforcement learning is imitation of your own good luck, with the reward deciding which luck to imitate. The replay buffer that makes SAC work is Chapter 4's, and it works for the reason Chapter 4 gave — off-policy learning.
+
+**Forwards.** The reparameterization trick of <XRef kind="eq" anchor="eq-reparam" number="5.15" /> is derived properly in Chapter 6, where it makes variational autoencoders trainable. PPO's clipped objective is the direct ancestor of **GRPO** in Chapter 10: keep the ratio and the clip, delete the critic, and replace the advantage with a group-relative comparison among several sampled answers to the same question — which is exactly this chapter's batch-mean baseline from <XRef kind="eq" anchor="eq-baseline" number="5.5" />, reinvented for language models. Chapter 10 also supplies the strongest illustration of this chapter's opening argument, that expectations are differentiable when rewards are not: reasoning emerges in a language model trained on nothing but a binary correct-or-not signal.
+
+Two threads run to the end of the book. **The critic as a learned simulator**, glimpsed in <XRef kind="eq" anchor="eq-sacactor" number="5.13" />, becomes the world model of Chapter 8, where a policy is trained entirely on imagined rollouts. And **the sample-efficiency argument** is the axis along which Chapter 11 frames the field's central open problem: getting reinforcement learning to work at scale on real robots is, in the lecturer's assessment, one of the highest-impact things anyone could work on, precisely because it is what would let a robot improve past the demonstrations it was given.
+
+## Further reading
+
+- **S. Levine, C. Finn, T. Darrell and P. Abbeel, "End-to-End Training of Deep Visuomotor Policies" (2015).** The paper that established that a single network can go from camera pixels to motor torques on a real robot, trained with a policy-search method closely related to this chapter's. Read it for the guided-policy-search structure — a trajectory optimizer teaching a neural policy — which is a third way to combine the two halves of reinforcement learning, distinct from actor-critic.
+- **Y. Ma, W. Liang, G. Wang et al., "Eureka: Human-Level Reward Design via Coding Large Language Models" (2023).** A direct answer to this chapter's last unresolved dependency. If everything here needs a reward function and writing one is hard, have a language model write it, run the policy, and let the model revise the reward from the result. Read it as the first appearance in this book of a language model in the training loop rather than the policy.
+- **E. Rosete-Beas, O. Mees, G. Kalweit, J. Boedecker and W. Burgard, "Latent Plans for Task-Agnostic Offline Reinforcement Learning" (CoRL 2022).** The offline case, where the data is fixed and the critic cannot be corrected by new experience. It also connects this chapter to Chapter 3's play data: latent plans learned from unstructured interaction, combined with reinforcement learning rather than imitation, which is one of the few concrete attacks on the imitation ceiling that does not require a robot to explore dangerously.

@@ -9,6 +9,7 @@ export const docs = defineDocs({
   docs: {
     schema: pageSchema.extend({
       chapter: z.number().optional(),
+      kind: z.enum(['front', 'chapter', 'back']).optional(),
       lecture: z.number().optional(),
       video: z.string().optional(),
     }),

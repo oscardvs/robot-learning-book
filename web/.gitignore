@@ -24,3 +24,10 @@ yarn-error.log*
 .env*.local
 .vercel
 next-env.d.ts
+.playwright-mcp
+
+# Note: content/docs/book, src/data and public/slides are produced by
+# `npm run sync` but are committed on purpose — that is what lets Vercel build from
+# web/ alone, without the book sources one level up. Re-run sync and commit after
+# the book changes.
+.env*
