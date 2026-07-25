@@ -1,0 +1,133 @@
+{
+  "course": {
+    "code": "263-5911-00L",
+    "title": "Robot Learning: From Fundamentals to Foundation Models",
+    "institution": "ETH Zürich",
+    "term": "Spring 2026",
+    "lecturer": "Oier Mees",
+    "mentor": "Marc Pollefeys",
+    "homepage": "https://cvg.ethz.ch/lectures/Robot-Learning/",
+    "playlist": "https://www.youtube.com/playlist?list=PLPU18BnWYUZJx3_d901-GD6BGpeWwE2vx"
+  },
+  "generatedAt": "2026-07-25",
+  "transcriptWords": 92242,
+  "slideCount": 484,
+  "chaptersWritten": 1,
+  "lectureCount": 11,
+  "lectures": [
+    {
+      "n": 1,
+      "slug": "introduction",
+      "title": "Introduction to Robot Learning",
+      "video": "X0k14u6pSxw",
+      "slideCount": 44,
+      "duration": 3873,
+      "hasTranscript": true,
+      "chapter": {
+        "slug": "introduction",
+        "title": "Introduction: Why Robots Are Hard",
+        "description": "A robot arm tried to pick up a coffee mug."
+      }
+    },
+    {
+      "n": 2,
+      "slug": "control-mdp",
+      "title": "Robot Control & Markov Decision Processes",
+      "video": "5-Bb84eTTqQ",
+      "slideCount": 46,
+      "duration": 2769,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 3,
+      "slug": "imitation",
+      "title": "Imitation Learning",
+      "video": "Ef4R5s1LqoQ",
+      "slideCount": 49,
+      "duration": 3036,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 4,
+      "slug": "rl-i",
+      "title": "Reinforcement Learning I",
+      "video": "90raNpc11tQ",
+      "slideCount": 48,
+      "duration": 3151,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 5,
+      "slug": "rl-ii",
+      "title": "Reinforcement Learning II",
+      "video": "AdTGz8YnnlE",
+      "slideCount": 33,
+      "duration": 3142,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 6,
+      "slug": "generative",
+      "title": "Generative Models",
+      "video": "qd6Ldsuu46I",
+      "slideCount": 37,
+      "duration": 3063,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 7,
+      "slug": "sequence-modeling",
+      "title": "Sequence Modeling & Transformers",
+      "video": "imSTfMJjp7M",
+      "slideCount": 40,
+      "duration": 3311,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 8,
+      "slug": "world-models",
+      "title": "World Models",
+      "video": "cTTmUZlOF2s",
+      "slideCount": 45,
+      "duration": 4306,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 9,
+      "slug": "generalist-policies",
+      "title": "Generalist Robot Policies",
+      "video": "dtofzDY9zuo",
+      "slideCount": 55,
+      "duration": 3807,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 10,
+      "slug": "reasoning",
+      "title": "Embodied Reasoning & Test-time Scaling",
+      "video": "CxhrjQuGEuE",
+      "slideCount": 44,
+      "duration": 3340,
+      "hasTranscript": true,
+      "chapter": null
+    },
+    {
+      "n": 11,
+      "slug": "frontiers",
+      "title": "Frontier & Open Problems",
+      "video": "eL4lcy1KNzE",
+      "slideCount": 43,
+      "duration": 3724,
+      "hasTranscript": true,
+      "chapter": null
+    }
+  ]
+}

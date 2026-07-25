@@ -9,8 +9,8 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phase 2 — slides reconstructed from the recordings (no password).
-Phase 3 (per-lecture notes) starting.**
+**Current status: Phase 3 in progress — per-lecture notes. L1–4 done, L5–11 pending.
+Ch.1 drafted & voice approved (2026-07-25).**
 
 ### The slide-password problem and how it was solved
 The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
@@ -36,7 +36,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 - [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
 - [x] **Phase 2 — Slides.** Reconstructed from recordings (password unavailable —
       see below). **484 slides** across 11 lectures, all extracted + OCR'd + montaged.
-- [~] **Phase 3 — Per-lecture notes.** L1 done (`notes/lecture01.md`). L2–11 pending.
+- [~] **Phase 3 — Per-lecture notes.** L1–4 done. L5–11 pending.
 - [ ] **Phase 4 — Notation pass** (needs all notes; L1 has almost none)
 - [~] **Phase 5 — Chapters.** Drafting **Ch.1 early** from L1 notes to get the voice
       approved before investing in the rest (checkpoint). Notation provisional until Ph4.
@@ -52,7 +52,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 | ✅ | ✅ draft (voice ckpt) |
 | 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ☐ |
 | 3 | Imitation Learning | ✅ 7,842 w | ✅ 49 | ✅ | ☐ |
-| 4 | Reinforcement Learning I | ✅ 7,651 w | 🔒 locked | ☐ | ☐ |
+| 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ☐ |
 | 5 | Reinforcement Learning II | ✅ 7,482 w | 🔒 locked | ☐ | ☐ |
 | 6 | Generative Models | ✅ 7,437 w | 🔒 locked | ☐ | ☐ |
 | 7 | Sequence Modeling & Transformers | ✅ 8,104 w | 🔒 locked | ☐ | ☐ |

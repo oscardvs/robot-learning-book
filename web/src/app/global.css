@@ -1,12 +1,296 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+@import 'katex/dist/katex.min.css';
+
+/* ============================================================================
+   Instrument panel
+   ----------------------------------------------------------------------------
+   The palette is semantic, not decorative. Three accents carry a fixed meaning
+   everywhere they appear — in prose, in figures, in the demos, in the course map:
+
+     amber   demonstration, human data, imitation
+     cyan    the learned policy, the machine's own estimate
+     rose    reward and value
+
+   Nothing else is allowed to be bright. If a colour shows up, it is saying one of
+   those three things.
+   ========================================================================== */
+
+:root {
+  --ground: #f4f6fb;
+  --surface: #ffffff;
+  --raise: #eaeef7;
+  --line: #d6dcea;
+  --line-soft: #e6eaf4;
+  --ink: #0c1322;
+  --ink-dim: #5a6580;
+  --ink-faint: #8b95ac;
+
+  --demo: #b46a00;
+  --policy: #0072a3;
+  --reward: #c8365c;
+
+  --demo-soft: #fff3e2;
+  --policy-soft: #e2f4fc;
+  --reward-soft: #fdeaf0;
+
+  --grid: rgb(12 19 34 / 0.05);
+
+  /* Fumadocs surfaces */
+  --color-fd-background: var(--ground);
+  --color-fd-foreground: var(--ink);
+  --color-fd-muted: var(--raise);
+  --color-fd-muted-foreground: var(--ink-dim);
+  --color-fd-popover: var(--surface);
+  --color-fd-popover-foreground: var(--ink);
+  --color-fd-card: var(--surface);
+  --color-fd-card-foreground: var(--ink);
+  --color-fd-border: var(--line);
+  --color-fd-primary: var(--policy);
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-secondary: var(--raise);
+  --color-fd-secondary-foreground: var(--ink);
+  --color-fd-accent: var(--raise);
+  --color-fd-accent-foreground: var(--ink);
+  --color-fd-ring: var(--policy);
+}
+
+.dark {
+  --ground: #060910;
+  --surface: #0b1120;
+  --raise: #121a2c;
+  --line: #1e2841;
+  --line-soft: #161f33;
+  --ink: #e9eef9;
+  --ink-dim: #8593ae;
+  --ink-faint: #5d6a84;
+
+  --demo: #ffb25e;
+  --policy: #5fdcff;
+  --reward: #ff7093;
+
+  --demo-soft: rgb(255 178 94 / 0.12);
+  --policy-soft: rgb(95 220 255 / 0.12);
+  --reward-soft: rgb(255 112 147 / 0.12);
+
+  --grid: rgb(120 160 220 / 0.06);
+
+  --color-fd-background: var(--ground);
+  --color-fd-foreground: var(--ink);
+  --color-fd-muted: var(--raise);
+  --color-fd-muted-foreground: var(--ink-dim);
+  --color-fd-popover: var(--surface);
+  --color-fd-popover-foreground: var(--ink);
+  --color-fd-card: var(--surface);
+  --color-fd-card-foreground: var(--ink);
+  --color-fd-border: var(--line);
+  --color-fd-primary: var(--policy);
+  --color-fd-primary-foreground: #04121a;
+  --color-fd-secondary: var(--raise);
+  --color-fd-secondary-foreground: var(--ink);
+  --color-fd-accent: var(--raise);
+  --color-fd-accent-foreground: var(--ink);
+  --color-fd-ring: var(--policy);
+}
+
+.dark #nd-sidebar {
+  --color-fd-muted: var(--raise);
+  --color-fd-secondary: var(--raise);
+  --color-fd-muted-foreground: var(--ink-dim);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-raise: var(--raise);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-demo: var(--demo);
+  --color-policy: var(--policy);
+  --color-reward: var(--reward);
+  --color-demo-soft: var(--demo-soft);
+  --color-policy-soft: var(--policy-soft);
+  --color-reward-soft: var(--reward-soft);
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-literata), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ------------------------------------------------------------------ base type */
 
 html {
   scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
 }
 
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: var(--ground);
+  color: var(--ink);
+}
+
+/* Headings are set in Archivo pushed wide — the register of an instrument
+   nameplate rather than a magazine masthead. */
+h1,
+h2,
+h3,
+h4,
+.u-display {
+  font-family: var(--font-display);
+  font-stretch: 112%;
+  letter-spacing: -0.012em;
+}
+
+/* ------------------------------------------------------------- utility classes */
+
+.u-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.u-readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* The hairline field that everything sits on. Two crossed gradients, no image. */
+.u-grid-field {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center center;
+}
+
+/* Corner ticks: the frame marks on a viewfinder. Applied to figure plates. */
+.u-ticks::before,
+.u-ticks::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--policy);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.u-ticks::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.u-ticks::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+/* ------------------------------------------------------------------- the book */
+
+/* Long-form chapters are set in a screen serif: this is a textbook that happens to
+   live on an instrument panel, and 9,000 words need a reading face. */
+#nd-page .prose {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: color-mix(in oklab, var(--ink) 92%, transparent);
+}
+
+#nd-page .prose p {
+  margin-block: 1.1em;
+}
+
+#nd-page .prose h1,
+#nd-page .prose h2,
+#nd-page .prose h3,
+#nd-page .prose h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+#nd-page .prose h2 {
+  font-size: 1.4rem;
+  margin-top: 2.6em;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+#nd-page .prose h3 {
+  font-size: 1.125rem;
+  margin-top: 2em;
+}
+
+#nd-page .prose strong {
+  font-weight: 650;
+  color: var(--ink);
+}
+
+#nd-page .prose a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#nd-page .prose table {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+
+#nd-page .prose code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+/* The opening paragraph of a chapter stands slightly back from the rest. */
+#nd-page .prose > p:first-of-type {
+  font-size: 1.1875rem;
+  line-height: 1.62;
+  color: var(--ink);
+}
+
+/* -------------------------------------------------------------------- maths */
+
+.katex {
+  font-size: 1.04em;
+}
+
+.katex-display {
+  margin: 0;
+  padding-block: 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* --------------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Focus is always visible, and always in the policy colour. */
+:focus-visible {
+  outline: 2px solid var(--policy);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
