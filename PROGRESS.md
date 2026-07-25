@@ -9,8 +9,8 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phase 3 COMPLETE — all 11 per-lecture notes written. Next: Phase 4
-(notation pass), then Phase 5 chapters 2–11. Ch.1 drafted & voice approved (2026-07-25).**
+**Current status: Phases 3 and 4 COMPLETE — all 11 per-lecture notes written and
+`notes/notation.md` settled. Next: Phase 5, chapters 2–11 in the approved Ch.1 voice.**
 
 ### The slide-password problem and how it was solved
 The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
@@ -37,9 +37,12 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 - [x] **Phase 2 — Slides.** Reconstructed from recordings (password unavailable —
       see below). **484 slides** across 11 lectures, all extracted + OCR'd + montaged.
 - [x] **Phase 3 — Per-lecture notes.** All 11 done.
-- [ ] **Phase 4 — Notation pass** (all notes now in; L1 and L11 have almost no math)
-- [~] **Phase 5 — Chapters.** Drafting **Ch.1 early** from L1 notes to get the voice
-      approved before investing in the rest (checkpoint). Notation provisional until Ph4.
+- [x] **Phase 4 — Notation pass.** `notes/notation.md`. Resolved the actor/critic
+      θ↔φ clash (θ = deployed model, φ = critic/encoder; Ch.4's DDPG flips) and the
+      diffusion step index (k = denoising step, λ = flow time), plus ~20 further
+      collisions found across the notes. §7 is the Phase-9 slide-deviation checklist.
+- [~] **Phase 5 — Chapters.** Ch.1 drafted, voice approved 2026-07-25. Chs 2–11 to
+      write from the notes, in that voice, following `notes/notation.md`.
 - [ ] **Phase 6 — Front/back matter**
 - [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
 - [ ] **Phase 8 — PDF build**
