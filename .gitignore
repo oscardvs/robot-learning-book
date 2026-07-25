@@ -6,3 +6,4 @@ build/*.html
 *.out
 video/
 build/*.jpg
+.playwright-mcp/
