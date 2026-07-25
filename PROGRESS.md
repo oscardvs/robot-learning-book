@@ -53,7 +53,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ☐ |
 | 3 | Imitation Learning | ✅ 7,842 w | ✅ 49 | ✅ | ☐ |
 | 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ☐ |
-| 5 | Reinforcement Learning II | ✅ 7,482 w | 🔒 locked | ☐ | ☐ |
+| 5 | Reinforcement Learning II | ✅ 7,482 w | ✅ 33 | ✅ | ☐ |
 | 6 | Generative Models | ✅ 7,437 w | 🔒 locked | ☐ | ☐ |
 | 7 | Sequence Modeling & Transformers | ✅ 8,104 w | 🔒 locked | ☐ | ☐ |
 | 8 | World Models | ✅ 9,791 w | 🔒 locked | ☐ | ☐ |
