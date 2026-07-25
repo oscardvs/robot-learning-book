@@ -9,8 +9,8 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phase 3 in progress — per-lecture notes. L1–10 done. L11 pending.
-Ch.1 drafted & voice approved (2026-07-25).**
+**Current status: Phase 3 COMPLETE — all 11 per-lecture notes written. Next: Phase 4
+(notation pass), then Phase 5 chapters 2–11. Ch.1 drafted & voice approved (2026-07-25).**
 
 ### The slide-password problem and how it was solved
 The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
@@ -36,8 +36,8 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 - [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
 - [x] **Phase 2 — Slides.** Reconstructed from recordings (password unavailable —
       see below). **484 slides** across 11 lectures, all extracted + OCR'd + montaged.
-- [~] **Phase 3 — Per-lecture notes.** L1–10 done. L11 pending.
-- [ ] **Phase 4 — Notation pass** (needs all notes; L1 has almost none)
+- [x] **Phase 3 — Per-lecture notes.** All 11 done.
+- [ ] **Phase 4 — Notation pass** (all notes now in; L1 and L11 have almost no math)
 - [~] **Phase 5 — Chapters.** Drafting **Ch.1 early** from L1 notes to get the voice
       approved before investing in the rest (checkpoint). Notation provisional until Ph4.
 - [ ] **Phase 6 — Front/back matter**
@@ -59,7 +59,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 8 | World Models | ✅ 9,791 w | ✅ 45 | ✅ | ☐ |
 | 9 | Generalist Robot Policies | ✅ 9,107 w | ✅ 55 | ✅ | ☐ |
 | 10 | Embodied Reasoning & Test-time Scaling | ✅ 7,491 w | ✅ 44 | ✅ | ☐ |
-| 11 | Frontier & Open Problems | ✅ 9,700 w | ✅ 43 | ☐ | ☐ |
+| 11 | Frontier & Open Problems | ✅ 9,700 w | ✅ 43 | ✅ | ☐ |
 
 Total cleaned transcript: **91,170 words** across 10 h 25 min of recording.
 
