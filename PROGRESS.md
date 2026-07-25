@@ -50,7 +50,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | # | Lecture | Transcript | Slides | Notes | Chapter |
 |---|---------|-----------|--------|-------|---------|
 | 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 | ✅ | ✅ draft (voice ckpt) |
-| 2 | Robot Control & MDPs | ✅ 7,085 w | 🔒 locked | ☐ | ☐ |
+| 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ☐ |
 | 3 | Imitation Learning | ✅ 7,842 w | 🔒 locked | ☐ | ☐ |
 | 4 | Reinforcement Learning I | ✅ 7,651 w | 🔒 locked | ☐ | ☐ |
 | 5 | Reinforcement Learning II | ✅ 7,482 w | 🔒 locked | ☐ | ☐ |
