@@ -200,7 +200,7 @@ $$\pi(a \mid o) = \sum_i w_i \, \mathcal{N}(\mu_i, \Sigma_i)$$ {#eq:mog}
 
 Chop the action space into bins and turn regression into classification. A classifier over bins can represent any shape of distribution, including several separated peaks, because there is no assumption of unimodality to violate. The catch is dimensionality: binning a 7-dimensional action into 256 bins per dimension jointly gives $256^7$ classes, which is not a classifier, it is a fantasy.
 
-The catch is dimensionality, and it is worth writing the number down. A 7-dimensional action binned into 256 bins per dimension gives
+The catch is dimensionality, and it is worth writing the number down. Take the binning Chapter 7 develops in full — 256 bins per dimension — applied jointly to a 7-dimensional action:
 
 $$256^7 = 2^{56} \approx 7.2 \times 10^{16}$$
 

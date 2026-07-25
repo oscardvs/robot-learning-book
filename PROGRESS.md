@@ -9,8 +9,8 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phases 3 and 4 COMPLETE — all 11 per-lecture notes written and
-`notes/notation.md` settled. Next: Phase 5, chapters 2–11 in the approved Ch.1 voice.**
+**Current status: Phases 0–6, 8 and 9 COMPLETE. `build/robot-learning.pdf` — 274 pages.
+Only Phase 7 (guest lectures) remains, and it needs the user's go-ahead.**
 
 ### The slide-password problem and how it was solved
 The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
@@ -51,7 +51,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 - [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
 - [x] **Phase 8 — PDF build.** `build/robot-learning.pdf` — **272 pages**, zero overfull
       boxes, no LaTeX warnings, all cross-references resolved.
-- [ ] **Phase 9 — Verification**
+- [x] **Phase 9 — Verification.** Results in the report below.
 
 ## Per-lecture progress
 
@@ -112,6 +112,50 @@ hard rules, no cracking was attempted — the password was requested from the us
 Everything downstream (Phases 3–9) depends on this.
 
 ---
+
+## Phase 9 — verification report
+
+Run against `build/robot-learning.pdf`, 274 pages.
+
+| Check | Result |
+|---|---|
+| Banned-word grep over all 16 chapter files | **clean** — zero hits |
+| Section opening by restating its own title | **zero** (checked programmatically) |
+| Overfull hboxes / vboxes | **0 / 0** |
+| Unresolved cross-references | **none** — no `??` in the rendered text |
+| Missing font glyphs | **0** |
+| `[UNCLEAR]` markers preserved into the PDF | **6 of 6** (1 explaining the convention in the preface, 5 content gaps) |
+| Notation consistency | pre-notation-pass forms (`\mu_\phi` actor, `Q(\cdot;\theta)`, `\theta^-`, `A_t^k`, `O_t`, `r_t(\theta')`) appear **only** in the notation appendix's deviation table and in the two editor's notes that quote the lectures' own convention |
+| Equation spot-check against slide-verified notes | 13 of 13 sampled equations present in the verified form |
+| Numeric-claim traceability | every distinctive figure traced to a slide-verified note; no invented numbers found |
+
+**Manuscript:** 81,000 words, 99 figures, 94 numbered equations, 8 `algorithm2e` boxes,
+23 marked editor's notes.
+
+**Unresolved gaps** (all visible in the PDF, all from slides that could not be recovered
+because a video was playing):
+
+1. Lecture 9, 30:55–33:49 — the TRI multi-task-pretraining study. Reported in Ch.9 from the
+   transcript; title and authors not established, so no citation is given.
+2. Lecture 11, 02:29–05:03 — the "robotics is solved" announcements and the three-step
+   rockstar-demo recipe. Transcript only.
+3. Lecture 11, 39:31–41:01 — memory at scale, spoken over a duplicate slide.
+4. Lecture 11, 41:01–41:50 — two navigation systems, named only approximately in the
+   captions; deliberately left uncited in Ch.11 and listed under *Unresolved* in the
+   bibliography.
+5. Lecture 11, 56:54–59:25 — the second half of the PhD backstory. Transcript only.
+
+**Where editor's-note background was added** — 23 boxes, of which the substantive ones are:
+the Bellman contraction sketch (Ch.4); Moravec's wording and the Shakey/SRI attribution
+(Ch.1); the forest-trail paper the lecturer could not recall (Ch.3); the Hwangbo quadruped
+attribution (Ch.5); DQN's 2013-vs-2015 dates (Ch.4); the AlphaGo 120-Elo arithmetic against
+the slide's 100,000x (Ch.10); the spoken −33.7% against the slide's −37.2% (Ch.10); the
+Octo attention-mask caption garble (Ch.9); and eight notation-change footnotes.
+
+**Known shortfall.** The brief asked for 300+ pages and 25–40 pages per chapter; the book is
+274 pages with chapters of 19–24. The chapters cover everything in the `notes/` files and
+hard rule #1 forbids padding — 10 h 25 min of lecture is less material than a 400-page
+textbook. Front and back matter are already 48 pages of the total.
 
 ## Phase 5 notes — chapter build gotchas
 

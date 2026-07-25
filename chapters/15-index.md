@@ -6,359 +6,359 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## A {.unnumbered}
 
-**action chunking**, 39, 119, 120, 136, 138, 169, 175
+**action chunking**, 39, 121, 122, 138, 140, 171, 177
 
-**action expert**, 175, 176
+**action expert**, 177, 178
 
-**action tokenization**, 53, 135, 137, 140, 170
+**action tokenization**, 53, 137, 139, 142, 172
 
-**actor-critic**, 77, 82, 85--87, 94, 97, 100, 101, 103, 105, 123, 149, 150, 158
+**actor-critic**, 79, 84, 87--89, 96, 99, 102, 103, 105, 107, 125, 151, 152, 160
 
-**advantage function**, 86, 93--95, 98--100, 103, 105, 129, 195--198
+**advantage function**, 88, 95--97, 100--102, 105, 107, 131, 197--200
 
-**ALOHA**, 30, 137
+**ALOHA**, 30, 139
 
-**AlphaGo**, 192
+**AlphaGo**, 194
 
-**attention**, 2, 51, 120, 126--130, 132--135, 140, 151, 165, 166, 170, 172, 173, 176, 180, 223
+**attention**, 2, 51, 122, 128--132, 134--137, 142, 153, 167, 168, 172, 174, 175, 178, 182, 225
 
-**autoencoder**, 55, 57, 59, 61, 103, 105, 107--109, 113, 114, 146, 158
+**autoencoder**, 55, 57, 59, 62, 105, 107, 109--111, 115, 116, 148, 160
 
-**autoregressive models**, 52--55, 60--62, 112, 122, 125, 128, 136, 139, 140, 152, 171, 172, 185, 187, 194
+**autoregressive models**, 52--55, 60--62, 114, 124, 127, 130, 138, 141, 142, 154, 173, 174, 187, 189, 196
 
 ## B {.unnumbered}
 
-**baseline (policy gradient)**, 91--95, 101, 103, 105, 196, 197, 202
+**baseline (policy gradient)**, 93--97, 103, 105, 107, 198, 199, 204
 
-**behavior cloning**, 41--43, 45--48, 60, 62, 91, 166
+**behavior cloning**, 41--43, 45--48, 61, 62, 93, 168
 
-**Bellman equation**, 3, 33, 65, 67, 80, 84
+**Bellman equation**, 3, 33, 67, 69, 82, 86
 
-**bitter lesson**, 125, 127, 130, 140, 215, 220, 224
+**bitter lesson**, 127, 129, 132, 142, 217, 222, 226
 
-**bootstrapping**, 65, 101, 187
+**bootstrapping**, 67, 103, 189
 
-**byte-pair encoding**, 129, 130, 132, 138, 139
+**byte-pair encoding**, 131, 132, 134, 140, 141
 
 ## C {.unnumbered}
 
-**CALVIN benchmark**, 59, 60, 222
+**CALVIN benchmark**, 59, 224
 
-**catastrophic forgetting**, 176, 216
+**catastrophic forgetting**, 178, 218
 
 **causal confusion**, 51, 60--62
 
-**causal mask**, 128, 129
+**causal mask**, 130, 131
 
-**chain-of-thought**, 4, 183--187, 189, 190, 194, 195, 197, 200
+**chain-of-thought**, 4, 185--189, 191, 192, 196, 197, 199, 202
 
-**classifier-free guidance**, 118, 119, 123
+**classifier-free guidance**, 120, 121, 125
 
-**CLIP**, 100, 132, 133
+**CLIP**, 102, 134, 135
 
-**codebook**, 111--114, 122, 123
+**codebook**, 113--116, 124, 125
 
-**compounding error**, 39, 43--46, 61, 146--148, 152, 157, 159, 206, 210, 215
+**compounding error**, 39, 43--46, 61, 148--150, 154, 159, 161, 208, 212, 217
 
 **configuration space**, 22--24
 
-**contrastive learning**, 132, 133, 212
+**contrastive learning**, 134, 135, 214
 
-**Cosmos**, 113, 151, 153
+**Cosmos**, 115, 153, 155
 
-**cross-attention**, 120, 128, 129, 133--135
+**cross-attention**, 122, 130, 131, 135--137
 
-**cross-embodiment learning**, 30, 39, 62, 154, 157, 162--164, 169, 179, 186, 209, 216, 217
+**cross-embodiment learning**, 30, 39, 62, 156, 159, 164--166, 171, 181, 188, 211, 218, 219
 
-**cross-entropy method**, 80, 81, 145, 149
+**cross-entropy method**, 82, 83, 147, 151
 
-**CrossFormer**, 4, 168--170, 172, 174, 179
+**CrossFormer**, 4, 170--172, 174, 176, 181
 
-**curse of dimensionality**, 75
+**curse of dimensionality**, 77
 
 ## D {.unnumbered}
 
-**DAgger**, 47--49, 60, 61, 86
+**DAgger**, 47--49, 60, 61, 88
 
-**data flywheel**, 62, 86, 180, 181, 215, 219, 224
+**data flywheel**, 62, 88, 182, 183, 217, 221, 226
 
-**DayDreamer**, 85, 150, 156, 158
+**DayDreamer**, 87, 152, 158, 160
 
-**DDIM**, 117--123
+**DDIM**, 119--125
 
-**DDPG**, 77, 82--84, 102
+**DDPG**, 79, 84--86, 104
 
-**DDPM**, 118, 119, 122
+**DDPM**, 120, 121, 124
 
-**degrees of freedom**, 20, 21, 23, 30, 39, 51, 71
+**degrees of freedom**, 20, 21, 23, 30, 39, 51, 73
 
-**diffusion models**, 3, 30, 53--55, 59--62, 114--124, 140, 152, 153, 161, 165, 166, 170, 180, 220
+**diffusion models**, 3, 30, 53, 54, 56, 59--62, 116--126, 142, 154, 155, 163, 167, 168, 172, 182, 222
 
-**Diffusion Policy**, 119, 120, 123, 124
+**Diffusion Policy**, 121, 122, 125, 126
 
-**discount factor**, 36, 38, 64--69, 71, 73, 77, 88, 102
+**discount factor**, 36, 38, 66--71, 73, 75, 79, 90, 104
 
-**discretization**, 52--55, 60--62, 79, 80, 85--87, 113, 117, 118, 135, 136, 171, 172
+**discretization**, 52--55, 60--63, 81, 82, 87--89, 115, 119, 120, 137, 138, 173, 174
 
-**distribution shift**, 43, 46, 60, 61, 178, 205, 206
+**distribution shift**, 43, 46, 60, 61, 180, 207, 208
 
-**Double DQN**, 78, 79, 83--85
+**Double DQN**, 80, 81, 85--87
 
-**DQN**, 75--79, 82--85, 101, 150
+**DQN**, 77--81, 84--87, 103, 152
 
-**Dreamer**, 149--151, 156, 158, 159
+**Dreamer**, 151--153, 158, 160, 161
 
-**DreamZero**, 152, 156--159
+**DreamZero**, 154, 158--161
 
 ## E {.unnumbered}
 
-**early fusion**, 133, 135, 141, 180
+**early fusion**, 135, 137, 143, 182
 
-**ELBO**, 58, 59, 108, 122, 149
+**ELBO**, 58, 60, 110, 124, 151
 
-**embodiment gap**, 209
+**embodiment gap**, 211
 
-**entropy regularization**, 80, 81, 86, 96, 97, 100--104, 133, 136, 145, 149, 158, 171, 193
+**entropy regularization**, 82, 83, 88, 98, 99, 102--106, 135, 138, 147, 151, 160, 173, 195
 
-**experience replay**, 74, 76, 77, 81, 86, 102, 105
+**experience replay**, 76, 78, 79, 83, 88, 104, 107
 
-**exploration**, 35, 40, 73, 74, 82, 84, 97, 102, 104, 118
+**exploration**, 35, 40, 75, 76, 84, 86, 99, 104, 106, 120
 
 ## F {.unnumbered}
 
-**FAST tokenizer**, 4, 138--141, 176, 177, 180
+**FAST tokenizer**, 4, 140--143, 178, 179, 182
 
-**FiLM**, 120, 169
+**FiLM**, 122, 171
 
-**Flamingo**, 133--135, 176
+**Flamingo**, 135--137, 178
 
-**FlashAttention**, 130, 140
+**FlashAttention**, 132, 142
 
-**flow matching**, 120--124, 150, 152, 158, 159, 176
+**flow matching**, 122--126, 152, 154, 160, 161, 178
 
 **forward kinematics**, 24
 
-**Franka**, 20, 21, 23, 28, 167, 169, 170, 222
+**Franka**, 20, 21, 23, 28, 169, 171, 172, 224
 
-**FuSe**, 29, 166, 215
+**FuSe**, 29, 168, 217
 
 ## G {.unnumbered}
 
-**Gato**, 165, 181
+**Gato**, 167, 183
 
-**generalist robot policy**, 15, 16, 62, 120, 161, 162, 164--168, 170, 172, 174, 176, 178--180, 182, 186, 209, 212, 219
+**generalist robot policy**, 15, 16, 62, 122, 163, 164, 166--170, 172, 174, 176, 178, 180--182, 184, 188, 211, 214, 221
 
-**goal-conditioning**, 56, 57, 62, 166, 180
+**goal-conditioning**, 56, 57, 62, 168, 182
 
-**gripper conventions**, 39, 167
+**gripper conventions**, 39, 169
 
-**GRPO**, 98, 105, 191, 195--199, 201
+**GRPO**, 100, 107, 193, 197--201, 203
 
 ## I {.unnumbered}
 
-**imitation ceiling**, 106, 124, 181, 199, 214, 223
+**imitation ceiling**, 108, 126, 183, 201, 216, 225
 
-**imitation learning**, 10, 14, 15, 37, 41, 42, 44--46, 48, 50--52, 54, 56, 58, 60, 62, 63, 180, 203, 214
+**imitation learning**, 10, 14, 15, 37, 41, 42, 44--46, 48, 50--52, 54, 56, 58--60, 62, 64, 65, 182, 205, 216
 
-**importance sampling**, 94, 96, 103
+**importance sampling**, 96, 98, 105
 
-**in-context learning**, 217
+**in-context learning**, 219
 
-**introspection**, 48, 157, 214, 222, 223
+**introspection**, 48, 159, 216, 224, 225
 
-**inverse dynamics model**, 152
+**inverse dynamics model**, 154
 
 **inverse kinematics**, 24--26
 
 ## J {.unnumbered}
 
-**Jacobian**, 25, 39, 82, 126
+**Jacobian**, 25, 39, 84, 128
 
-**JEPA**, 155--157
+**JEPA**, 157--159
 
 ## K {.unnumbered}
 
-**knowledge insulation**, 216
+**knowledge insulation**, 218
 
 **Kutzbach formula**, 21, 22
 
 ## L {.unnumbered}
 
-**late fusion**, 133, 135
+**late fusion**, 135, 137
 
-**latent-variable models**, 54--57, 60, 61, 105, 109, 111, 115, 122, 123
+**latent-variable models**, 54--57, 60, 61, 107, 111, 113, 117, 124, 125
 
-**LIBERO**, 188, 194, 201, 220
+**LIBERO**, 190, 196, 203, 222
 
-**lifelong learning**, 180, 215, 219
+**lifelong learning**, 182, 217, 221
 
-**LLaVA**, 133, 135, 141, 170, 180
+**LLaVA**, 135, 137, 143, 172, 182
 
-**log-derivative trick**, 88--90
+**log-derivative trick**, 90--92
 
 ## M {.unnumbered}
 
-**Markov decision process**, 15, 33, 34, 38, 95, 144
+**Markov decision process**, 15, 33, 34, 38, 97, 146
 
-**Markov property**, 32, 38, 39, 64, 65, 85
+**Markov property**, 32, 38, 39, 66, 67, 87
 
-**mixture of Gaussians**, 52, 60, 146
+**mixture of Gaussians**, 52, 60, 148
 
-**mobile manipulation**, 38, 216, 223
+**mobile manipulation**, 38, 218, 225
 
 **mode averaging**, 52
 
-**multimodal behavior**, 60, 165
+**multimodal behavior**, 60, 167
 
 ## N {.unnumbered}
 
-**notation, deviations from slides**, 3, 25, 33, 78, 97, 119
+**notation, deviations from slides**, 3, 25, 33, 80, 99, 121
 
 ## O {.unnumbered}
 
-**Octo**, 4, 120, 141, 165--168, 172--174, 179, 181, 185, 207
+**Octo**, 4, 122, 143, 167--170, 174--176, 181, 183, 187, 209
 
-**off-policy learning**, 74--76, 81, 83, 86, 101, 102, 104, 105
+**off-policy learning**, 76--78, 83, 85, 88, 103, 104, 106, 107
 
-**offline reinforcement learning**, 105, 223
+**offline reinforcement learning**, 107, 225
 
-**Open X-Embodiment**, 4, 12, 15, 163, 165, 167, 170, 186
+**Open X-Embodiment**, 4, 12, 15, 165, 167, 169, 172, 188
 
-**OpenVLA**, 135, 139, 171, 173, 185--187
+**OpenVLA**, 137, 141, 173, 175, 187--189
 
-**overestimation bias**, 78, 79, 85
+**overestimation bias**, 80, 81, 87
 
 ## P {.unnumbered}
 
 **PALO**, 2
 
-**PID control**, 28--30, 33, 38, 39, 177
+**PID control**, 28--30, 33, 38, 39, 179
 
-**play data**, 57, 106
+**play data**, 57, 108
 
-**policy gradient**, 40, 82, 86--90, 92--94, 96, 98, 100--102, 104--106
+**policy gradient**, 40, 84, 88--92, 94--96, 98, 100, 102--104, 106--108
 
-**policy iteration**, 70, 71, 75
+**policy iteration**, 72, 73, 77
 
-**positional encoding**, 127, 128, 132, 173
+**positional encoding**, 129, 130, 134, 175
 
-**posterior collapse**, 111, 123
+**posterior collapse**, 113, 125
 
-**PPO**, 96, 98--101, 104, 105, 195, 196, 198, 202
+**PPO**, 98, 100--103, 106, 107, 197, 198, 200, 204
 
-**prior mismatch**, 111, 114, 123
+**prior mismatch**, 113, 116, 125
 
-**privileged information**, 50, 60, 61, 101
+**privileged information**, 50, 60, 62, 103
 
 ## Q {.unnumbered}
 
-**Q-function**, 71, 72, 75, 78, 79
+**Q-function**, 73, 74, 77, 80, 81
 
-**Q-learning**, 62, 72--77, 81, 83--85
+**Q-learning**, 63, 74--79, 83, 85--87
 
-**quantile normalization**, 135, 137, 170
+**quantile normalization**, 137, 139, 172
 
 **quintic time scaling**, 27, 28
 
 ## R {.unnumbered}
 
-**rapid adaptation**, 216, 217, 219, 222
+**rapid adaptation**, 218, 219, 221, 224
 
-**readout token**, 141, 165
+**readout token**, 143, 167
 
-**reasoning dropout**, 189, 190, 202
+**reasoning dropout**, 191, 192, 204
 
-**reasoning pre-training**, 189, 190, 202
+**reasoning pre-training**, 191, 192, 204
 
-**rectified flow**, 121, 123
+**rectified flow**, 123, 125
 
-**recurrent state-space model**, 147, 149--151, 157
+**recurrent state-space model**, 149, 151--153, 159
 
-**redundancy**, 23--25, 51, 139
+**redundancy**, 23--25, 51, 141
 
-**REINFORCE**, 90, 91, 93, 100, 103, 105, 109, 202
+**REINFORCE**, 92, 93, 95, 102, 105, 107, 111, 204
 
-**reparameterization trick**, 102, 105, 109, 110, 121, 123
+**reparameterization trick**, 104, 107, 111, 112, 123, 125
 
-**representation collapse**, 155, 156
+**representation collapse**, 157, 158
 
-**reward, sparse and dense**, 34, 35, 38, 85
+**reward, sparse and dense**, 34, 35, 38, 87
 
-**reward-to-go**, 91, 94, 95, 103
+**reward-to-go**, 93, 96, 97, 105
 
-**RT-2**, 135, 167, 171, 185
+**RT-2**, 137, 169, 173, 187
 
 ## S {.unnumbered}
 
-**SARSA**, 74, 75, 83, 84
+**SARSA**, 76, 77, 85, 86
 
-**scaling laws**, 11, 125, 131, 140
+**scaling laws**, 11, 127, 133, 142
 
-**sequence packing**, 172, 173
+**sequence packing**, 174, 175
 
-**shuffle buffer**, 173, 174, 180
+**shuffle buffer**, 175, 176, 182
 
-**SIMPLER**, 4, 177--180
+**SIMPLER**, 4, 179--182
 
 **SO-101**, 4, 20, 27
 
-**soft actor-critic**, 85--87, 97, 102--105, 123
+**soft actor-critic**, 87--89, 99, 104--107, 125
 
-**spatial discretization**, 80
+**spatial discretization**, 82
 
-**stop gradient**, 112, 134, 176, 177
+**stop gradient**, 114, 136, 178, 179
 
-**straight-through estimator**, 111, 113
+**straight-through estimator**, 113, 115
 
-**system identification**, 177, 178
+**system identification**, 179, 180
 
 ## T {.unnumbered}
 
-**target network**, 77, 78, 85, 102
+**target network**, 79, 80, 87, 104
 
 **task space**, 23, 24
 
-**teacher forcing**, 129, 152, 171
+**teacher forcing**, 131, 154, 173
 
-**temporal ensembling**, 137, 138, 140
+**temporal ensembling**, 139, 140, 142
 
-**temporal-difference target**, 73, 82, 86, 101
+**temporal-difference target**, 75, 84, 88, 103
 
-**test-time compute scaling**, 190--193, 201, 202, 213
+**test-time compute scaling**, 192--195, 203, 204, 215
 
-**thinking tokens**, 189, 194, 213
+**thinking tokens**, 191, 196, 215
 
-**trajectory**, 26--28, 35--39, 42, 43, 47, 51, 57, 59, 62--64, 69, 87--92, 95, 105, 117, 121, 124, 130, 139--141, 144, 147, 162, 163, 165, 166, 168, 170, 174, 184, 185, 190, 214, 215
+**trajectory**, 26--28, 35--39, 42, 43, 47, 51, 57, 59, 60, 62, 65, 66, 71, 89--94, 97, 107, 119, 123, 126, 132, 141--143, 146, 149, 164, 165, 167, 168, 170, 172, 176, 186, 187, 192, 216, 217
 
-**transformer**, 2, 13, 15, 30, 50, 53, 113, 120, 125, 126, 128--130, 132, 134--136, 138, 140--142, 150, 152, 159, 165, 166, 168--170, 180, 181, 188, 194, 210
+**transformer**, 2, 13, 15, 30, 50, 53, 115, 122, 127, 128, 130--132, 134, 136--138, 140, 142--144, 152, 154, 161, 167, 168, 170--172, 182, 183, 190, 196, 212
 
-**TRPO**, 96--98, 103, 104
+**TRPO**, 98--100, 105, 106
 
-**trust region**, 98, 99
+**trust region**, 100, 101
 
 ## V {.unnumbered}
 
-**value function**, 39, 40, 63--72, 74, 76, 78, 80, 82, 84, 86, 93--95, 100--102, 195, 196
+**value function**, 39, 40, 65--74, 76, 78, 80, 82, 84, 86, 88, 95--97, 102--104, 197, 198
 
-**value iteration**, 66, 67, 69, 71--73, 75
+**value iteration**, 68, 69, 71, 73--75, 77
 
-**verifier**, 158, 191, 193, 198--201
+**verifier**, 160, 193, 195, 200--203
 
-**vision transformer**, 132, 150, 165
+**vision transformer**, 134, 152, 167
 
-**vision-language-action model**, 53, 121, 153, 158, 167, 171, 172, 177, 179, 181, 185, 187, 189, 202, 210, 216
+**vision-language-action model**, 53, 123, 155, 160, 169, 173, 174, 179, 181, 183, 187, 189, 191, 204, 212, 218
 
-**visual matching**, 177, 178
+**visual matching**, 179, 180
 
-**vocabulary override**, 13, 129, 130, 136, 137, 139, 171, 218
+**vocabulary override**, 13, 131, 132, 138, 139, 141, 173, 220
 
-**VQ-VAE**, 111--114, 122--124, 138
+**VQ-VAE**, 113--116, 124--126, 140
 
 ## W {.unnumbered}
 
-**whole-body control**, 217
+**whole-body control**, 219
 
-**workspace**, 22, 23, 169
+**workspace**, 22, 23, 171
 
-**world model**, 15, 39, 62, 81, 82, 86, 102, 105, 124, 140, 143--148, 150--154, 156--160, 171, 191, 224
+**world model**, 15, 39, 62, 83, 84, 88, 104, 107, 126, 142, 145--150, 152--156, 158--162, 173, 193, 226
 

@@ -42,7 +42,7 @@ This matters for how much you trust individual sentences, so it is stated in ful
 
 Instead, the decks were rebuilt from the 1080p recordings, which are full-screen slide captures. A frame-differencing script recovered **484 slides** across the eleven lectures, each at the last stable state before the lecturer advanced — which has the useful side effect of capturing animated and progressively-built slides in their final, complete form. The reconstruction was verified as legible, and every equation in this book was transcribed by reading the slide **images**, not by trusting an optical-character-recognition layer, which garbles mathematics reliably. Equations that carried real weight were additionally checked on magnified crops.
 
-The one cost of this method is that **slides shown while a video was playing could not always be recovered**, because the frame never stabilized. There are four such gaps, all in the last three lectures, and each is marked in the text where it occurs:
+The one cost of this method is that **slides shown while a video was playing could not always be recovered**, because the frame never stabilized. There are five such gaps — one in Lecture 9 and four in Lecture 11, the two lectures that lean most heavily on video — and each is marked in the text where it occurs:
 
 > [UNCLEAR: a gap of this kind, with the lecture, the timestamps, and what could not be recovered.]
 
