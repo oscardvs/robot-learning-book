@@ -1,0 +1,1149 @@
+# Lecture 9 — slide OCR (secondary source; verify math visually)
+# 55 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 10: Generalist Robot Policies
+
+Oier Mees ETHziirich §” Microsoft
+
+27.04.2026
+
+eFSABMOO
+
+===== slide 002  [03:01] =====
+Foundation Models in NLP
+
+Large
+Dataset
+
+Code completion
+Foundation Model x Question Answering
+
+Translation
+
+eFSABMOO
+
+===== slide 003  [03:45] =====
+Foundation Models > Specialist Models
+
+Translation: Seq2Seq, GNMT...
+Images Language
+
+fae ————————> Transformer
+| ; ON ean]
+1. Input 2. Extract region 3. Compute 4. Classify
+image proposals (~2k) CNN features regions
+Object Detection: R-CNN, Fast-RCNN...
+Vision-Language Models: VILBERT,
+
+Flamingo, BLIP, GPT-4V...
+
+efsSiBmed
+
+===== slide 004  [09:19] =====
+Key Idea: Leverage Existing Robot Datasets
+
+Aggregate existing data into common format
+
+Bridge V2
+DO
+RoboNet
+
+O
+
+esSiBmed
+
+===== slide 005  [09:40] =====
+Large Robot Data: Open X-Embodiment
+
+Universit UNIVERSITY
+ap ce S Stanford f
+Ean vu Bi invert cotese ie, KAIST @ Stanfor © Berkeley G) universtattreiburg pa EXA
+lia |Queenstand cee ra eae:
+max pravon msrrure (©) fees", GH) F#AIAF © ucSandiegs HPSCUMe, CP Monine
+
+BSu fe» Carnegie dig COLUMBIA og ETHziiri
+zurich
+
+af . © Mellon af
+
+University
+
+@ 1M+ Real Robot Episodes
+fs 22 Robot Embodiments
+
+i’ 34 Research Labs
+FE) 300+ Scenes
+
+Open X-Embodiment: Robotic Learning Datasets and RT-X Models
+Open X-Embodiment Collaboration, ..., Mees et al., ICRA, 2024. Best Conference Paper Award (out of 1765 papers)
+
+eSB OO
+
+===== slide 006  [10:12] =====
+Sparks of a Generalist Robot Policy
+
+Py
+AIS fy Multi-robot &
+iitgest Multi-dataset Original Method
+
+t MVP BC-RNN
+© Resnet + MLP
+VINN
+TACORL, HULC2
+ORT-1
+=RT-1-X
+
+TOY
+
+Kitchen Manipulation Cable Routing NYU Door Opening Autolab UR5 Task-Agnostic Play Mean
+
+Open X-Embodiment: Robotic Learning Datasets and RT-X Models
+Open X-Embodiment Collaboration, ..., Mees et al., ICRA, 2024. Best Conference Paper Award (out of 1765 papers)
+
+(cy aeemcch ke)
+
+===== slide 007  [10:20] =====
+Sparks of a Generalist Robot Policy
+
+My PhD robot setup
+
+>? cILVR q (AUTOLAD) <; AiS ~: Multi-robot &
+
+treatigent Multi-dataset Original Method
+MVP BC-RNN
+Resnet + MLP
+VINN
+TACORL, HULC2
+
+ORT-1
+=RT-1-X
+
+IN
+
+Kitchen Manipulation Cable Routing NYU Door Opening Autolab URS Task-Agnostic Play Mean
+
+Open X-Embodiment: Robotic Learning Datasets and RT-X Models
+Open X-Embodiment Collaboration, ..., Mees et al., ICRA, 2024. Best Conference Paper Award (out of 1765 papers)
+
+eFSARBHMOO
+
+===== slide 008  [11:44] =====
+eFSABHMOO
+
+New Task Specification
+
++ re +
+Generalist Robot Policy
+y
+
+End-Effector Control
+
+Person Camera
+
+===== slide 009  [11:57] =====
+New Action Space
+
+Generalist Robot Policy C
+
+Joint Control
+
+Proprio
+
+eFSABMOO
+
+===== slide 010  [12:13] =====
+New Action Space
+
+Robot Data is Heterogeneous
+= Diverse Sensors
+
+= Diverse Actuators
+
+Diverse Control Frequencies
+
+Proprio
+
+eFSABHMOO
+
+===== slide 011  [12:16] =====
+eFSABMOO
+
+“Pick up the
+spoon”
+
+ACTION:
+[Ax, A@, AGrip] =...
+
+14
+
+===== slide 012  [13:22] =====
+“The picture
+Vision-Language shows
+
+the Statue of
+Model Liberty in NY”
+
+“Caption the
+scene”
+
+16
+O@eSARBMOO
+
+===== slide 013  [13:55] =====
+Key: Robotics as Multimodal Sequence Modeling
+
+(<yaeemcch ke)
+
+Language Image Action
+Oogew Womae, fom )
+
+ACTION:
+[Ax, 46, AGrip] =...
+
+“Pick up the
+
+spoon”
+
+===== slide 014  [15:10] =====
+& Octo Architecture
+
+Task Tokens
+Put, the knife, on the, plate
++ + + +
+
+A aeaiene
+QAOSOD
+p'—O—-O—_©
+
+COoee@eT
+
+@-+|
+
+Observation Tokens
+
+Octo: An Open-Source Generalist Policy
+
+C/SABMOO Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees* et al., RSS, 2024.
+
+===== slide 015  [15:43] =====
+& Octo Architecture
+
+Task Tokens
+
+Put, the knife, on the, plate
+
++ + + +
+
+Language Encoder
+
++ 4
+22>
+
+P
+oe
+
+:
+--
+
+(-6
+¢-
+
+Tr
+
+Observation Tokens
+
+om,
+
+a
+
++
+
+\ouw/
+
+Seog
+Pp o—®
+ocw
+
+©
+;
+
+@ 7,
+
+Octo: An Open-Source Generalist Policy
+C/ABmMOO Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees* et al., RSS, 2024.
+
+===== slide 016  [15:45] =====
+& Octo Architecture
+
+Task Tokens
+Put, the knife, on the, plate
++ + + +
+
++4 t
+CI)
+P & eS
+CO@e@T
+
+o-()+|
+
+Task Observation
+
+Observation Tokens
+
+R Octo Transformer
+
+Octo: An Open-Source Generalist Policy
+
+Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees* et al., RSS, 2024. 20
+
+(<yaeemcch km)
+
+===== slide 017  [16:53] =====
+R Octo Architecture |
+goal image, language
+
+Task Tokens {
+Put, the knife, on the, plate
++ + + +
+
+19 (az| 8, 8g)
+SESS
+
+CO@e@T
+
+on
+—
+B
+
+x
+
+Observation Readout
+
+Goal state conditioned BC
+
+Observation Tokens
+
+Action Head |+a
+
+Octo: An Open-Source Generalist Policy
+C/ABmMOO Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees” et al., RSS, 2024. 21
+
+===== slide 018  [17:28] =====
+& Octo Architecture
+
+Task Tokens
+Put, the knife, on the, plate
++ + + +
+
+PA BE TRE
+QOSOQ
+p'—O—-O—_©
+
+COoee@eT
+
+@+
+
+Observation Tokens
+
+(<yaeemcch k---m->)
+
+Task Observation Readout
+
+R Octo Transformer
+
+y
+
+Diffusion Action Head | >a
+
+Octo: An Open-Source Generalist Policy
+Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees* et al., RSS, 2024.
+
+22
+
+===== slide 019  [17:59] =====
+R Octo Design Decisions
+
+# Train everything from scratch, most params in Transformer
+" Align gripper action across OXE datasets
+
+Gripper action conventions in OXE
+Typical motion (open > closed to grasp > open to release), four dataset conventions
+
+Absolute, +1 open / 0 closed Absolute, 0 open / 1 closed (inverted)
+Taco, Austin Sailor, Austin Sirius, NYU Franka Play Roboturk, Viola, Stanford Hydra, BC-Z
+
+1 1
+
+0 ol Pe 0 —s ne
+Relative deltas, +1 opening / —1 closing Continuous with transition ramps
+RT-1, Kuka, Jaco Play, Berkeley AutoLab URS Bridge — intermediate values during opening/closing
+
++1 + 1
+0) ae aes eee
+-1 1 0
+orange points: analog values during transitions
+
+Octo aligns all four to a single convention
+
+Target: absolute, +1 open /0 closed
+
+| a
+
+(cy aeemcch i---m->) 23
+
+===== slide 020  [20:45] =====
+The Eureka Moment
+
+eFSABMOO
+
+25
+
+===== slide 021  [21:06] =====
+The Eureka Moment
+
+===== slide 022  [22:16] =====
+How To Adapt To New Obs/Action Spaces?
+
+===== slide 023  [23:12] =====
+R Octo Finetuning
+
+Adaptable pre-trained representation for finetuning
+
+Task Observation Readout Observation Readout Observation
+
+Task Tokens
+
+‘Put, the knife, on the, plate
+
+COe@e@T, Soe |—>)
+
+Observation Tokens { Pre-Training L (Retion Head} 2 L (Retion Head}~2
+
+| Finetuning
+
+Octo: An Open-Source Generalist Policy
+Octo Model Team, Ghosh*, Walke*, Pertsch*, Black*, Mees* et al., RSS, 2024. 27
+
+===== slide 024  [24:54] =====
+Adoption of Octo
+
+= Key: RFMs learn better representations for transfer
+= Researchers finetune to their robot with 50 demos
+
+Source: Peter Mitrano via Twitter Source: Tokyo Robotics
+
+===== slide 025  [25:11] =====
+Cross-Embodiment Learning
+
+" How “generalist” is a single arm manipulation policy?
+
+Can we learn from more robot embodiments?
+
+« Transfer knowledge across embodiments
+
+Quadrupeds
+»
+
+C single arms | dice
+
+ce Robot Generalist Robot Policy , ;
+ataset
+
+ood
+
+v,
+Quadcopters
+
+29
+
+===== slide 026  [26:59] =====
+One Policy for Manipulation, Navigation,
+Locomotion & Aviation
+
+a
+
+@ 900k Robot Trajectories |.
+@ Navigation
+
+> Locomotion
+
+& Manipulation
+
+6&3 Bimanua
+
+wo
+
+Scaling Cross-Embodied Learning: One Policy for Manipulation, Navigation, Locomotion and Aviation
+Doshi*, Walke*, Mees, Dasari and Levine. CoRL 2024. Oral, top %4 of 670 papers. 30
+
+===== slide 027  [27:27] =====
+One Policy for Manipulation, Navigation,
+Locomotion & Aviation
+
+™” BOC $8?) Quadrupeds
+
+= u
+
+- 900k Robot Trajectories ; Cross-Embodied 545 coo } Single Arms
+@ Navigation ;
+} Locomotion Transformer .. —
+& Manipulation Flexible Observation Spaces 1 ju Navigation
+
+£34 Bimanual Flexible Action Spacesce[2,..,1400] _
+' © Control Freq.c[5Hz,...,50Hz] ¢ % ooo a? Bimanual Arms
+
+age *8.° “BB quadcopters
+
+Scaling Cross-Embodied Learning: One Policy for Manipulation, Navigation, Locomotion and Aviation
+Doshi*, Walke*, Mees, Dasari and Levine. CoRL 2024. Oral, top %4 of 670 papers. 30
+
+===== slide 028  [28:00] =====
+CrossFormer Model
+
+= No action space alignment required
+=» Can consume data from any robot embodiment
+=» Maximize parameter sharing across embodiments
+
+Observation Image Tokenization Observation Tokens
+
+Workspace Image Navigation|mage  WristImage Quadruped Proprio Bimanual Proprio Readout Tokens
+Current Image Goal ‘|
+
+Sweep the objects
+into the fa jlustpan
+[ Language Encoder | Encoder i |
+FiLM Conditioning t
+Lae LIN Arm pe Bimanual
+oo [=] in Head Action [cea pe Head Action Head
+z 7 7 = Er
+8 O—_®) j 5 P
+© Coe. FF) oe dt eco mo U ¢% coe EP
+31
+
+===== slide 029  [30:35] =====
+Quantitative Results
+
+Key: matches and outperforms specialist policies
+
+1
+
+0.75
+0.5
+ti
+
+Average WidowX Franka ALOHA LoCoBot Go1 TELLO
+
+©) Best Prior Method ') Single-Robot Dataset {© CrossFormer
+33
+
+===== slide 030  [33:49] =====
+Everything so far trains on robot data from scratch
+
+Do internet-scale priors like VLMs transfer to control?
+
+35
+
+===== slide 031  [34:40] =====
+Recap Llava
+
+=» Prepends image tokens to the text sequence, LLM
+processes everything in single unified self-attention pass
+
+unified token sequence into LLM
+
+pooRsooos
+
+CLIP MLP image tokens (196) text tokens
+be oe Recesae image tokens prepended to text tokens
+always Trozen
+image input patch embeddings trainable
+
+LLM (LLaMA)
+self-attention over all tokens jointly
+
+generation
+
+text prompt
+"describe this"
+
+| text output
+"a cat sitting on a mat"
+
+Visual Instruction Tuning
+Liu et al. (2023) 36
+
+===== slide 032  [35:21] =====
+LLaVA treats images as another token sequence the LLM can
+attend to
+
+Can we treat robot actions the same way?
+
+37
+
+===== slide 033  [35:36] =====
+Pretrained VLM
+
+Image | Text
+RGB pixels Instruction
+
+i |
+
+Vision | Tokenizer
+ViT / CLIP Subword IDs
+
+ee
+
+LLM transformer
+Autoregressive decoder
+
+l
+
+Language tokens
+Vocab of ~32k IDs
+
+Output: natural language answer
+e.g. "The cat is on the mat."
+
+Fine-tune
+>
+
+on robot data
+
+VLM — Vision-Language-Action Model (VLA)
+
+Fine-tuned into VLA
+
+Image Text
+Robot camera Task command
+
+l l
+
+Vision | Tokenizer
+Same encoder Same vocab
+
+Ne
+
+LLM transformer
+Same weights, fine-tuned
+
+ss
+
+Action tokens
+256 reused vocab IDs
+
+"1 128 91 2415 101127"
+de-tokenize > [Ax, Ay, Az, A9, grip]
+
+38
+
+===== slide 034  [36:21] =====
+Pretrained VLM
+
+Image | Text
+RGB pixels Instruction
+
+l |
+
+Vision | Tokenizer
+ViT / CLIP Subword IDs
+
+Ne
+
+LLM transformer
+Autoregressive decoder
+
+I
+
+Language tokens
+Vocab of ~32k IDs
+
+Output: natural language answer
+e.g. "The cat is on the mat."
+
+Fine-tune
+>
+
+on robot data
+
+VLM — Vision-Language-Action Model (VLA)
+
+Fine-tuned into VLA
+
+Image Text
+Robot camera Task command
+
+l l
+
+Vision Tokenizer
+Same encoder Same vocab
+
+Na
+
+LLM transformer
+Same weights, fine-tuned
+
+———_t
+
+Action tokens
+256 reused vocab IDs
+
+"1 128 91 2415 101127"
+de-tokenize > [Ax, Ay, Az, A9, grip]
+
+38
+
+===== slide 035  [36:44] =====
+Tips & Tricks: Convergence
+
+" How dol know my VLA training has converged?
+
+Action token accuracy L1 action error L2 action error
+
+0.8
+
+0.54
+
+0.44 0.6 4
+
+0.34
+0.4
+
+0.2
+0.2
+
+0.14
+
+0.0 0.0
+
+0 25k 50k 75k 100k 0 25k 50k 75k 100k 0 25k 50k 75k 100k
+Training step Training step Training step
+Did we pick the exact action bin? How far off are the predicted continuous actions
+
+(after detokenization) from ground-truth actions?
+40
+
+===== slide 036  [40:32] =====
+Tips & Tricks: Batching Heterogeneous Datasets
+
+= Datasets in OXE have different observation spaces
+=" Sequence Packing:
+« Maximize GPU Throughput
+« Impl Complexity: reset positional encodings, block-diagonal att.
+somole 1a) (END (Rese)
+
+—>
+
+Packed view (one sequence)
+
+(owt ws na Bw | wt noc
+i] | I |
+
+sl s2 s3 s4
+cu_seqlens = [0, 8, 16, 32, 48] < prefix sums of sample lengths
+
+42
+
+===== slide 037  [41:53] =====
+Tips & Tricks: Batching Heterogeneous Datasets
+
+1. Attention must be block-diagonal
+
+Tokens in sample i can only attend to other tokens in sample i.
+Without this mask, sample 1 would attend to sample 3's images.
+
+queries | keys >
+
+sl fH) Attention allowed
+
+Masked out
+s2
+
+S3
+S4
+
+2. Positional encodings reset at each boundary
+
+Token 0 of every sample gets position 0 — not its absolute offset in the packed sequence.
+Otherwise sample 4 would see "position 24+" as out-of-distribution input.
+
+© -B-Be22-Be2e) positions reset per sample 43
+
+===== slide 038  [42:29] =====
+Tips & Tricks: Dataloading
+
+Sequential reads + shuffle buffer True random reads
+Octo, OpenVLA index-based samplers
+flat index [0 ... N)
+
+shard 1 @ | | | |] | |] >
+shard 2 | i a “ ;
+shard 3 stream random seeks batch
+
+batch
+_-Shuffle buffer
+
+too small > correlated batches
+
+True random reads
+/O pattern sequential reads random seeks seek-bound
+throughput very high lower bottleneck at scale
+randomness approximate exact no buffer bias
+memory large buffer in RAM index only lightweight
+
+obs. history free — adjacent extra seeks cost x window size
+
+Wn
+oO
+2
+[=
+©
+3
+=A
+fo:
++
+lox
+=
+fo)
+al
+
+@ advantage QO disadvantage
+
+44
+
+===== slide 039  [45:53] =====
+Tips & Tricks: Dataloading
+
+Sequential reads + shuffle buffer True random reads
+Octo, OpenVLA index-based samplers
+flat index [0 ... N)
+
+shard 1 i] | ia | ia | | >
+shard 2 | i ms “ :
+shard 3 stream random seeks batch
+
+batch
+_-shuffle buffer
+
+[ too small > correlated batches |
+
+True random reads
+
+1/O pattern sequential reads random seeks seek-bound
+
+throughput very high lower bottleneck at scale
+randomness approximate exact no buffer bias
+memory large buffer in RAM index only lightweight
+
+obs. history free — adjacent extra seeks cost x window size
+
+eR)
+oO
+2
+[=
+oO
+3
+fa4
+2
++
+lox
+=
+oO
+al
+
+O advantage O disadvantage
+
+44
+
+===== slide 040  [49:49] =====
+How does the VLA know which embodiment to produce
+actions for at test time?
+
+46
+
+===== slide 041  [49:56] =====
+Cross-Embodiment Heads
+
+CrossFormer-style Tl -Sstyle
+User specifies head in Model infers embodiment
+prompt from obs, proprio & task
+
+Observations | Observations |
+images + language + proprio images + language + proprio
+
+Shared transformer backbone | | Shared transformer backbone |
+Single-arm Bimanual Quadruped Drone Action expert
+head head head head padded action space
+
+| | 1 | i"
+Oe en
+Bimanual §QG00800000000
+Quadruped §§GGG0000008
+Drone $808
+
+47
+
+===== slide 042  [51:38] =====
+Current VLA Recipe
+
+= Next token prediction for VLM: FAST robot actions + Web
+# Single action expert: flow matching + stop gradient to VLM
+
+continuous actions
+
+limages (cameras + web) | Language | | Robot actions (FAST) | (-1.7)(2.25)[3.24)(2.42]
+
+stop gradient
+Bese OOOCOLUWLLW WOU sation expert
+OoaHd flow matching loss
+
+VLM backbone
+
+@image tokens (language tokens (NTP loss) ()FAST action tokens (NTP loss) (continuous actions
+X stop gradient — action expert cannot update backbone
+1,5 : a Vision-Language-Action Model with Knowledge Insulating Vision-Language-Action
+
+Open-World Generalization Model Models: Train Fast, Run Fast, Generalize Better
+Physical Intelligence (2025) Driess et al., Physical Intelligence (2025) 48
+
+===== slide 043  [54:15] =====
+Ingredients for Generalist Robot Policies
+
+Large Datasets Large Models Svsalable Evaluation
+
+Leverage Existing Robot Cross-embodied Policies
+Data
+
+Robot Evals are
+edious & Expensive
+
+Difficult to reproduce
+
+49
+
+===== slide 044  [54:22] =====
+Evaluating Policies is Expensive
+
+... people bump into cameras,
+
+50
+
+===== slide 045  [56:58] =====
+Evaluating Policies is Expensive
+
+» Sim evals democratize research
+
+... people bump into cameras, grippers get stuck, and real eval is slow and tedious.
+
+50
+
+===== slide 046  [57:23] =====
+Evaluating Real-World Policies in Simulation
+
+= Sim evals are more reproducable
+
+... and make them SIMPLER its
+
+Google Robot
+
+Evaluating Real-World Robot Manipulation Policies in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meesf et al., CoRL, 2024. 51
+
+===== slide 047  [57:36] =====
+Evaluating Real-World Policies in Simulation
+
+» Sim evals are more reproducable
+
+®
+
+Stale
+
+S(t Sele
+pr
+
+ £
+71
+“abe abby a
+" 7
+™ e
+
+A
+oe
+
+4
+=_
+m
+ca —
+
+|
+
+aN on
+
+roducible eval at scale.
+
+7
+
+i : | ;
+MN
+
+Evaluating Real-World Robot Manipulation Policies | in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meest et al., CoRL, 2024.
+
+===== slide 048  [58:16] =====
+Evaluating Real-World Policies in Simulation
+
+OK, but how meaningful are SIMPLER results?
+
+@ RT1 & RT-1-X BM RT-2-X = Octo
+
+How correlated are real and SIMPLER
+performance measures?
+
+Very!
+
+SIMPLER is a reliable proxy for real
+robot evaluation.
+
+SIMPLER success rate
+
+Real success rate
+
+Evaluating Real-World Robot Manipulation Policies in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meest et al., CoRL, 2024. 52
+
+===== slide 049  [58:43] =====
+Evaluating Real-World Policies in Simulation
+
+OK, but how meaningful are SIMPLER results?
+
+SIMPLER can accurately characterize an RT-1
+policy's robustness to various distribution shifts.
+
+A Real success rate A SIMPLER success rate
+—0.38 —0.39
+
+Camera pose
+
+—0.19 BK] Table texture
+Background
+
+Distractors
+
+KY Lighting
+
+Evaluating Real-World Robot Manipulation Policies in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meest et al., CoRL, 2024. 53
+
+===== slide 050  [59:02] =====
+Evaluating Real-World Policies in Simulation
+
+So, what matters for good simulated evaluation?
+1. Accurate control dynamics via system identification (SysID)
+
+Same open-loop action sequence:
+
+Real Sim w/o SysID Sim after SysID (ours)
+
+Evaluating Real-World Robot Manipulation Policies in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meesf et al., CoRL, 2024. 53
+
+===== slide 051  [59:44] =====
+Evaluating Real-World Policies in Simulation
+
+So, what matters for good simulated evaluation?
+2. Mitigating visual distribution shifts via "Visual Matching"
+
+Real Sim
++ Green Screen
++ Texture Matching
+
+Evaluating Real-World Robot Manipulation Policies in Simulation Policy
+Li*, Hsu*, Gu*, Pertscht, Meest et al., CoRL, 2024. 54
+
+===== slide 052  [61:39] =====
+Follow Up Works on Real-to-Sim Evals
+
+‘alomati Policy Evaluation
+
+@=- -
+
+PolaRiS 3, Evaluation Environments with
+Strong Real-to-Sim Correlation
+
+1. Tools for Scalable Real-to-Sim
+
+Environment Generation ‘Simulation Evaluation for Generalist Policies
+
+2. Simulation Dataset for Bridging H
+Real-to-Sim Gap é oo
+; g & oA
+Stor ideo of of 5} & 9,00 ate ROBOTARENA
+real scene ate RyTAST
+& °%
+i se OO
+
+Builder
+les Sim Data
+, _ | erskgo 4. Hub for Environment Sharing
+‘Simulated Evaluation
+
+oun aay @Q ownanPoiaris-Hub
+
+PolaRiS Scene
+
+Environment
+
+PolaRiS: Scalable Real-to-Sim Evaluations for RobotArena : Scalable Robot Benchmarking via Real-to-Sim
+
+Generalist Robot Policies Translation
+Jain et al., 2025. Jangir et al., 2025.
+
+RoboLab Benchmarking Framework
+Policy Scene Generation & ss Generation & Environment Generation
+
+| 69S +> + aa, —— +H RM
+
+OES
+
+Sum =
+
+RoboLab: A High-Fidelity Simulation Benchmark
+for Analysis of Task Generalist Policies 55
+Yang et al., 2026.
+
+===== slide 053  [62:29] =====
+Ingredients for Generalist Robot Policies
+
+Large Datasets Large Models _ Scalable Evaluation
+
+Leverage Existing Robot Cross-embodied Policies Leverage Real2Sim Evals
+Data with Internet-scale Priors
+
+wandmaketrem SIMPLER“
+
+Google Robot
+BridgeData V2
+C2 ee]
+
+56
+
+===== slide 054  [63:19] =====
+Ingredients for Generalist Robot Policies
+
+Large Datasets Large Models _ Scalable Evaluation
+
+Leverage Existing Robot Cross-embodied Policies Leverage Real2Sim Evals
+Data with Internet-scale Priors
+
+j= siMpLen A ees effortless and
+
+ible eval at scale.
+
+56
+
+===== slide 055  [63:23] =====
+Thank you for your attention
+

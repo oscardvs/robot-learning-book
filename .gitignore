@@ -5,3 +5,4 @@ build/*.html
 *.toc
 *.out
 video/
+build/*.jpg

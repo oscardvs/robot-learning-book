@@ -1,0 +1,1127 @@
+# Lecture 10 — slide OCR (secondary source; verify math visually)
+# 44 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 11: Embodied Reasoning and Test-time Scaling
+
+Oier Mees ETHziirich =” Microsoft
+
+04.05.2026
+
+eFSABMOO
+
+===== slide 002  [00:57] =====
+Is Scaling Robot Data All We Need?
+
+No...
+
+eFSArABHMOO
+
+===== slide 003  [03:47] =====
+What is Missing? Intelligent Reasoning
+
+# Training LLMs on all of Internet not enough
+= LLMs train specifically for reasoning
+ChatGPT
+
+ay deepseek
+
+Robots capable of many tasks Intelligent Reasoning: Generalization,
+Interpretability, Interaction, Controllability
+
+eFSABHMOO
+
+===== slide 004  [04:14] =====
+Robotics as Multimodal Sequence Modeling
+
+= Can we transfer algorithmic improvements like reasoning?
+=" Can a robot think harder to act better?
+
+Language Image Action
+oO oe DOOoOee @ oa @®
+
+ACTION:
+[Ax, A@, AGrip] =...
+
+“Pick up the
+
+spoon”
+
+(<yaeemcch ke)
+
+===== slide 005  [06:09] =====
+Embodied Chain-of-Thought Reasoning
+
+Break down hard problems into intermediate reasonings
+
+Plan: 1. Move to watermelon, 2. Grasp it, ...
+‘Subtask: to watermelon
+
+Move: Move backwards
+Bboxes, Gripper Pos: __
+
+Standard policies directly map
+images to actions
+
+[x] They thus often fail on novel tasks
+
+We thus propose to add embodied
+reasoning to the policy
+
+Robotic Control via Embodied Chain-of-Thought Reasoning
+C/ABMOO Zawalski*, Chen*, Pertsch, Mees, Finn, Levine. CoRL, 2024.
+
+===== slide 006  [06:30] =====
+Creating Multimodal Reasonings at Scale
+
+Maximally use existing data by distilling foundation models
+
+How do we create robot reasoning data at scale?
+
+We use a Suite of foundation models to generate reasoning data for training
+
+Robot Trajectory from
+Dataset
+
+i Gemini
+
+GS OWLv2+SAM
+
+@@ Prismatic VLM
+
+@ Grounding DINO
+
+This scone has a
+
+watermelon.
+‘spoon, towel, and
+‘mushroom.
+
+REASONING
+
+TASK:
+
+Place the watermelon on the towel
+PLAN:
+
+1, Move to watermelon
+
+2. Firmly grasp it
+
+SUBTASK: The watermelon is the first
+‘object the robot needs to interact with >
+Move to the watermelon
+
+MOVE: The watermelon is behind the
+robot, so it needs to move backward >
+Move backward.
+
+GRIPPER POS:
+
+[156, 55]
+
+Robotic Control via Embodied Chain-of-Thought Reasoning
+O@efSARBMOO Zawalski*, Chen*, Pertsch, Mees, Finn, Levine. CoRL, 2024.
+
+===== slide 007  [06:36] =====
+Creating Multimodal Reasonings at Scale
+
+Maximally use existing data by distilling foundation models
+
+How do we create robot reasoning data at scale?
+We use a suite of foundation models to generate reasoning data for training
+
+Embodied Chain-of-Thought Dataset
+
+REASONING
+
+TASK:
+Place the watermelon on the towel
+PLAN:
+
+1. Move to watermelon
+2. Firmly grasp it
+3.
+
+SUBTASK: The watermelon is the first
+‘object the robot needs to interact with >
+Move to the watermelon
+
+MOVE: The watermelon is behind the
+robot, so it needs to move backward >
+Move backward.
+
+GRIPPER POS:
+
+[156, 55]
+
+VISIBLE OBJS:
+
+Watermelon [126, 146, 141, 125],
+Towel [20, 59, 218, 198],
+
+Robotic Control via Embodied Chain-of-Thought Reasoning
+O@esSABMOO Zawalski*, Chen*, Pertsch, Mees, Finn, Levine. CoRL, 2024.
+
+===== slide 008  [07:06] =====
+Embodied Chain-of-Thought Architecture
+
+“Think carefully” and “look carefully” before acting
+
+Input Robot Action
+
+oo
+
+ACTION:
+[Ax, 46, AGrip] =...
+
+Robotic Control via Embodied Chain-of-Thought Reasoning
+O@efSABMOO Zawalski*, Chen*, Pertsch, Mees, Finn, Levine. CoRL, 2024.
+
+===== slide 009  [07:49] =====
+Embodied Chain-of-Thought Architecture
+
+“Think carefully” and “look carefully” before acting
+
+_ Input Generated Embodied Chain-of-Thought Robot Action
+
+TASK: SUBTASK REASONING: MOVE REASONING: (lapis ACTION:
+Place the The watermelon is the first The watermelon is POS: [Ax, 46, AGrip] =...
+watermelon on the object the robot needs to behind the robot, so it [156, 55]
+towel interact with. The robot is not needs to move
+yet close to the watermelon, backward
+PLAN: so the robot needs to move VISIBLE OBJECTS:
+1 Watermelon
+1. Move to watermelon closer [126, 146, 141, 125),
+2. Firmly grasp it t MOVE: Towel (20, 59, 218, 198],
+USER: "Put the 3. Move to towel Move backward Spoon [1 Ah ey 141, 125]
+watermelon on the towel” 4. Place watermelon on SUBTASK:
+towel Move to the watermelon
+Semantic Reasoning Visual Reasoning
+
+Robotic Control via Embodied Chain-of-Thought Reasoning
+C/ABMOO Zawalski*, Chen*, Pertsch, Mees, Finn, Levine. CoRL, 2024.
+
+===== slide 010  [09:23] =====
+Generalization Evaluations
+Boosts performance 30% without extra robot data
+
+Our Embodied Chain-of-Thought VLA is more performant than other
+generalist policies, especially on novel tasks
+
+ECoT (Ours)
+
+RT-2-X
+
+30% :
+
+Octo
+
+efSA2RBHOO
+
+===== slide 011  [10:08] =====
+Human-Robot Interaction
+
+=» ECoT makes policies more interpretable
+= Allows human to correct behaviors
+
+Lastly, human operators can correct robot behaviors by editing reasoning chains
+
+Robot misb
+
+Pla
+Move to the yellow cloth
+
+‘Sub’
+Move: Move left
+
+ChatGPT’s corrected reasoning
+fixes robot behavior!
+
+(cy aeemcch ke)
+
+===== slide 012  [10:14] =====
+Human-Robot Interaction
+
+= ECoT makes policies more interpretable
+= Allows human to correct behaviors
+
+Lastly, human operators can correct robot behaviors by editing reasoning chains
+
+eFSABMOO
+
+===== slide 013  [10:24] =====
+an orange
+orange
+
+a carrot
+
+ared bow!
+
+eFSArABMOO
+
+TASK: Put the black bowl in the
+blue sink.
+
+PLAN: Move to the black bowl.
+Pick up the black bowl. Move to
+the sink. Drop the black bowl in
+the blue sink.
+
+SUBTASK: The black bowl is the
+first object to interact with >
+Move to the black bowl.
+
+MOVE: The black bowl is to the
+right of the robot > Move right.
+
+a yellow banana
+
+TASK: The task is to put the
+in the red bowl.
+
+PLAN: 1. Move to the . 2.
+Grasp the . 3. Move to the
+red bowl. 4. Release the
+
+SUBTASK: The robot has
+grasped the and needs to
+move it to the red bowl > Move
+to the red bowl.
+
+MOVE: The red bow! is to the
+right of the robot, so the robot
+needs to move right to reach it >
+Move right
+
+a red bottle
+
+a robot
+
+TASK: Move to the banana.
+
+PLAN: Move to the banana,
+grasp the banana, move the
+banana to the plate, release the
+banana.
+
+SUBTASK: The banana is on the
+left side of the plate, so the robot
+needs to move left > Move to
+banana.
+
+MOVE: The robot needs to move
+left to get closer to the banana >
+Move left.
+
+TASK: Put the grey sponge on
+the yellow towel.
+
+PLAN: Move to the sponge, pick
+up the sponge, move to the
+towel, put down the sponge.
+
+SUBTASK: The sponge is on the
+table, and it needs to be reached
+first > Move to the sponge.
+MOVE: The sponge is below the
+
+robot, so move down > Move
+down.
+
+===== slide 014  [12:35] =====
+Impact of Embodied Chain-of-Thought
+
+= Key: new standard to train VLAs with reasoning
+= Improves generalization, interpretability & interactiveness
+= Adoption by industry and academia
+
+we
+
+O@SABMOO Gemini Robotics VLA 1.5 10
+
+===== slide 015  [13:01] =====
+Follow Up Works on Embodied Reasoning
+
++ robot data and action generation from just robot data!
+
+(41.1451.1)
+21612
+A 1.66) | Py
+
+Depth Perception Tokens Visual Reasoning Trace
+
+Pre-Trained Action Reasoning Model
+
+MolmoAct: Action Reasoning Models
+that can Reason in Space
+Lee et al., 2025.
+
+WTF ¢
+scans, 999 99Q- 900 &
+
+= rc | | Causal & Full-Attention }
+
+CoT-VLA
+
+wuu |OOO 000
+
+CoT-VLA: Visual Chain-of-Thought Reasoning for
+Vision-Language-Action Models
+Zhao et al., 2025.
+
+eFSABMOO
+
+RAD learns broad reasoning from hut
+
+Action-Free Reasoning for Policy Generalization
+Clark et al., 2025.
+
+Self-Supervised Bootstrapping of Action-Predictive
+Embodied Reasoning
+Ganai et al., 2026. 11
+
+===== slide 016  [13:43] =====
+Inference Cost of Reasoning
+
+Autoregressive VLA Inference Speed .
+OpenVLA 4 Actions/Second
+
+Embodied Chain-of-Thought Reasoning
+
+Inference Speed 4 Seconds/Action
+
+OesSABMOO
+
+===== slide 017  [15:06] =====
+(<yaeemcch i---e->)
+
+Can we get the benefits of reasoning
+without the inference costs?
+
+===== slide 018  [16:46] =====
+Why Does Embodied Reasoning Help Robot Policies?
+2. Improved learning “curriculum” 3. Increased policy expressivity
+
+1. Better representation learning
+
+oa ne ee ee il
+! INSTRUCTION Jj
+
+San
+
+J OBSERVATION
+
+<<: l ACTION
+i 2X. |
+
+—— ee”
+. sf 8 f Fy |
+
+Train on both, but only choose
+actions at test time
+
+(<yaeemcch k---m>) 15
+
+===== slide 019  [19:42] =====
+Why Does Embodied Reasoning Help Robot Policies?
+1. Better representation learning 2. Improved learning “curriculum”
+
+3. Increased policy expressivity
+
+INSTRUCTION J
+
+OBSERVATION
+ZS
+©) e
+\9
+
+rcs
+
+l
+
+l M tok i text i
+<THINKING> | J } ore tokens in-context improves
+
+j expressivity (even when meaningless)
+
+oe es
+
+ACTION
+
+Let’s Think Dot by Dot: Hidden Computation Think before you speak: Training Language
+in Transformer Language Models Models With Pause Tokens
+Pfau et al, 2024. Goyal et al, 2024. 17
+
+(<yaeemcch i.e)
+
+===== slide 020  [21:21] =====
+Results in LIBERO-90
+
+LIBERO-90 Success Rate
+
+I
+i
+|
+I
+
+Reasoning “Scaffolding” [s—isdS:
+Thinking Tokens [
+
+70 80 90
+
+LIBERO-90
+
+Training Strategies for Efficient Embodied Reasoning
+
+CcAmmeoe Chen, Belkhale, Mirchandani, Mees, Driess, Pertsch, Levine. CoRL, 2025. 18
+
+===== slide 021  [22:52] =====
+Embodied Chain-of-Thought Lite
+
+Reasoning Dropout
+
+Reasoning Pre-training
+
+Policy > Reasoning:
+Plan, Subtask, Move,
+
+Bounding Boxes, Gripper
+rans]
+
+Training Strategies for Efficient Embodied Reasoning
+
+e/A.mmoo Chen, Belkhale, Mirchandani, Mees, Driess, Pertsch, Levine. CoRL, 2025. 24
+
+===== slide 022  [23:49] =====
+Embodied Chain-of-Thought Lite
+
+Reasoning Pre-training
+
+Reasoning Dropout
+
+(7/7
+
+Reasoning: _
+Policy > Plan, Subtask, Move, lL, ieee |
+Bounding Boxes, Gripper | uo B
+
+\ Randomly Dropped
+
+Training Strategies for Efficient Embodied Reasoning
+
+e/Aimmoo Chen, Belkhale, Mirchandani, Mees, Driess, Pertsch, Levine. CoRL, 2025. 32
+
+===== slide 023  [24:24] =====
+CoT
+
+Policy Performance
+
+(<yaeemcch i.e)
+
+Results
+
+Embodied
+
+Inference Freq. (Hz)
+ECoT-lite is faster than reasoning policies
+and stronger than non-reasoning policies
+
+in Real-World Bridge WidowX Setup
+
+ECoT-Lite
+> Variants (Ours)
+Bridge Success Rate Inference Rate (Hz)
+fe)
+Pre-training
+Dropout
+
+> p
+
+Standard VLA 40 60 80 0 2
+
+More Performant than Standard VLAs
+without sacrificing speed!
+
+Training Strategies for Efficient Embodied Reasoning
+Chen, Belkhale, Mirchandani, Mees, Driess, Pertsch, Levine. CoRL, 2025.
+
+33
+
+===== slide 024  [26:51] =====
+Embodied Reasoning so far has used a fixed compute budget
+
+Can we do better by letting it think longer at test time?
+
+—— Test-Time Compute Scaling
+
+efsSiBeied
+
+35
+
+===== slide 025  [27:05] =====
+Isn’t LLM Test-Time Compute Scaling just Planning?
+
+World
+model
+
+Search /
+thinking
+
+Verifier
+
+Scope
+
+esa
+
+HOO
+
+Classical planning
+
+A*, STRIPS, PDDL
+
+Learned planning
+
+Chess, Go, Atari
+
+LLM reasoning
+
+CoT, GRPO, R1
+
+Hand-specified
+
+Transition function
+
+Learned
+
+Policy + value network
+
+Implicit in weights
+
+No explicit model
+
+Explicit tree search
+
+A‘, BFS, DFS
+
+MCTS rollouts
+
+Many sims per move
+
+NN
+Token generation
+
+Sequential reasoning
+
+Goal test
+
+Exact, hand-specified
+
+Win / loss
+
+Exact, from game rules
+
+Rule-based reward
+
+Math grader, unit test
+
+Known domains
+
+Structured, discrete
+
+Discrete games
+
+Bounded action space
+
+Open-ended tasks
+
+Language, code, robots
+
+36
+
+===== slide 026  [28:52] =====
+Scaling Test-Time Compute in Go
+_— Full AlphaGo Zero
+
+5000
+
+Superhuman
+
+4000
+
+. . No test-time
+Rule of Thumb, increasing search
+120 Elo points requires
+
+either:
+* 2x model size
+
+* 2x test-time search
+
+Elo Rating
+
+Improving the raw policy from 3000 to 5200
+Elo points would require scaling the model
+by ~100,000x
+Mastering the Game of Go without Human Knowledge
+Silver, et al. Nature, 2017. 37
+
+elsiidegrdagias from Noam Brown]
+
+===== slide 027  [30:30] =====
+eFSABMOO
+
+Does this hold too in language?
+
+===== slide 028  [30:53] =====
+Scaling Test-Time Compute in Language
+
+= Compute-optimal test-time scaling beats a ~14~x larger
+model on easy/medium problems at equal FLOPs
+
+Comparing Test-time and Pretraining Compute
+in a FLOPs Matched Evauation
+
+30 aa = SFT on own failed attempts +
+learned verifier — model learns to
+produce better answer given
+previous wrong ones, verifier picks
+the best one
+
+=" Generate multiple answers at test
+time, select best with verifier
+
+@ Easy Questions
+@ Medium Questions
+@ Hard Questions
+
+Relative Improvement in Accuracy
+From Test-time Compute (%)
+
+<<1 ~=1 >>1
+
+Ratio of Inference Tokens to Pretraining Tokens
+
+Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters
+C@sSA2ABMOO Snell et al, 2024.
+
+===== slide 029  [33:07] =====
+Why Do Reasoning Tokens Help?
+
+= Any problem solvable in T computational steps can be
+solved by a constant-size transformer generating O(T)
+reasoning tokens
+
+= Generating O(T) intermediate tokens before the answer
+gives the model O(T) effective computation steps
+
+= Without reasoning tokens: needs a much deeper/larger
+model or can’t solve the problem at all
+
+Chain of Thought Empowers Transformers to Solve Inherently Serial Problems
+CesSABMOO Li et al, 2024.
+
+40
+
+===== slide 030  [34:44] =====
+Chain-of-Thought with LLMs
+
+More tokens = more computation steps
+
+Standard Prompting Chain-of-Thought Prompting
+
+Q: Roger has 5 tennis balls. He buys 2 more cans of
+tennis balls. Each can has 3 tennis balls. How many
+tennis balls does he have now?
+
+Q: Roger has 5 tennis balls. He buys 2 more cans of
+tennis balls. Each can has 3 tennis balls. How many
+tennis balls does he have now?
+
+The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to
+make lunch and bought 6 more, how many apples
+do they have?
+
+A: The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to
+make lunch and bought 6 more, how many apples
+do they have?
+
+A: The answer is 27. x
+
+answer is 9.
+
+Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+
+ofinees Wei, Wang et al, NeurlIPS 2023.
+
+===== slide 031  [35:29] =====
+CoT Emerges in Large Models
+
+GSM8K
+solve rate (%)
+
+04 8 137 04 7 175 8 62 540
+Model scale (# parameters in billions)
+
+—e— Standard prompting
+—e-— Chain-of-thought prompting
+- == Prior supervised best
+
+Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+
+eFSABMOO
+
+Wei, Wang et al, NeurIPS 2023. 42
+
+===== slide 032  [37:44] =====
+Original CoT Prompting = Few-shot/In-Context Learning
+
+Q: [problem 1] A 7
+
+A: [step 1... step 2... therefore answer] / Prompt-sensitive, brittle
+
+Q: [problem 2] A Requires Human input
+
+A: [step 1... step 2... therefore answer] / 4. Doesn't generalize beyond the examples
+
+Q: [new problem]
+A: 2???
+
+OesSABMOO 43
+
+===== slide 033  [37:55] =====
+Instead of eliciting reasoning with human prompts, can we
+train the model to reason intrinsically?
+
+(cy aeemcch k---m->)
+
+44
+
+===== slide 034  [38:19] =====
+eFSABMOO
+
+Single Chain
+of Thought
+
+Process
+
+Answer ii
+
+Problem:
+
+( oaasenitese @ pagalbiio Ad teenie aradts MiermenEESCraeM Bay )
+
+Large Language Model (LLM) GPT-40’s Response:
+
+5. ar = 12 pages/week x 52 weeks/year = 624 pages/year. Thus, James writes a total of
+_4
+Large Reasoning Model (LRM) DeepSeek-R1’s Response:
+<think> i)
+
+To solve this problem step-by-step, we can break it down as follows:
+1. Determine Pages per Letter: James writes a 3-page letter.
+2. Determine Number of Friends: He writes this letter to 2 different friends.
+3. Calculate Pages per Week:
+« James writes to each friend twice a week.
+Pages per letter: (3)
+© Letters per friend per week: (2)
+© Friends: (2)
+« Total pages per week = 3 pages/letter x 2 letters/week x 2 friends = 12 pages/week
+4. Calculate Pages per Year:
+« There are 52 weeks in a year.
+
+Okay, let me try to figure out this problem. So, James is writing a 3-page letter to two different friends twice
+aweek. We need to find out how many pages he writes in a year. Hmm, let's break this down step by step.
+First, let me understand the details. [...]
+
+Wait, if he writes to 2 friends twice a week, does that mean he writes 2 letters each time, and he does this
+twice? [...] So per week, he writes 2 friends * 3 pages * 2 times. Let me check that. [...]
+
+Alternatively, maybe it's 3-page letter to 2 different friends each time he writes, and he does that twice a
+week. So each time he writes, he's writing two letters (each 3 pages), so that's 2 * 3 = 6 pages per writing
+session. Then, twice a week would be 6 * 2 = 12 pages per week. Then, multiply that by the number of
+weeks in a year. But how many weeks are in a year? Typically, 52 weeks. So 12 pages/week * 52 weeks =
+624 pages. Is that right?
+
+Wait, let me confirm. So, per week: [...] That makes sense.
+
+But maybe I need to double-check if the problem is interpreted differently. [...] That seems consistent.
+
+Wait, but wait a second. Is there any chance that the problem might be considering a year as 52 weeks, but
+some people might account for leap years or something else? But generally, in problems like this, unless
+specified, we take 52 weeks per year. So that's standard.
+
+So, conclusion: [...] So the answer is 624. So | think that’s correct.
+
+</think>
+
+James writes 3-page letters to 2 friends twice a week. Here's the breakdown:
+
+LJ
+
+Answer: James write:
+
+—_4
+
+DeepSeek-R1 Thoughtology: Let’s think about LLM reasoning
+
+Marjanovicé et al, 2026.
+
+===== slide 035  [40:14] =====
+Learning to Reason with RL - GRPO
+
+=» Sample answers, compare with each other, update
+toward good ones
+
+= No reward model, no value function, no human labels
+
+Prompt q Policy =p G rollouts (chain-of-thought + answer)
+
+Reward r; (binary) Advantage A; GRPO objective Creo Updated
+comecnes, fomat ;
+60 + (90/60) ~ 60 +15 . = 4 lim be ge ED mi( iA. clip(p;,1-te) A.)
+| n a =2-* G
+40mph v O, i=l hoone
+= Decrees!
+90min =15h, v= 60/15
+nat is : | u b, api . a ~ BKU(0 I mt)
+P ete i N = ese
+5050 \ se3e
+eoce / \\ 5
+@ e V speed = 60/1.5 = 40 \ 1 = Tol Fed importance ratio
+AC kK —| meno a | sy] {— %e®
+\ mph / \
+60+ 90 ~ 067 x 60 \N
+|__, =i \
+[ae Policy model “45 mph x. =p B-KL(rllret) \ Updated model
+No critic model \
+76 cient . grou y Te
+speed = 60/90 = 0.67 rewards relative to \\
+\ FD eesti & 1 Gow
+0.67 mph x
+
+DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models
+. Shao et al, 2024. 46
+eFSABMOO
+
+===== slide 036  [43:09] =====
+eSB OO
+
+Why didn’t this work before?
+
+Base LLM needs to be good enough to produce any
+correct rollouts to reinforce!
+
+47
+
+===== slide 037  [44:05] =====
+Reasoning Behaviors Emerge from RL
+
+4000
+
+12000
+1200
+
+0000
+
+6000 600
+
+The Frequency of Word 'Wait'
+
+The Frequency of Reflection Words
+
+4000
+
+200
+
+Steps oe Steps os
+Figure 9 | Evolution of reasoning behaviors during training. (a) Frequency of representative
+reflective words during the training process; (b) Specific occurrence patterns of the word “wait”
+throughout the training process.
+
+DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning
+
+oscnumes DeepSeek-Al, 2026.
+
+48
+
+===== slide 038  [46:24] =====
+(<yaeemcch i---e->)
+
+Does this RL reasoning apply too in vision?
+
+49
+
+===== slide 039  [46:39] =====
+Visual Reinforcement Fine-Tuning
+
+" Applies GRPO to enhance visual grounding of VLMs
+« The verifier is loU (geometric), not a math grader
+
+=o <think> The vehicle has a door that can be opened. The door is located on the right
+
+1
+I
+1
+1
+I
+I
+I
+(|
+H side of the vehicle, near the top.</think>
+1
+*
+4 Reference =
+1 Model
+£_Ea. J
+
+Policy Gradient Verifiable
+Optimization Reward
+
+Question: the part
+of the vehicle that
+can be opened?
+
+ToU Reward & CLS Reward
+
+ane ffaen if match
+tou 0, otherwise
+
+Rae = {hf Paae = Tea
+“sO, otherwise
+
+< Reasoning
+
+ey <think> The image appears to be of a columbine flower. The flower has five light yello
+w petals and a yellow center, which are characteristic features of this species. The flo
+wer also has a purple or lavender color on the petals, which is typical for this plant. Th
+e presence of a small insect on the flower is also a common feature of columbine flower
+s.</think> <answer> columbine </answer>
+
+Question: What
+spices is the flower
+in the image?
+
+Visual-RFT: Visual Reinforcement Fine-Tuning
+
+Liu et al., 2025. 50
+
+eFSABHMOO
+
+===== slide 040  [48:29] =====
+Failure mode: Standard GRPO rewards the final answer only,
+the reasoning trace is invisible to the verifier
+
+In vision, hallucinated reasoning & correct answers aren’t
+mutually exclusive
+
+OC/ABMooO 51
+
+===== slide 041  [49:39] =====
+ARGOS - Agentic Reasoning with Multimodal RL
+
+" Key: aggregate multiple reward signal from intermediate
+reasoning steps, ie spatial & temporal reasoning in videos
+
+Images
+
+Spatial 2D Point Reasoning quality
+
+Final Answer
+Object: white lamp Image + Question Predicted: 1.8
+Pixel coordinate: x=346, y= 126 + Response
+
+Ground-truth: 2.1
+
+» OO
+Meta
+
+Question: How much distance is there vt
+between the white lamp on wall with striped Action Score
+shade and the light brown sofa with pillows
+
+panel S escter | GB Sino” || SO same 1[B] aceriaat|| FD Aca
+Response: ... The distance is 1.8 metres @ models and ane Metic. cy
+econng J, Language
+
+functi - Y Ba
+inctions is MOLMO-7B ES omasy @1| String Match Matial'Scara
+
+Action Score
+
+Spatial 2D Point
+Object: dark bottle
+
+Temporal Segment
+Event: the person is handling
+what appears to be an oil Predicted: C
+bottle
+Start Frame: 22 Time: 23.01 COTES
+EndFrame:23 Time: 24.11
+
+Final Answer
+
+Question: What action or actions did the
+
+¢ Pixel coordinate: x=195, y= 199
+person fail to complete and why?
+
+Frame: 22 Time: 23.01 seconds
+
+49)
+
+Meta
+
+Response:
+
+The person tried to pour oil,
+but failed because the bottle cap is on. The
+correct option is C...
+
+7
+
+Multimodal Reinforcement Learning with Agentic Verifier for Al Agents
+Tan, Peng, Yang, Cheng, Mees et al. arxiv, 2025. 52
+
+===== slide 042  [52:22] =====
+ARGOS - Embodied Al Benchmarks
+
+= Test-time reasoning helps for high-level planning
+= 3-4x better than supervised CoT on the hardest tasks
+
+= For continuous control, internalize reasoning during VLA
+training and drop it at inference — ECoT-Lite style
+
+Multimodal Reinforcement Learning with Agentic Verifier for Al Agents
+(<aeemcch i-->) Tan, Peng, Yang, Cheng, Mees et al. arxiv, 2025.
+
+53
+
+===== slide 043  [53:21] =====
+Conclusion
+
+= Scaling test-time compute is often more effective than
+scaling pre-training
+
+# Reasoning SFT in VLAs improves representations for
+control — drop reasoning at inference
+
+=» RL can induce emergent reasoning in LLMs and VLMs
+
+" For multimodal agents, verifying the reasoning trace, not
+just the final answer, is essential
+
+OC*cABMoO 54
+
+===== slide 044  [55:33] =====
+Thank you for your attention
+
+(<yaeemcch ke)
+

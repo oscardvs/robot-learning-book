@@ -1,0 +1,877 @@
+# Lecture 11 — slide OCR (secondary source; verify math visually)
+# 43 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 12: Frontier & Open Problems
+
+Oier Mees ETHzirich =” Microsoft
+
+11.05.2026
+
+===== slide 002  [01:19] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 12: Frontier & Open Problems
+
+Oier Mees ETHziirich 8” Microsoft
+
+11.05.2026
+
+===== slide 003  [05:44] =====
+1 se) 1 room 1 building the world
+
+OeSARBMOO
+
+===== slide 004  [08:18] =====
+The Quest for the Best of Both Worlds
+
+Non-Embodied Foundation Models Specialist Embodied Models
+
+Images Language
+
+Transformer
+é
+Internet-scale Data Physical Grounding
+Broad Generalization Embodied Sensing
+X Lacks Physical Grounding X Narrow, Task-specific Data
+
+XX Non-Embodied Sensing X Poor Generalization
+
+eFSABMOO
+
+===== slide 005  [08:32] =====
+The Path to Embodied Intelligence
+
+« Today’s foundation models lack physical grounding
+
+#» Embodied data inherently multimodal, spatial &
+temporal
+
+Embodied Data
+Multimodal
+
+Al Agents for
+
+TemGerel Foundation the Digital &
+Spatial Models Physical World
+Physical
+
+eFSABHMOO
+
+===== slide 006  [09:14] =====
+What is the Best Backbone for Robotics?
+
+_ : Doesn’t matter if we
+Vision-Language Generative Video have enough data to
+Model Model train from scratch?
+
+efSA2Bneod
+
+===== slide 007  [11:15] =====
+What is the Best Data Recipe?
+
+Real-World Data & &
+
+Simulation Data
+
+Web Data
+
+eFSABMOO
+
+===== slide 008  [12:40] =====
+What is the Best Data Recipe?
+
+Real-World Data z A} Real-World Data
+
+Human Videos Real-World Data
+
+Internet Real-World
+Videos ey) YouTube Data
+
+eFSABMOO
+
+===== slide 009  [14:47] =====
+Data Collection Interfaces
+
+UMI-Style Gloves for Dexterous Hands Static Bimanual Puppeteering
+
+a
+VR
+
+Mobile Bimanual Puppeteering
+
+eFSABMOO 10
+
+===== slide 010  [14:53] =====
+Data Scalability vs Hardware Alignment
+
+esSiBeieo
+
+Data Scalability
+
+Egocentric
+
+107 hr O Videos
+
+|
+|
+|
+\
+!
+|
+'
+% I
+i
+|
+!
+|
+|
+
+> Data
+Wearables
+N
+
+105 hr
+
+103 hr
+
+Hardware
+Alignment
+Sensorized Human Data Robot in the loop
+
+11
+
+===== slide 011  [16:21] =====
+Towards Dexterous Generalist Policies
+
+Dexterity and generalization require different ingredients
+
+Dexterity Generalization
+
+High-Frequency
+Control
+
+Foundation Models
+
+Heterogeneous
+
+Multimodal Sensing Mobility
+
+(cy aeemcch ie)
+
+===== slide 012  [20:24] =====
+Dexterity Requires More Than Vision
+
+Albert-Ludwigs-
+Universitat Freiburg
+
+TidyUpRobot
+
+Self-supervised 3D Shape and Viewpoint Estimation from Single Images for Robotics
+
+Mees, Tatarchenko et al., IROS, 2019.
+eFSABMOO
+
+13
+
+===== slide 013  [20:37] =====
+Recap: Native Multimodal Models
+
+# Instead of adding vision to an existing LLM, train all
+modalities jointly from scratch
+
+any combination of inputs interleaved token sequence (any order, any mix)
+
+P (ison ene) e.g. image caption task:
+image (vision enc.) ~> "describe this image”
+
+{img ]{ img }{ img }{ txt }{ txt ]{ txt
+
+e.g. audio transcription:
+
+audio — audio enc.| (aud ]{aud ]{aud ]{aud }( txt] > "transcribe this"
+
+e.g. video QA:
+(vid ]{ txt ]{ via }{ txt }{ vid ]{ txt ] — freely interleaved
+
+video —| video enc.
+
+e.g. multimodal reasoning:
+
+|_| :
+text {img ]{ txt ]{ aud }{ img ]{ txt ]{ aud any mix, any order
+
+each modality is optional
+
+unified multimodal transformer
+trained from scratch — every weight has always seen every modality
+
+y
+
+text (+ image) output
+
+C/AEmMOO 14
+
+===== slide 014  [21:08] =====
+The Long Tail of Robot Sensing
+
+" Scarcity: many relevant sensing modalities (e.g. touch)
+not available at scale
+
+" Pairing: cross-modal paired data (e.g. RGB + depth+
+tactile + force simultaneously) is nearly nonexistent
+
+= Heterogeneity: sensors vary across robot embodiments,
+making transfer hard even when data exists
+
+(cy aeemcch ke)
+
+===== slide 015  [22:18] =====
+Reason Across New Modalities?
+
+KI Vision
+
+@™ Language
+
+eFSABMOO
+
+===== slide 016  [22:50] =====
+eFSABMOO
+
+Giving VLAs Senses They Were Never Trained On
+
+Pre-trained
+Generalist Policy
+
+V
+
+FuSe Finetuning
+
+Generative+contrastive losses
+ground multimodal inputs in language
+
+a
+
+Multi-Modal Language
+
+“Push the button that plays piano”
+
+“Pick the object that feels squishy”
+
+Beyond Sight: Finetuning Generalist Robot Policies with Heterogeneous Sensors via Language Grounding
+Jones*, Mees’, Sferraza*, Stachowicz, Abbeel, Levine. ICRA, 2025. 17
+
+===== slide 017  [24:13] =====
+When & How to Reason Intelligently?
+
+¥ no reasoning needed
+
+I
+certain
+
+adaptive TTC
+
+policy confidence
+
+I
+uncertain
+
+escalate / stop
+
+unknown
+
+In-distribution task
+Known objects, scene, goal
+
+Near-distribution task
+Novelty or low confidence
+
+Out-of-distribution task
+Novel goal or failure mode
+
+|
+
+|
+
+|
+
+Reactive policy
+No reasoning tokens
+
+Uncertainty detection
+
+Escalate / ask for help
+Pause and defer
+
+~50 Hz control loop
+
+te:
+
+|
+
+Scale test-time compute
+1 frequency, t reasoning
+
+st-time compute can take many form:
+
+a
+
+More thinking tokens
+CoT, GRPO, RL reasoning
+
+Larger / specialist model
+Foundation model fallback
+
+Human in the loop
+Teleop, correction, label
+
+19
+
+===== slide 018  [26:21] =====
+How does a model know what it doesn’t know?
+
+Generalization across many axes: objects, environments, embodiments,
+instructions, tasks...
+
+Open Problem: Introspection
+
+efSAiBHOO
+
+20
+
+===== slide 019  [28:24] =====
+Current Robot Models Rely on Imitation Learning
+
+Policy bounded by the Dataset
+demonstrations in the dataset
+
+O@eFSABMOO 21
+
+===== slide 020  [29:41] =====
+Can we Scale RL for Robotics?
+Dataset
+Imitation learning:
+
+» |Imitates seen behaviors in the data
+
+Reinforcement learning (RL):
+= Learns near optimal policies from Offline-RL policy
+
+suboptimal data @ @
+« Stitches suboptimal trajectories
+
+eFSABMOO 22
+
+===== slide 021  [30:57] =====
+Robot Learning Data Flywheel
+
+Increased
+Deployments
+
+improved reliability
+
+More Capable
+Robots
+
+multiple embodiments
+
+aan
+
+More
+Training Data
+
+deployment data
+suboptimal demos
+human corrections
+
+Better
+Learning
+
+BC, RL, fine-tuning
+
+23
+
+===== slide 022  [31:48] =====
+Expert trajectories
+Human demos, teleoperation
+
+¥ High quality
+
+¥ On-manifold states
+
+¥ Short, smooth, dense
+
+X Expensive, limited scale
+
+X Bounded by human skill
+
+eFSABMOO
+
+=>
+
+Distribution mismatch
+state spaces don't overlap
+
+Temporal mismatch
+frequency, length, smoothness
+
+<—
+
+Co-Training Expert & Autonomous Data
+
+Autonomous rollouts
+Self-generated experience
+
+¥ Cheap and scalable
+
+¥ Covers failure modes
+
+X Noisy, suboptimal
+
+X Off-manifold states
+
+X Longer, jerky, variable
+
+New algorithms required
+
+weighting, alignment, joint learning
+
+24
+
+===== slide 023  [34:08] =====
+Lifelong Learning
+
+pert.
+lifelong learning
+
+high
+
+low |
+
+time
+pre-training deployment
+
+( open problem: how do we get there?
+
+(wy aeemcch (Ee) 25
+
+===== slide 024  [35:18] =====
+Rapid Adaptation: In-Context Learning
+
+Policy failure
+
+novel task, environment...
+
+Corrective Robot demo Cross-embodiment
+instructions in context demo in context
+| language feedback | | same embodiment | | human or novel robot
+
+Adapted policy
+no retraining required
+
+open problem: few-shot, real-time adaptation |
+
+eFSABMOO
+
+26
+
+===== slide 025  [36:57] =====
+Towards a Unified Model for Mobile Manipulation
+
+vision
+which env. representation?
+
+today
+
+SLAM + metric map
+
+es — 3 Metric map | | Gaussian splat |
+| Topological map | | Scene graph |
+
+Localization stack
+. - | BEV projection | | Walkthrough video |
+
+Nav planner
+
+Mapless adaptation
+reason from current obs + memory
+
+[
+
+VLA (manipulation only)
+
+A context length bottleneck — can't fit a city map
+
+Unified model
+implicit state estimation
+loop closures
+
+Maps are static
+world changes, can't precompute all
+
+whole body control
+Navigation | Manipulation
+mobile base bimanual, dexterous
+
+Replace SLAM Env. representation
+implicit localization map, video, implicit?
+
+Whole body control
+nav + manipulation jointly
+
+(cy aeemcch km) 27
+
+===== slide 026  [39:31] =====
+Towards a Unified Model for Mobile Manipulation
+
+(cy amemcch ke)
+
+vision
+which env. representation?
+
+today
+
+SLAM + metric map |
+
+_ ee Metric map | | Gaussian splat |
+| Topological map | | Scene graph |
+
+Localization stack
+. | BEV projection | | Walkthrough video |
+
+Nav planner
+
+Mapless adaptation
+reason from current obs + memory
+
+J
+
+VLA (manipulation only)
+
+A context length bottleneck — can't fit a city map
+
+Unified model
+implicit state estimation
+loop closures
+
+Maps are static
+world changes, can't precompute all
+
+whole body control
+|
+Navigation Manipulation
+mobile base bimanual, dexterous
+
+Replace SLAM Env. representation
+implicit localization map, video, implicit?
+
+Whole body control
+nav + manipulation jointly
+
+27
+
+===== slide 027  [41:50] =====
+First Steps: Autonomous Improvement
+
+« Leverage foundation models to enable autonomous
+improvement without human interventions
+
+a. ae
+
+a" *F Robot 2 "9 Robot 5
+
+Vv
+
+== | Reward Detector
+
+Foundation Model Foundation Model
+
+Robot Policy
+
+Offline Online
+Dataset Dataset
+Autonomous Data Collection
+
+Autonomous Improvement of Instruction Following Skills via Foundation Models
+Zhou*, Atreya*, Lee, Walke, Mees, Levine. CoRL, 2024.
+
+(<yaeemcch k---e->) 30
+
+===== slide 028  [42:09] =====
+First Steps: Adaptation via Human Feedback
+
+= Leverage verbal or visual cues from humans to adapt to
+
+new tasks
+
+PALO: Policy Adaptation via
+Langues Optiniration PALO —} Finetuning
+VLM
+
+‘Search in Language Space
+
+a
+
+Only Sdemos! aime “aera
+
+Policy Adaptation via Language Optimization:
+Decomposing Tasks for Few-Shot Imitation
+Myers*, Zheng*, Mees et al. CoRL 2024.
+
+efSiBHOO
+
+Fetch the round yellow thing
+Do you mean the lemon in the
+middle?
+
+Place it left of the object on the
+bottom
+
+Composing Pick-and-Place Tasks By
+Grounding Language
+Mees, Burgard ISER 2021.
+
+31
+
+===== slide 029  [42:37] =====
+Ingredients for Embodied Intelligence
+
+Intelligent Embodied Dexterous Mobile Lifelong Learning
+
+Reasoning Manipulation
+
+Rapid Adaptation
+
+eFSABMOO 32
+
+===== slide 030  [43:19] =====
+Ingredients for Embodied Intelligence
+
+Intelligent Embodied Dexterous Mobile Lifelong Learning
+
+Reasoning Manipulation
+
+Rapid Adaptation
+
+(cy aeemcch ke) 32
+
+===== slide 031  [43:42] =====
+(cy aeemcce (h---e->)
+
+But, how to do research in robot learning?
+
+34
+
+===== slide 032  [44:16] =====
+The (Harsh) Reality of Research
+
+1. Most research is incremental
+
+today’s self-driving cars rely on on 40 years of work:
+from Pomerleau's ALVINN in 1986 to the DARPA
+Challenge to modern end-to-end learning
+
+2. Most research ideas never become papers.
+
+3. Most papers don't stand the test of time.
+
+4. The most impactful ideas are often the simplest,
+because simple ideas can be scaled
+
+(cy aeemcch h---m->) 35
+
+===== slide 033  [46:20] =====
+The Recipe for Good Research Problems
+
+= Needed ingredients:
+1. animportant problem
+2. aplan for how to tackle it
+
+=» Example ideas:
+= Cure cancer (important, but how?)
+
+« Algorithm that improves 1% on Libero benchmark (missing
+problem)
+
+= lf you are succesfull, how does it help the community?
+
+(cy aeemcce ke) 36
+
+===== slide 034  [48:00] =====
+The Recipe for Good Research Problems
+
+= Needed ingredients:
+1. animportant problem
+2. aplan for how to tackle it
+3. excitement!
+
+Research requires tons of time and effort
+
+You will be more likely to succeed if you are excited!
+
+eCefSA2BHKOO 37
+
+===== slide 035  [48:51] =====
+The Recipe for Good Research Problems
+
+= Needed ingredients:
+
+1.
+
+2.
+3.
+4
+
+(cy aeemcch h---e)
+
+an important problem
+
+a plan for how to tackle it
+excitement!
+
+be your own reviewer #2
+
+What is the most likely reason your idea could fail?
+
+If you can answer that honestly and still believe in the
+idea, proceed
+
+38
+
+===== slide 036  [50:12] =====
+Styles of Research
+
+Method-driven Problem-driven
+You start with an idea, but You start with a problem, but
+need to find the problem for it need to find the method for it
+“Video diffusion models just dropped, “How can | make my VLA work with a
+let me apply it to robot manipulation... novel camera viewpoint?
+somehow”
+
+Both can lead to impactful research, but problem-driven is safer
+for a PhD student
+
+efSiBneod 39
+
+===== slide 037  [51:47] =====
+Debugging Your Research
+
+# Start with something that should work, then make it
+incrementally harder
+
+# Talk to colleagues, authors of papers you are building
+upon, advisors etc.
+
+= Visualize your model’s data & outputs to understand its
+behavior
+
+= Revisit your initial assumptions after experiments
+
+CcABMoo 40
+
+===== slide 038  [52:47] =====
+Share Your Research
+
+# Sharing your findings is how you find your community
+
+= Open-source code & data: the most direct way for your
+research to be useful to others
+
+# An image is worth a thousand words: polish your figures
+
+= Adapt to your audience: even experts may Know nothing
+about your specific topic
+
+OCA BHOO 41
+
+===== slide 039  [53:51] =====
+Share Your Research
+
+= If nobody knows about your research, it didn’t happen!
+
+= Disseminate your research on social media
+» Find the line between making people curious about your work
+# And overhyping it like this:
+
+(Q), Brett Adcock @ 2 SS
+¢ @adcock brett
+
+we just had an Al breakthrough in our lab
+
+robotics is about to have its ChatGPT moment
+
+and that moment is happening tomorrow
+
+1:17 AM - Jan 7, 2024 - 2.4M Views
+
+C/AEMOO 42
+
+===== slide 040  [54:40] =====
+Personal Backstory
+
+Early PhD: frustrated with thousand
+
+ROS nodes, disjoint models and
+
+errors accumulating through a
+
+complex pipeline
+
+Fun fact: robot broke a week before ——>
+the deadline
+
+(cy aeemcch ke)
+
+Can | ditch ROS and
+learn everything (motor
+skills+ language)
+end2end for a cool end
+of PhD demo?
+
+What would it take?
+Wrote a proposal that
+funded me for the next
+PhD years
+
+43
+
+===== slide 041  [59:25] =====
+This was my last lecture of the course!
+
+Thank you for your patience, this was a new course and your mid-term
+feedback was very helpful.
+
+Teaching this has been an absolute privilege, even while juggling two
+full-time jobs.
+
+| am looking forward to seeing your projects on demo day!
+
+eFSABMOO
+
+===== slide 042  [61:07] =====
+Huge Thanks to the Teaching Assistants
+
+eFSA2ABMOO
+
+This course would not have been possible without them
+
+48
+
+===== slide 043  [61:58] =====
+References
+
+= Uni Freiburg, Deep Learning Lab
+" UC Berkeley Deep RL
+
+= Stanford University, Deep RL
+
+=" Cornell Robot Learning
+
+efsSiBeeod
+
+49
+

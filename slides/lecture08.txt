@@ -1,0 +1,1230 @@
+# Lecture 8 — slide OCR (secondary source; verify math visually)
+# 45 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 8: World Models
+
+Oier Mees ETHziirich 8” Microsoft
+
+13.04.2026
+
+eFSABMOO
+
+===== slide 002  [00:13] =====
+Mid-term feedback
+
+= Well-received: main lectures, guest lectures & homeworks
+
+« Things to improve: paper presentations, more time for
+main lecture & a break, more ECTS credits for workload
+
+eFSABHMOO
+
+What is your favorite aspect of the course so far? (What should we keep doing?)
+
+SPEAKRS and homeworks. As annoying as they are, the homeworks are very cool. | think you managed to ace it
+in terms of content and length. «#c#:es«s great course. | am someone who doesn't tend to like courses
+because of their lack of practicality, but this one is lit.
+
+What | get out of the paper presentation: mhm okay this speaks about this. If | like it then | can maybe read it or
+go through it. Otherwise i forget it. | think it’s great, because tomorrow | have a list of papers that you consider
+important and that in this field everybody knows about. About the presentations themselves, | doubt their
+usefulness since they are very short and | most of the time don't understand a lot of things
+
+===== slide 003  [01:33] =====
+Changes
+
+" We will move one additional paper presentation from
+Monday’s to Thursdays
+= More time for main lecture & a break
+
+efSA2BHKOO
+
+===== slide 004  [02:28] =====
+Projects: Key Information
+
+= 5 Projects & competitions, Demo day on May 21th
+
+= Best team for per project will have potential chance to
+demo to Yann LeCun, Shuran Song, Jitendra Malik & others
+on May 29th (https://vreai.ch)
+
+= NVIDIA supports the course with 12500 H100 hours, ~277
+H100 hours per team
+
+efsSiBmeo
+
+===== slide 005  [07:11] =====
+Project 1: Reasoning Pick&Place - VLA
+
+= Eval 1(50pts): Pick up a plastic banana and
+place it into one of 3 bowls in front of the arm
+
+= Eval 2 (50pts): Perform the same task, but the
+language instruction this time requires your
+VLA to reason about which bowl to put the
+banana into (i.e. like “put the banana into the
+2 minus 1 bowl from the left”)
+
+= Eval 3 (50pts): Place a coke can on a certain
+image (you won’t know the images beforehand)
+
+= Bonus (50pts): We give bonus points for the
+smallest model in number of parameters
+
+“Move Coke Can near Taylor Swift“
+
+eFSABMOO
+
+===== slide 006  [08:27] =====
+Project 2: Pushing - World Model
+
+= Eval 1 (50pts): Push a given smaller object
+(TBD which one) in a straight line
+
+= Eval 2 (50pts): Push a given smaller object
+around an obstacle
+
+= Eval 3 (50pts): Push a new unknown object in
+a straight line (25pts) and around an obstacle
+(25pts again)
+
+= Bonus (50pts): Least amount of pushes
+needed in each of the three challenges (10
+pts for least pushes for the first, 10 for the
+second, 30 for the last, will be divided amont
+the 10 groups competing).
+
+Time Step = 5
+
+(cy aeemcch ke)
+
+===== slide 007  [09:41] =====
+Project 3: Singulation - Reinforcement Learning
+
+= Eval 1 (50pts): Learn a pick an place policy
+that picks up one wooden block and placing
+them in one of three bowls laid out in front of
+the arm (can be just BC).
+
+# Eval 2 (50pts): Singulate the combined four
+wooden blocks
+
+= Eval 3 (50pts): Singulate more combined
+blocks.
+
+= Bonus (50pts): Fastest singulating policy
+
+C/AmmOO 6
+
+===== slide 008  [11:04] =====
+Project 4: Keyboard Typing - Code as Policies
+
+« Design a system (VLM -> keypoints + some classical keypoint
+grasping policy) that is able to work in unseen eval environment.
+
+= Eval 1 (50pts): Move to four points
+drawned on a paper sheet.
+
+= Eval 2 (50pts): Pressing defined keys
+on a laptop keyboard.
+
+= Eval 3 (50pts): Typing words on an
+unseen laptop keyboard.
+
+= Bonus (50pts): Fastest spelling of
+words on the keyboard.
+
+eFSABMOO
+
+===== [12:11] revisit of slide 1 =====
+
+===== slide 009  [12:24] =====
+World Models
+
+« Batters can hit 160km/h balls by anticipating the location
+
+=" Our world model allows to decide batting in shorter time
+than visuals reach our brain
+
+S + aN ___ SUBCONSCIOUS
+~ WORLD MODEL
+
+ANTICIPA TED
+LOCATION
+
+eFSABMOO 10
+
+===== slide 010  [14:43] =====
+World Models vs Policies
+
+" Policies/VLAs are blind to physical causality & temporal
+
+dynamics
+
+Policy / VLA World model
+Given s; and goal g, what action should | take? } ( Given s; and action a;, what happens next?
+: } | | | ! | | d
+\ state y NY language goal state L action
+mat | St Q) P(St+1 | St, a1)
+policy / VLA world model
+a — action to execute Stz1 — next state
+
+(cy aeemcch k---e->)
+
+===== slide 011  [16:06] =====
+Why World Models?
+
+= What if we could predict how different sequence of
+actions would affect the environment?
+# Unlock optimizing for the optimal trajectory
+
+N imagined rollouts
+
+_ best
+Sol world model el execute best plan
+robo! —i
+ais P(Stz1 | St. at) real world - 1 trial
+) learned from data - a
+
+esSA2RBHKOO
+
+===== slide 012  [16:53] =====
+World Models: Data-driven Simulators
+
+= Function that predicts the consequences of actions, i.e. a
+learned simulator
+
+Traditional simulator World model
+(— 5
+hand-engineered physics engine real interaction data
+tigid bodies - contact models - friction - collision geometry Ko robot trajectories - human video - internet-scale video
+
+| |
+
+i
+simulator world model
+$11 = f(S1,a) [deterministic, hand-coded] L plsis1 | sa) [leamed from data]
+
+| |
+
+predicted next state s;.1 predicted next state s;.1
+accurate only for modelled phenomena generalises to anything seen in data
+@ fast, repeatable simulation @ models anything capturable on video
+X _ requires hand-engineered physics models @ 10 manual engineering required
+
+C/A2EmMOO 13
+
+===== slide 013  [19:06] =====
+World Model Definition
+
+= Given the current state, an action, and a memory of the
+past — what happens next?
+
+P(St41 | St, Qt, he )
+
+" Strictly, video models P(video | text) are not world models
+
+(<yaeemcch i---m->)
+
+===== slide 014  [20:36] =====
+Pixel AC-WMs
+
+" Instead of full video prediction, predict action conditioned
+flow field that warps F +41.; Current image to next frame
+
+F 5x5 5xSconv 5x5conv 5x5conv 5xSconv 5x5 conv
+RGB input
+
+ha
+
+=>
+stride
+2
+
+64x64x3 32x32 32x32 32x32 16x16
+
+5x5conv 5x5 conv 1x1 compositing
+convi  LSTM1 LSTM2 LSTM3  LSTM4 — LSTMS LSTM 6 LSTM7 conv 2 masks
+
+decom
+
+CONV:
+16x16 32x32 GAxG4
+
+masked
+compositing
+——
+
+8 S fully connected,
+
+°cvi reshape & 10 5x5
+
+normalize EDNA\ ae 10 64x64x3 i
+8x8 transformed
+images
+
+Unsupervised Learning for Physical Interaction through Video Prediction
+CSA2BMOO Finn, Goodfellow, Levine (2016) 15
+
+8x8
+
+concatenate
+
+===== slide 015  [23:31] =====
+Pixel AC-WMs
+
+Training Test time — Visual MPC
+( pixel
+Bs |. model
+robot (01, at, Or+1) pred Or = sample N roll out
+autonomous large-scale robot conv-LSTM current obs action segs fart: pixel preds 61:1.
+interaction \ interaction dataset floss
+
+pixel warp
+
+nN
+exegute
++replan
+
+v
+
+key insight: predict pixel motion, not pixel values | cost function — choose one:
+- 2 best
+Se = icted flow fiel
+0141 =Fi.1~—10 0, — warp frame by predicted flow field . < ( pixel distance | goal image ) | classifier )
+a
+
+\dr—dg|2 image registration few-shot success
+
+optimiser: Cross-Entropy Method (CEM) — gradient-free
+iteratively refit Gaussian to top-k sequences - replan every step
+
+Self-supervised training on robot videos
+
+Generalizes to unseen objects due to motion objective
+x Blurry predictions with L2 loss
+
+x Planning in pixel space computationally expensive
+
+X Prediction error accumulates
+
+eFSABMOO 17
+
+===== slide 016  [24:50] =====
+What if we compressed observations into a latent space and
+trained a policy entirely inside that learned world?
+
+eFSABMOO
+
+===== slide 017  [25:42] =====
+Latent AC-WMs
+
+= By learning a compact, latent world model a policy can be
+trained entirely in imagination
+
+Latent AC-WMs — general structure
+
+(ne " a
+) encoder dynamics model policy (
+2 Zn he a
+environment —> Z:=eNnC¢(0r) —s Aes = Ahr, Zt, at) — a= (Zt, hi) —* environment
+or Ze RI PlZtst | 21, at, hi) optimised on Oeste
+hes | rr compact latent code pli | mz) imagined rewards = |
+0121 fed b¥ck to encoder |
+
+training the policy in imagination
+
+1. fix encoder + dynamics model 2. roll out imagined 21,..., 2H
+
+3. policy acts on z, hy 4. optimise policy on imagined 7
+
+= policy improves without real environment interaction
+
+eFfSABMOO 19
+
+===== slide 018  [26:49] =====
+The OG Latent AC-WM
+
+eFSABMOO
+
+At each time step, our agent
+receives an observation from
+the environment.
+
+World Model
+
+The Vision Model (V) encodes the
+high-dimensional observation into
+a low-dimensional latent vector.
+
+The Memory RNN (M) integrates
+the historical codes to create a
+representation that can predict
+future states.
+
+A small Controller (C) uses the
+representations from both
+V and M to select good actions.
+
+The agent performs actions that
+
+go back and affect the environment.
+
+Vv \ Vv
+z
+
+World Models
+
+Ha and Schmidhuber (2018)
+
+20
+
+===== slide 019  [27:53] =====
+The OG Latent AC-WM: Visual Model
+
+# Learn abstract, compressed representation of each input
+
+frame
+
+Original Observed Frame
+
+eFSABMOO
+
+Encoder GH Decoder
+
+World Models
+Ha and Schmidhuber (2018)
+
+Reconstructed Frame
+
+—
+
+===== slide 020  [28:33] =====
+The OG Latent AC-WM: Memory Model
+
+= Compress what happens over time P( 2:43 | @¢, Zz, he )
+= The MDN output models P(z;,,) as a mixture of Gaussians
+
+Zin Zuo
+
+—
+
+Zz
+A
+MDN
+AA
+hs RNN h, >| RNN 1
+1 | a, | Aun
+Lu
+
+ay
+
+World Models
+C/SA2BMOO Ha and Schmidhuber (2018) 22
+
+===== slide 021  [29:33] =====
+The OG Latent AC-WM: Controller Model
+
+= Policy conditions on both the current latent z,and the
+memory h,, single FC layer a; = 1(z;, h;)
+
+« Trained with black-box evolutionary optimisation algorithm
+(CMA-ES)
+
+1. Sample N controllers from W,(i) ~ N (wu, Z)
+
+2. For each candidate run dream rollout and
+collect imagined reward
+
+3. Select top rollouts
+
+4. Update p and 2 toward the top rollouts
+
+World Models
+OCsSA2BMOO Ha and Schmidhuber (2018) 23
+
+===== slide 022  [32:55] =====
+Why Imagination Without Priors Drifts
+
+# RNN is trained on real z, from VAE, not own predictions
+" No principled ie to generate a from Me alone, P(z; | hz )
+
+ailable
+Or iS VAE " MDN-RNN MDN controller
+encoder fe= fhe ize | hi) = mz, hi)
+
+in imagination — no real observation
+
+2
+MDN-RNN ine MDN te) controller
+2) hhe= fhn1,21, i) ples | hi) ar= mz, hi)
+
+hallucinated 2 fed back into RNN at next step
+
+problem
+
+VAE is trained separately from the RNN — it encodes o,, not the model's own belief
+There is no prior p(zt | hi) — without o; the model has no way to form a belief
+
+Sampling errors in Z; compound across steps = imagination drifts from reality
+
+eFSABMOO 26
+
+===== slide 023  [34:37] =====
+Training a Recurrent State-Space Model (RSSM)
+
+deterministic path — h, carries memory (never sampled)
+
+eSB OO
+
+training — posterior: F training — posterior:
+21] i, 0%) A201 | Per, On) 202 | Pez, On2)
+
+Imagination — prior: Imagination — prior: Imagination — prior:
+pl2i| mi) P21 | Pos) PR2n2 | Paz)
+
+stochastic path — j, captures uncertainty about current sti
+
+o Ons One
+fix 1 — exposure bias fix 2— missing prior
+‘nis deterministic — never sampled, never corrupted Prior pz | fis learned — no observation needed
+Even it z drifts, remains a clean memory anchor {In imagination, sample 2: from prior conditioned on fy
+rors cannot compound through hk — reset at every step ‘The medel has an intemal compass — grounded in its own memory
+‘and f decoded from (fy 2) ‘Daa(qip) forces prior to match posterior
+Forces 2:1o encode everything needed to reconsinuct the word Imagination stays close to what training taught the mod!
+
+Learning Latent Dynamics for Planning from Pixels
+Hafner et al. (2019)
+
+27
+
+===== slide 024  [36:19] =====
+RSSM Closed-Loop Inference Imagination
+
+deterministic path — h, carries memory (never sampled)
+
+stochastic path,
+policy 7
+1 = Uber, Zu1)
+
+policy + world model — closed-loop imagination
+
+2:~ plz: | hi), no observationfeeded
+
+At each step: reads (h,, z)) and outputs a; — no real robot needed
+World model advances: hy.1= fh, 2, a), then 2st ~ plZier | fer)
+
+accumulated over the rollout ~ policy optimised on imagined reward
+
+Learning Latent Dynamics for Planning from Pixels
+O@esSABMOO Hafner et al. (2019)
+
+28
+
+===== slide 025  [37:44] =====
+Dreamer V1
+
+= Why plan from scratch with CEM at every step when you
+
+could amortise that planning into a learned policy?
+
+PlaNet (Hafner et al., 2019) Dreamer V1 (Hafner et al., 2020)
+World mode! only — plan at test time with CEM World mode! + actor-critic— policy trained by backprop
+RSSM (world model) RSSM (world model)
+Perm file, 252i) = plier | Mies) + pli | Pez) Peet = flee Z5a) © plZter | ees) © phe | Mz)
+trained on real data - ELBO foss — trazen during pokey training trained on real data - ELBO loss - trozen during pobcy training
+CEM planning (test time) imagination rollout actor-critic
+1. sample N action sequences roll out (22x79, in latent space actor: ar= Melty 2)
+| 2. roll out in RSSM imagination ‘no real environment needed Ls cate: Vel, 2)
+3. keep top-k, refit Gaussian ‘returns for policy gradient le trained by backprop
+v
+4, execute best frst action, replan world mode! frozen during this phase through trozen SSM
+training: collect real data — train RSSM — repeat 1. collect real data + train RSSM (ELBO)
+
+2. freeze RSSM — train actor-critic in imagination (backprop)
+alternate between phases
+
+Actions chosen without policy bias Backprop through differentiable dynamics
+
+x Planning from scratch at every step CEM enables long-horizon planning
+
+Policy can exploit world model errors
+
+Dream to Control: Learning Behaviors By Latent Imagination
+O@fSABMOO Hafner et al. (2020)
+
+===== slide 026  [41:45] =====
+Dreamer Lineage
+
+World Models
+2018
+
+KEY INNOVATION
+
+V-M-C decomposition
+
+VAE +MDN-RNN + CMA-ES
+
+HEADLINE RESULT
+First agent trained
+
+purely in imagination
+
+Car racing solved
+
+from pixels.
+
+—EEEEEe
+
+(<yaeemcch ie)
+
+PlaNet
+
+deterministic h + stochastic 2:
+
+200x more sample-efficient
+
+than model-free methods
+
+Dreamer V1
+
+Backprop through dynamics
+
+actor-critic replaces CMA-ES
+
+Outperforms model-free RL
+on DMControl
+
+Dreamer V2
+
+Categorical latents
+
++KL balancing
+
+First world model to
+
+match DQN on Atari
+
+Human-level on 45,
+of 55 Atari games
+
+Dreamer V3
+
+First to obtain diamonds
+
+in Minecraft from pixels
+
+Dreamer V4
+
+jow matching + transformer K\
+
++ unlabeled video pretraining
+
+Diamonds from offline
+
+data only
+
+32
+
+===== slide 027  [45:09] =====
+Dreamer’s latents are domain specific. What if we want to
+scale the videos to all of Internet?
+
+|
+
+Generative Video Models
+
+(<yaeemcch ke)
+
+===== slide 028  [46:40] =====
+Naive Video Tokenization
+
+« Per-frame ViT produces too many tokens
+
+256x256 pixels per-frame, no temporal tokens / frame 10 sec video @ 20 FPS context explosion
+
+total context length:
+
+tokens per frame: x number of frames
+ViT Encoder
+256 ,, 256 _ 256 x 200 = 51,200 tokens
+16 * 16 7256 tokens — 20 FPS x 10 seconds y
+1616 patches = 200 frames for a 10-second clip
+per frame
+CoA MM te (short clip) GPT-4: 128K limit total!
+
+‘one frame o;
+
+(<yaeemcch k--e->)
+
+===== slide 029  [48:10] =====
+Video Tokenization Compression
+
+Axis 1 — Spatial Compression Axis 2— Temporal Compression Axis 3 — Adaptive Compression
+
+variable budget > complex trames get more tokens
+
+deeper encoder > fewer tokens per frame ‘merge frames > fewer time steps
+
+naive: 16 patches compressed: 4 patches
+foken budget allocated proportionally to frame complexity
+» 256 tokensitrame » 4 tokensitrame
+mechanism Tubelets Causal Aggregation ‘mechanism
+VO-VAE/ VOGAN encoder with stride 8 patch (thw) attend past only tall-drop masking during training
+8 spatial: 256x256 + 4x4 tokens full tube at once frame-by-frame decode tokens ordered by information content
+non-causal causal
+examples —_____. examples,
+VOGAN - SD-VAE - Cosmos CVBx8x8 ElasticTok (Van ot al, ICLR 2025)
+TimeStormer-ViViT Dreamer VA tokenizer
+Cae causal? yes — works per-trame with context
+
+osmos (analysis)
+
+‘causal? yes —no temporal dependency
+
+256 — 4 tokens / frame 200 — 25 time steps le tokens per frame
+64x spatial reduction 8 temporal reduction 2-5 reduction on average
+
+Combined (Cosmos): spatial 8x + temporal 8x = 512x compression -> 51,200 tokens becomes 100 tokens for a 10-sec clip
+
+‘Axes are independent and composable - causality requirement determines which temporal method to use
+
+| Ih.-->)
+
+esa
+
+36
+
+===== slide 030  [52:08] =====
+Video World Model: Where Do Actions Live?
+
+Action-Conditioned World Models (AC-WMs)
+
+actions in - future states out
+
+Video-Based Action Prediction Models
+
+pretrain on video - actions predicted from generated frames
+
+WAM — World Action Model
+single model — joint video + action prediction
+
+World Model
+observations future
+future actions states i
+i Dstt | Sa) im Joint Model
+ee Ae Plott. attend
+[observations + actions] — [sr.1] | text, 09:1. 4)
+what it does example: DreamZero
+given current obs + planned actions,
+simulate what the world will ook like VEDI SU AEU IO SE|
+frozen video backbone - lightweight policy head
+aris an input — conditions future prediction
+examples: Dreamer V1-V4 - DreamDojo - V-JEPA2
+Video Backbone
+
+retrained on internet video
+
+‘example: mimic-video
+
+37
+
+===== slide 031  [55:13] =====
+eFSABHMOO
+
+Didn’t we say video is expensive?
+Why use video backbones?
+
+38
+
+===== slide 032  [55:34] =====
+VLAs: Poor Sample Efficiency
+
+=» VLMs are often trained on static images & text, blind to
+physical causality and temporal dynamics
+= Larg-scale teleop data necessary to convert a VLM to VLA
+
+VLA
+
+Image-Text Pairs Large Scale
+
+Semantics Robotics Data X Expensive Post-Training
+
+=3-m<
+
+Learn: Dynamics+Control
+
+Person cutting carrots
+
+C/SABMO of igure designed by Oier Mees for: mimic-video: Video-Action Models for Generalizable Robot Control Beyond VLAs 39
+
+===== slide 033  [57:21] =====
+Video Backbones
+
+" Offload dynamics learning to scalable action-free video
+data
+
+Video-Text Pairs
+Semantics + Visual Dynamics Small Scale Efficient Post-Training
+
+Robotics Data
+Video Model / video Mode! ] <> pe, o> OC
+
+Learn: Control
+
+Person cutting carrots
+
+e7SAgBMO of igure designed by Oier Mees for: mimic-video: Video-Action Models for Generalizable Robot Control Beyond VLAs 40
+
+===== slide 034  [58:36] =====
+Video-Action Models
+
+« Key: leverage generative video models as backbone
+
+VLA 10x Sample-Efficiency
+<—__—__—_.
+
+Success 1.0 + :
+
+Large Scale Rate o
+
+Image-Text Pairs
+
+Semantics Robotics Data X Expensive Post-Training os
+
+aw .
+VLM o> o> oF a
+Person cutting carrots = ee °°
+
+Learn: Dynamics+Control 2% 0% 50% 700%
+Robot Data Quantity
+
+----- - ee eH ee KH HH Ke He ee ee ee ee ee ee ee ee (1) Video-Action Model (ours) |
+
+Video-Action Model (VAM) 6 Vision-Language-Action Model (VLA)
+
+i j 5 Small Scale
+Semantics + Visual Dynamics Robolles Data Efficient Post-Training
+
+Learn: Control
+
+Dexterous & Generalizable Manipulation
+
+Video-Text Pairs
+
+Person cutting carrots
+
+mimic-video: Video-Action Models for Generalizable Robot Control Beyond VLAs
+Pai*, Achenbach*, Montesinos, Forrai, Mees*, Nava*. arxiv, 2025. AL
+
+(cy aeemcch h---e->)
+
+===== slide 035  [59:14] =====
+Policy Performance Scales with Video Model
+
+(oro, achieves perfect ame
+
+when conditioned on ground truth video
+
+aed ® Pretrained Video Model
+(8 Finetuned Video Model
+
+@ Finetuning a video model on robot
+data improves video prediction
+quality and thus policy performance
+
+/| Policy performance scales with
+Predicted Video Expert Video better video models
+
+Action Decoder Input
+
+efSA2RBHKOO
+
+===== slide 036  [61:41] =====
+mimic-video
+
+Repeat neyees
+
+, Action
+Video Model lr,
+Video Noise 7, Decoder Action Noise T,
+
+Language Partial Video “ a — : ne
+Encoder Prediction
+
+“put the package on
+the conveyor belt”
+
+Then, video model activations condition a light-weight flow matching
+action decoder
+
+eFSABMOO 43
+
+===== slide 037  [62:54] =====
+Joint Video-Action Sampling
+
+Autonomous Policy Execution Video Generation
+(skipped in regular policy inference)
+
+reTioe EL Ee
+
+eFSABMOO
+
+===== slide 038  [63:00] =====
+World Action Models: DreamZero
+
+= Joint video-action prediction, no explicit IDM
+
+= Autoregressive video chunk generation, faster KV cache
+inference with 14B model
+
+Training: Joint Video-Action Flow Matching
+
+Joint Video-Action DiT
+Video Latents :
+
+Inference: Closed-Loop Real World Execution
+Joint Video-Action DiT
+
+Future frames
+
+-
+
+Future action
+chun
+
+Acti =
+SS) [eas —
+
+1
+1
+
+'
+
+'
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+Joint flow t
+er 1
+(re 1
+1
+
+'
+
+'
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+'
+
+'
+
+i
+1
+Proprioception : Asyne real-world
+ate/Text a execution
+Proprioception Language setae o\
+State/Text "Pack up the fruits <a >
+Language ncoder into the bag” ras
+k up th
+to the
+
+Update with Real Observation
+
+World Action Models are Zero-shot Policies
+Ye et al. arxiv, 2026.
+esSABMOO
+
+47
+
+===== slide 039  [65:49] =====
+WAMs vs VAMs
+
+Dimension
+
+Data
+
+Cross-
+embodiment
+
+Pre-training
+
+WAMs (DreamZero, mimic-video)
+
+AC-WMs (Dreamer, DreamDojo)
+
+instruction-labeled only — hard to use
+
+play data or failure trajectories at scale
+
+all robot data: play. failures,
+
+policy rollouts — easier to scale
+
+easy — inputs/outputs embodiment-agnostic
+
+only action decoder needs robot data
+
+open challenge — each robot has
+
+its own action space
+
+small gap from pre-trained video model
+
+preserves general visual capabi
+
+action conditioning changes input distribution
+
+may destroy pre-trained abilities
+
+Beyond BC paradigm only — instructions ~ actions RL in imagination + fine-grained
+imitation no RL or counterfactual simulation gradient-based planning
+
+best-of-N via diverse text prompts fine-grained gradient-based optimization
+Planning
+
+easy action proposal generation
+
+of action sequences at inference time
+
+49
+
+===== slide 040  [67:36] =====
+World Action Models: DreamZero
+
+# Strong generalization and few-shot acapialen eapeetiice
+
+Fold the bottom of the green short sleeve to the middle. Then, pull the
+shirt toward the edge of the table. Next, fold the top of the shirt down to
+the middle. Finally, grasp the collar and folds it down. | ut
+
+Untie the knot rah the shoelace. | @ Pick up the marker and draw a circle on the book. | 4
+
+World Action Models are Zero-shot Policies
+Ye et al. arxiv, 2026. 48
+
+===== slide 041  [67:40] =====
+WAMs vs VAMs
+
+Dimension
+
+Data
+
+Cross-
+embodiment
+
+Pre-training
+
+Beyond
+imitation
+
+Planning
+
+esa
+
+HOO
+
+WAMs (DreamZero, mimic-video)
+
+AC-WMs (Dreamer, DreamDojo)
+
+instruction-labeled only — hard to use
+
+play data or failure trajectories at scale
+
+all robot data: play. failures,
+
+policy rollouts — easier to scale
+
+easy — inputs/outputs embodiment-agnostic
+
+only action decoder needs robot data
+
+open challenge — each robot has
+
+its own action space
+
+small gap from pre-trained video model
+
+preserves general visual capabi
+
+action conditioning changes input distribution
+
+may destroy pre-trained abilities
+
+BC paradigm only — instructions — actions
+
+no RL or counterfactual simulation
+
+RL in imagination + fine-grained
+
+gradient-based planning
+
+best-of-N via diverse text prompts
+
+easy action proposal generation
+
+fine-grained gradient-based optimization
+
+of action sequences at inference time
+
+49
+
+===== slide 042  [68:02] =====
+(<yaeemcch km)
+
+All approaches so far had a decoder to reconstruct or
+generate pixels at some point
+Do you even need to predict pixels at all?
+
+50
+
+===== slide 043  [68:47] =====
+Joint-Embedding Predictive Architecture
+
+= What if we don't predict pixels or tokens at all?
+
+rc
+
+JEPA — Joint-Embedding Predictive Architecture
+
+predict in latent space — no decoder, no pixel reconstruction
+
+= — Encoder
+ae
+
+z=enc(o))
+
+— — ‘Same encoder
+=|
+
+2-1 =eNc( 01-1)
+
+Predictor Zt
+: p He
+21.1 =pred(z,, ai) pened
+
+[21-1 -Zte?
+
+Zt
+>
+target
+
+How to prevent collapse — three strategies
+
+No Decoder
+
+no pixel reconstruction
+
+Collapse risk
+
+enc maps all frames
+
+to same vector:
+
+MSE = 0 trivially
+
+EMA Target Encoder
+
+Target enc = slow-moving copy
+(momentum update)
+Breaks gradient symmetry
+e.g. LJEPA, V-JEPA2
+
+‘not fully end-to-end / requires tuning
+
+Frozen Pretrained Encoder
+
+Encoder fixed (e.g. DINO)
+Collapse impossible —
+‘encoder never changes
+
+eg. DINO-WM
+
+‘no end-to-end learning
+
+Gaussian Regularisation
+
+Force latent distribution
+to be Gaussian
+
+Provably prevents collapse
+e.g. LeWorldModel
+
+{ully end-to-end / one hyperparameter
+
+(<yaeemcch ke)
+
+JEPA)
+
+pl
+
+===== slide 044  [70:59] =====
+onclusion
+
+~
+
+One master formula P(s;41 | sz, a;,h;), five different approaches
+
+Family 5; (state repr.) arrole Planning Data Example
+input — conditions robot data Finn 2016
+Pixel AC-WMs pixels 0; visual MPC (CEM)
+future frame + action labels Visual Foresight
+input — conditions RL in imagination robot data Dreamer V1-V4
+Latent AC-WMs compact latent z;
+latent dynamics Dreamer-style + action labels DayDreamer
+—————EEE ————————
+Sa See
+video tokens output — jointly generate video intemet video
+WAMs: DreamZero
+(full frames) predicted + extract actions + robot fine-tune
+re —_
+video tokens output — IDM generate latent video internet video (backbone)
+VAMs mimic-video
+(frozen backbone) reads from video +IDM + robot data (IDM)
+latent 2; input — conditions latent MPC robot data LeWorldMode!
+JEPA
+(no decoder ever) latent predictor no pixels needed + action labels V-JEPA 2
+Open questions
+Will flexible conditioning win? Pixels or latents? | Can JEPA scale?
+
+‘one model on text OR actions — best of both worlds does pixel prediction help cross-embodiment, or is it unnecessary cost? V-JEPA 2 shows promise — can latent WMs match generative ones at scale?
+
+===== slide 045  [71:41] =====
+Thank you for your attention
+
+efSA2BHKOO
+

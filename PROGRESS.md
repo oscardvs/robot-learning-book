@@ -34,8 +34,8 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 
 - [x] **Phase 0 — Setup.** Dirs, git, tooling. Build chain smoke-tested end to end.
 - [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
-- [ ] **Phase 2 — Slides.** ⛔ All 11 PDFs are AES-256 encrypted with a *user*
-      password. Downloaded but unreadable. **Asked the user for the password.**
+- [x] **Phase 2 — Slides.** Reconstructed from recordings (password unavailable —
+      see below). **484 slides** across 11 lectures, all extracted + OCR'd + montaged.
 - [~] **Phase 3 — Per-lecture notes.** L1 done (`notes/lecture01.md`). L2–11 pending.
 - [ ] **Phase 4 — Notation pass** (needs all notes; L1 has almost none)
 - [~] **Phase 5 — Chapters.** Drafting **Ch.1 early** from L1 notes to get the voice
@@ -49,7 +49,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 
 | # | Lecture | Transcript | Slides | Notes | Chapter |
 |---|---------|-----------|--------|-------|---------|
-| 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 (rebuilt) | ✅ | draft |
+| 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 | ✅ | ✅ draft (voice ckpt) |
 | 2 | Robot Control & MDPs | ✅ 7,085 w | 🔒 locked | ☐ | ☐ |
 | 3 | Imitation Learning | ✅ 7,842 w | 🔒 locked | ☐ | ☐ |
 | 4 | Reinforcement Learning I | ✅ 7,651 w | 🔒 locked | ☐ | ☐ |

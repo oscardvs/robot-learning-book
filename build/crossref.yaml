@@ -1,0 +1,12 @@
+# pandoc-crossref configuration for the book: per-chapter numbering (1.1, 1.2, …)
+# and capitalised prefixes ("Figure 1.1", "Equation 1.1").
+figureTitle: "Figure"
+tableTitle: "Table"
+figPrefix: ["Figure", "Figures"]
+eqnPrefix: ["Equation", "Equations"]
+tblPrefix: ["Table", "Tables"]
+secPrefix: ["Section", "Sections"]
+chapters: true
+chaptersDepth: 1
+numberSections: true
+linkReferences: true

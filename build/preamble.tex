@@ -1,0 +1,74 @@
+% ---- Robot Learning textbook: shared XeLaTeX preamble ----
+% Design target: the calm density of Sutton & Barto and Lynch & Park.
+% Serif body ~11pt, single column, generous margins, one restrained accent.
+
+\usepackage{geometry}
+\geometry{papersize={7in,10in},
+  inner=0.9in, outer=1.35in, top=1.0in, bottom=1.0in,
+  marginparwidth=0.95in, marginparsep=0.18in}
+
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\setmainfont{Libertinus Serif}
+\setsansfont{Libertinus Sans}
+\setmonofont{Latin Modern Mono}[Scale=0.92]
+\setmathfont{Libertinus Math}
+
+% microtype is already loaded by pandoc's template; just enable tracking
+\microtypesetup{tracking=true}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+
+% one accent colour, used for headings and rules only
+\usepackage{xcolor}
+\definecolor{accent}{HTML}{7A1F2B}   % deep ETH-ish red
+\definecolor{rulegray}{HTML}{888888}
+
+% headings
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\sffamily\bfseries\color{accent}}
+  {\fontsize{14}{16}\selectfont\MakeUppercase{\chaptertitlename}\ \thechapter}
+  {8pt}{\fontsize{26}{30}\selectfont\raggedright}
+  [\vspace{2pt}{\color{accent}\titlerule[1.2pt]}]
+\titleformat{\section}
+  {\sffamily\large\bfseries\color{accent}}{\thesection}{0.6em}{}
+\titleformat{\subsection}
+  {\sffamily\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.6ex plus 1ex minus .2ex}{0.8ex}
+
+% running heads
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[LE]{\sffamily\small\thepage\quad\leftmark}
+\fancyhead[RO]{\sffamily\small\rightmark\quad\thepage}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+
+% figures / captions
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=small,labelfont={sf,bf,color=accent},labelsep=period]{caption}
+\setkeys{Gin}{width=0.85\linewidth,keepaspectratio}
+
+% algorithms as proper boxes
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\setlist{itemsep=2pt,topsep=3pt}
+
+% editor's-note and unclear callouts
+\usepackage{tcolorbox}
+\newtcolorbox{editornote}{colback=accent!4,colframe=accent!55,
+  boxrule=0.4pt,left=6pt,right=6pt,top=4pt,bottom=4pt,
+  fontupper=\small}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent,
+  linktoc=all}
+\usepackage{parskip}
