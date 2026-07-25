@@ -54,7 +54,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 |---|---------|-----------|--------|-------|---------|
 | 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 | ✅ | ✅ 12 pp (voice ckpt) |
 | 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ✅ 26 pp |
-| 3 | Imitation Learning | ✅ 7,842 w | ✅ 49 | ✅ | ☐ |
+| 3 | Imitation Learning | ✅ 7,842 w | ✅ 49 | ✅ | ✅ 22 pp |
 | 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ☐ |
 | 5 | Reinforcement Learning II | ✅ 7,482 w | ✅ 33 | ✅ | ☐ |
 | 6 | Generative Models | ✅ 7,437 w | ✅ 37 | ✅ | ☐ |
@@ -107,6 +107,17 @@ hard rules, no cracking was attempted — the password was requested from the us
 Everything downstream (Phases 3–9) depends on this.
 
 ---
+
+## Phase 5 notes — chapter build gotchas
+
+`algorithm2e` boxes: use **`\KwIn` / `\KwOut`**, not the preamble's
+`\SetKwInOut`-defined `\Input` / `\Output`. The latter aligns its colon in a fixed-width
+box that wraps in this 7in geometry, leaving a stray `:` on its own line. `\KwIn`/`\KwOut`
+print "Input:" / "Output:" inline and render correctly.
+
+Cross-chapter `@eq:` / `@fig:` references only resolve when the chapters are built
+together — a single-chapter build reports "undefined references", which is expected and
+not a defect. Verify page counts with two or more chapters in the same run.
 
 ## Phase 0 notes — toolchain
 
