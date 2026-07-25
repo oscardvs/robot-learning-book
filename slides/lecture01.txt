@@ -1,0 +1,497 @@
+# Lecture 1 — slide OCR (secondary source; verify math visually)
+# 44 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 1: Introduction to Robot Learning
+
+Oier Mees SE Microsoft
+
+16.02.2026
+
+eFSABMOO
+
+===== slide 002  [01:43] =====
+About Me
+
+From Basque Country, Spain PhD in Freiburg, Germany _—_‘ PostDoc in Berkeley, USA Research at Microsoft
+
+Se ae ee :
+i BA BERKELEY
+
+©
+IN MUNICH f
+= Ea
+
+O@sSABMOO
+
+===== slide 003  [04:05] =====
+Course Staff: TAs
+
+Alexey Gavryushin Jonas Pai Liam Achenbach Nicola Irmiger
+alexey.gavryushin@inf.ethz.ch jonpai@student.ethz.ch jonpai@student.ethz.ch nirmiger@ethz.ch
+
+Tianxu An Simon Sukup Nicole Damblon Zador Pataki
+tianan@ethz.ch ssukup@student.ethz.ch ndamblon@ethz.ch patakiz@ethz.ch
+
+eFSARBMOO
+
+===== slide 004  [05:01] =====
+Course Staff: TAs
+
+Carl Brander
+cbrander@student.ethz.ch
+
+Several open TA positions:
+This could be you!
+
+eFSABMOO
+
+===== slide 005  [05:34] =====
+The Plan for Today
+
+= Course Goals & Logistics
+= Why study Robot Learning?
+
+Robot Learning
+
+Oier Mees
+
+eFSABMOO
+
+===== slide 006  [05:52] =====
+Course Goal
+
+= Mastery of Fundamentals: Imitation, Reinforcement and
+Policy Learning
+
+# Practical Skills: Hands-on simulation and real-robot
+policy deployment
+
+« Frontier Models: Exploration of Foundation Models for
+robotics
+
+«" Systems Design: Scalable pipelines for perception,
+control and reasoning
+
+eFSABMOO
+
+===== slide 007  [08:24] =====
+Course Structure
+
+= Website: https://cvg.ethz.ch/lectures/Robot-Learnin
+= Mondays 16:15-17:45 :
+= Lecture 45 min + 45 min Paper Discussion
+= Guest lectures throughout course
+=» Thursdays 10:15-12:00
+= TA Led Practice Sessions
+
+= Individual Homework: 4x assignments
+= Group Projects on real SO-101 robots
+
+eFSABHMOO
+
+===== slide 008  [10:22] =====
+Paper Discussion
+
+= 3x papers per lecture, available at project course
+= 15 minutes per paper, groups of 4 students
+= Group A presents & defends paper, Group B criticizes it
+
+Enter paper groups here: Lecture Tentative Schedule -
+
+https://docs.google. coni/spreadehestsd/t YSJAvOj4 ri
+UwgBXzQIsAgiAGjVIJ30DI4TtdicgJdB4/
+
+eFSARBMOO
+
+===== slide 009  [13:00] =====
+Individual Homework
+
+course/ethz-course-2026
+# Submission: Gradescope
+
+=» HW1: Pytorch & Numpy Tutorial
+# HW2: Robot Control & MDPs
+
+=» HWS: Imitation Learning
+
+« HW4: Reinforcement Learning
+
+efSABHKOO
+
+Assignments: https://github.com/mees-robot-learning-
+
+16.02-26.02
+23.02-05.03
+02.03-16.03
+16.03-30.03
+
+===== slide 010  [13:57] =====
+Homework Advice
+
+=» Neural networks take some time to train!
+=" We try to make the homeworks fast to train
+
+Fi —= Me. waiting for my ne neural
+network to finishara valning
+
+Don’t start the night before the deadline working on the
+
+i |
+O@eSABMOO assignment! 11
+
+===== slide 011  [14:59] =====
+Course Grading
+
+» Paper Presentation & Discussion (Group): 20 %
+# Practical Homework (Coding Assignments): 40 %
+# Final Project (Group): 40 %
+
+SL COURSE GRADING FORECAST |-7
+
+/
+
+Paper Presentation Practical Homework Final Project
+(20%) (40%) (40%)
+
+C/A2EBmMOO 12
+
+===== slide 012  [15:49] =====
+Feedback Welcome
+
+= We are working hard to offer a great course
+=" We will probably make mistakes
+=" We would love to hear your feedback!
+
+ARE WE IMPROVISING AND GOING TO MAKE MISTAKES?
+SS
+
+ruRUM
+
+eFSABMOO
+
+===== slide 013  [16:53] =====
+Robots in Science Fiction
+
+The Jetsons, 1962 - Transformers, 2007
+
+eFSABMOO
+
+“Wall-E, 2008
+
+14
+
+===== slide 014  [24:25] =====
+Why Robots
+
+eFSABMOO
+
+5
+
+===== slide 015  [26:35] =====
+Shakey the Robot
+
+RESEARCH PERFORMED
+cy
+
+Shakey the Robot, Stanford 1966
+OesSARBMOO
+
+===== slide 016  [27:03] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+eFSABMOO
+
+===== slide 017  [27:29] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+eFSABMOO
+
+===== slide 018  [27:36] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+eSB OO
+
+===== slide 019  [27:38] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+esSA2BHKOO
+
+16
+
+===== slide 020  [27:47] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+efSA2BHKOO
+
+===== slide 021  [27:58] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+eFSABMOO
+
+===== slide 022  [28:18] =====
+Shakey the Robot
+
+Shakey the Robot, Stanford 1966
+
+(yy aeemcch ke)
+
+===== slide 023  [29:39] =====
+Robot Engineering
+
+=» Sense-Plan-Act
+# Similar to Shakey (1966)
+» Structured Environments
+
+efSA2BHOO
+
+aly
+
+===== slide 024  [32:02] =====
+When State Estimation Fails
+
+Boston Dynamics | TED
+
+eFSABHMOO
+
+18
+
+===== slide 025  [33:23] =====
+When State Estimation Fails
+
+Boston Dynamics | TED
+
+Boston Dynamics 2022
+
+eFSABMOO
+
+18
+
+===== slide 026  [35:44] =====
+Robot Learning
+
+===== slide 027  [37:04] =====
+Robot Learning
+
+Solving Robotics via Machine Learning
+os ss
+
+Perception Imitation Learning
+
+Control Reinforcement Learning
+Dynamics Learning
+Representation Learning
+
+21
+
+===== slide 028  [38:05] =====
+Are These Robots?
+
+ChatGPT
+
+22
+
+===== slide 029  [41:10] =====
+Why Don’t We Already Have
+
+Berger and Wyrobeck, Stanford 2007
+
+===== slide 030  [41:18] =====
+Why Don’t We Already Have
+Autonomous Robots?
+
+Berger and Wyrobeck, Stanford 2007
+
+23
+
+===== slide 031  [41:59] =====
+Recent Hardware Advances
+
+Humanoid Robots
+
+NVIDIA GPUs
+
+24
+
+===== slide 032  [43:41] =====
+Recent Al Advances: Data Scaling
+
+« Avg time for a human to read dataset
+
+Llama 3
+
+GPT-2
+Imagenet
+O
+2 years
+60 years
+
+90,000 years
+
+25
+
+===== slide 033  [46:14] =====
+Recent Al Advances: Models
+
+Ly
+
+ALPHAGO
+
+eFSA2ABMOO
+
+26
+
+===== slide 034  [49:20] =====
+Recent Advances in Robot Learning
+
+Large Datasets Large Models
+
+R Octo
+
+Isaac GROOT
+9
+RT-2
+
+Open X-Embodiment: Robotic Learning Datasets and RT-X Models
+Open X-Embodiment Collaboration, Mees et al., ICRA, 2024.
+Best Conference Paper Award (out of 1765 papers)
+
+eFSABMOO 29
+
+===== slide 035  [50:05] =====
+eFSABMOO
+
+“Pick up the
+spoon”
+
+ACTION:
+[Ax, A0, AGrip] =...
+
+30
+
+===== slide 036  [51:20] =====
+“The picture
+Vision-Language shows
+
+the Statue of
+Model Liberty in NY”
+
+“Caption the
+scene”
+
+efSAiBHOO 32
+
+===== slide 037  [51:59] =====
+Key: Robotics as Multimodal Sequence Modeling
+
+Language Image Action
+Ooe @Oee @ oa ®
+
+ACTION:
+[Ax, 46, AGrip] =...
+
+“Pick up the
+
+spoon”
+
+(cy aeemcch ie) 33
+
+===== slide 038  [52:36] =====
+So we train a large transformer on robot data
+and we are done?
+
+Not quite...
+
+eFSABHMOO
+
+34
+
+===== slide 039  [54:40] =====
+Algorithms for Robotic Learning
+
+Imitation Learning Reinforcement Learning
+Given labeled data: Learn behavior:
+learn f(x) = y
+Assumes: data is not i.i.d., actions
+inputs x are independently, affect future states
+
+identically distributed (i.i.d.)
+
+= Supervised
+Dataset Learning
+
+eFSABHMOO
+
+36
+
+===== slide 040  [58:19] =====
+Course Syllabus: 1st Half
+
+Robot Learning Fundamentals & Algorithms
+Robot Control & MDPs
+# Imitation Learning
+= Reinforcement Learning (Online & Offline)
+
+Homework Assignments in Simulation
+
+eFSABMOO
+
+37
+
+===== slide 041  [59:52] =====
+Course Syllabus: 2nd Half
+
+" Scaling Robot Learning
+= Generative Models
+« Sequence Modeling & Transformers
+=" World Models
+= Robot Foundation Models & Embodied Reasoning
+
+C/SABmMOO Group Projects with Real Robots
+
+38
+
+===== slide 042  [62:42] =====
+After the Course
+
+# You will understand:
+
+DARPA Robotics Challenge 2015
+
+Figure Al, 2026
+
+41
+
+===== slide 043  [64:09] =====
+Why You Should Study Robot Learning
+
+# Broad skills from foundation model training to PID control
+# Advances often applicable to all robotic applications
+
+WANGMOUITD
+
+eFSA2ABMOO
+
+42
+
+===== slide 044  [64:25] =====
+Thank you for your attention
+and enjoy the course!
+
+(cy aeemcch k---e->)
+

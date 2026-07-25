@@ -1,0 +1,734 @@
+# Lecture 6 — slide OCR (secondary source; verify math visually)
+# 37 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 6: Generative Models
+
+Oier Mees ETHziirich 8” Microsoft
+
+23.03.2026
+
+===== slide 002  [00:15] =====
+Recap: Why Generative Modeling for Robotics?
+
+Stochasticity: Many (infinite) ways to close a drawer with a 7-DoF robot!
+
+Expert Inconsistency: Humans operators might use different ‘modes’ across trials
+
+===== slide 003  [01:44] =====
+Recap: Multimodal Behavior
+
+" Deterministic MSE BC policy will fail due to “averaging” of
+modes!
+
+= Goal: learn the full distribution!
+
+===== slide 004  [02:09] =====
+Generative Modeling
+
+= Goal: Learn complex, full distributions
+Po(x) => in robotics mg (a;|s;)
+
+How to Encode a How to Sample from a How to Transport
+Distribution Distribution through a Distribution
+
+VAEs Diffusion Models Flow Models
+
+===== slide 005  [03:02] =====
+Generative Modeling
+
+= A generative model converts samples from an initial
+distribution p(z) to a data distribution Dgata (x)
+
+Generative
+
+Model
+
+===== slide 006  [03:56] =====
+Latent Variable Models
+
+= Output still gaussian, but receives additional input
+= Can represent “any” distribution
+= Popular: conditional VAEs
+
+Conditional Decoder
+m(alo,z)= fat)
+
+===== slide 007  [04:35] =====
+Autoencoder
+
+= Compress input x into a compact latent representation z,
+then reconstruct x’
+
+O-O-@
+
+VA 2
+Latent'"—>| Decoder |£= lz — 96 (f6@))|
+Reconstruction
+
+z= fo() x' = go(z)
+
+===== slide 008  [05:33] =====
+Issues with Autoencoders
+
+= Latent space has no structure
+" Bottleneck (size) is the only regularizer
+= zis deterministic, can’t sample new data!
+
+e.®@
+ee ee
+| @ fe
+e class C
+class A
+? empty ?
+can't sample here
+e
+ee
+
+class B
+
+===== slide 009  [07:57] =====
+Variational Autoencoders (VAEs)
+
+= Constrain z to follow a distribution, often p(z) = N(0,/)
+= Forces latent space to be continuous, structured & sampleable
+
+—
+
+log pg (x) = —KL cols (z)) + Egy(zix) llog po (x1z)]
+
+Encoder
+
+Decoder
+qo (Z|x)
+
+Do (x|Z)
+
+Regularization: Reconstruction:
+are latents z close to our prior how well does latent z explain x ?
+
+2
+OcAmMOO p(z)? 8
+
+===== slide 010  [08:46] =====
+Reparameterization Trick
+
+= Problem: Sampling is non-differentiable
+
+X Naive sampling — gradients cannot flow
+
+(Ge@aaaae a Se n
+Encoder } Sample z | Decoder
+en outputs x” nail
+
+v . — gradients flow through pp and o
+
+eA fs tse |
+eA H, 07 fs xt oS
+= aes
+
+Y gradients flow to p and o
+
+et Z=u +a0Q@e€ where €~ N(0,1)
+
+not learned
+
+efSABHKOO
+
+===== slide 011  [12:35] =====
+Derivation
+
+Option 1) Score Function Estimator - REINFORCE
+
+Vol = Ez~aqg(ZIx) [F(Z)V¢ log qg(zlx)| =< B Ve acts on log gy only
+High variance, as a= =0
+Option 2) Reparameterization
+
+Z= Ug (x) + Oy (x) Og Er~N(0,I) Reparam. z— €, p(e) independent of @
+Vel =V¢o [rors (x) + og(x) O e)de Leibniz/linearity, move grad. inside integral
+Vol = Es-~won [Vof (ug (x) + Og (x) © e)| Vy acts on f directly — low variance = #0
+
+(a) (a) (a) (a)
+Vol xt. % = whe re—— = 1, “eae Chain Rule
+
+agcumes’? 8? OLg dog 10
+
+===== slide 012  [13:22] =====
+Variational Autoencoders (VAEs)
+
+= Latent space is continuous & structured
+=" Generative! Any z ~ p(z) decodes meaningfully
+
+Smooth! NEaTEYZ z's produce similar outputs
+
+VAE latent space
+
+@ @
+ee oO
+e.° o,°
+@ @
+class A class C
+sample z ~ p(z)
+e
+@
+e
+@
+
+@/2ABMOCO ms all
+
+===== slide 013  [14:04] =====
+Issues with Variational Autoencoders
+
+= Posterior Collapse: powerful decoder can learn to model
+p(x) directly, while ignoring z
+
+" Prior Mismatch: sampling z ~ W(0,|) at test time can land
+in regions the decoder was never trained on
+
+Training time: left ~ 96(2/*teft) = V (Mert Fert) Zright ~ I¢ (z [zright) =e (Hright right )
+C/ABMOO 12
+
+===== slide 014  [15:42] =====
+Vector Quantized VAE (VQ-VAE)
+
+= Replace the continuous Gaussian latent z with a discrete
+codebook of K learned vectors
+
+= Force to “commit” to a discrete code
+
+@, 6,8, ex
+Embedding
+Space
+CNN
+
+e,
+1 p(xiz,)
+
+e@
+
+2,(X) VL
+
+ea
+
+ ) ~ ©
+
+2,04) ~ ate)
+
+Encoder Decoder
+
+Neural Discrete Representation Learning
+van den Ord, Vinyals, et al., (2017)
+
+eSB OO
+
+===== slide 015  [16:56] =====
+VQ-VAE
+
+« What’s the nearest codebook vector C = {e;, é2, ...,ex}?
+Zq(x) =e, where k=arg min;||ze(x) _ ell,
+
+Not Differentiable!
+updating z,(x) will still point to same neighbor
+
+Straight-Through Estimator
+copy the gradients from the decoder input (z,) directly to
+
+the encoder output (z,), bypassing the argmin
+0Zq
+az. = I > Vz£ y Vit
+Zq = Ze + sg|Zq _ Za
+Oz Oz, OsglzZ,—-—Z
+$e = Se Blah 4-1
+OC*CABHOO a e 14
+
+===== slide 016  [18:59] =====
+VQ-VAE: Training
+
+Full Loss
+
+L=|x-D(zq)||, + Ise(ze)-exll? + Bllze—sgCex)Il3
+
+Reconstruction Codebook Commitment
+Did the decoder recover x = Moves the codebook Forces the encoder to stay
+
+from the quantised code? vectors e, toward the __ close to its chosen codebook
+Trains encoder & decoder encoder outputs to learn entry, preventing the latent
+jointly via STE a representative space from growing arbitrarily
+vocabulary of the data
+
+Training gives us the codebook C and decoder D,
+but how do we sample new data at test time?
+
+yy aeemcch i---m-) 15
+
+===== slide 017  [20:23] =====
+VQ-VAE: How to Generate New Data?
+1. Training Stage:
+
+encoder argmin
+X — Ze — ey EC = {€4, €2,..-, eK}
+2. Collect code indices per training sample
+D ={k ,k@, KS 3}
+
+3. Learn a categorical prior over the sequence of codes:
+n
+D(ky, Kn) = | | p(k; | ky)», Ki—-1) i.e. autoregressive transformer...
+i=1
+
+4. Inference time:
+I) Sample Index: k; ~ p(k; | ky, ..., Ki-1)
+II) Lookup Vector: ex, = Lookup(C, k;)
+
+III) Decode: X = D AP,
+C/ABMOO ) Decode: % (ex, Cien ) 16
+
+===== slide 018  [21:33] =====
+VQ-VAE
+
+Autoencoder
+scattered - gaps - no structure
+
+. oe
+e ® e
+Cc
+fe)
+A
+e
+Ce
+Ce
+B
+
+no structure + gaps
+
+Fixes posterior collapse
+
+No prior mismatch
+
+Discrete and controllable,
+good compression
+
+efSA2BHKOO
+
+VAE
+compact - continuous - sampleable
+
+structured but continuous
+
+VQ-VAE
+
+discrete - explicit - no gaps
+
+discrete + no gaps possible
+
+aie &
+X Codebook collapse —> Finite Scalar
+
+Quantization (FSQ)
+
+X Need to determine K in advance
+
+X Reconstruction still uses MSE,
+mean-seeking in outputs remains
+
+===== slide 019  [24:04] =====
+Diffusion
+
+# VQ-VAEs still have mean-seeking in outputs due to MSE
+
+" Diffusion learns complex distributions over continuous
+variables
+
+Forward Process
+
+Generative Backward Process
+
+(cy aeemcch i---e->) 19
+
+===== slide 020  [25:41] =====
+Diffusion: Forward Process
+= l|teratively add gaussian noise
+
+Xit-a = V1 — Bi41xi + V Bi41€: €, ~N(0,1) Bit noise schedule
+
+=” Maggi?
+Signal Noise —
+Decay Scale Repscamerizailon
+
+(cy aeemcch ke) 20
+
+===== slide 021  [26:53] =====
+Diffusion: Backward Process
+
+# Learn p(x;-1|x;), which is intractable (infinite clean images
+could have produced the noisy version)
+
+= Solution: instead of predicting the previous image, predict
+the added noise x;_; ~ x; — €9(%, i)!
+
+XT
+
+Xo
+
+efSiBHOO 21
+
+===== slide 022  [28:29] =====
+Diffusion: Objective
+
+=» Same ELBO as VAE, but T denoising steps instead of one,
+and q is fixed
+t
+log pg (Xo) = —Dxx (q(xr|xo) I p(xr)) + >, —Dx1(q (xj-1|%;, Xo) Il De (xi-11x:)) + log pg (xo|x1)
+
+Prior Regularization Denoising Matching Reconstruction
+
+= KL between two Gaussians has closed form
+Det & \lii — He Xp i) ||? « lle — €g (x, 6) II?
+Lsimple = Ej~uc.r),e~n (ope — €9(%, i)||?]
+
+Denoising Diffusion Probabilistic Models
+O@FSAMMOCO Ho et al., (2020) 22
+
+===== slide 023  [30:21] =====
+Diffusion: Efficient Training
+
+Lsimple = Ei~uc,r),e~w onllle — €6 i, 1117]
+Signal Retention
+
+Requires “teleporting” instead of for algebraic convenience
+iterative forward process O(T) v
+Forward Process Xita = V1 — BisiXi + VBi41 Ee ~N(O,D a=1-8;
+
+Expand %1 = V@xX9+J1—aye> 9X2 = Vagx, + J1—ang,
+Substitute %2 = V@2(V@ixo + 1 — ay€0) + V1 — ane, = VG Xo + Yaa(1 — a1 )€o + V1 — are
+£
+
+a
+
+Gaussian Sum >" © og1) + N(0, 051) = N (0, (og +06 )I) —P x2 = (Oa _xX) + 1 — a,a2€
+
+Generalizing Signal Coefficient = ./ajaj_1 ...a, = Wes aj = JG;
+
+Allows “teleporting” from x to any noisy x; ina single step 0(1)!
+
+23
+
+eSB OO
+
+===== slide 024  [32:13] =====
+Diffusion: DDPM Sampling
+
+1. Sample Gaussian Noise x; ~ N(0,/)
+
+Very slow! => 2. Fori = T,...,1: Typically
+Image generation T=1000!_ || Sample z ~ N(0,/) if i > 1, else z = 0 a = VBi
+
+r 1 1-a; F
+Il. Denoise x;_; = a (x - rei (xi, 0) + 0jZ
+3. Return xo —_—_S———’” ”
+
+Predicted Mean _ Stochastic (Langevin)
+Term
+We add noise during denoising
+to increase sample diversity and avoid
+collapsing into a mean distribution
+
+¢ DDPM is a discrete version of a Stochastic Differential Equation (SDE)
+
+e DDPM denoising = score step (V log(p)) towards higher density + Langevin noise
+
+C/AEBNOO 24
+
+===== slide 025  [34:18] =====
+Denoising Diffusion Implicit Models
+
+Diffusion: DDIM Sampling Song etal. (2020)
+
+1. Sample Gaussian Noise x; ~ N(0,/)
+2. Define subset of timesteps Tt = {ty, tz, ..., tx} (only 20 steps instead of 1000)
+3. Fori=K,K —1,...,1: (where x;, @ denote x,, and @;,)
+
+. ow Xj 1-j€g (XL) Inverse of “teleportation” formula, can
+I. Denoise xo = Jai jump to any x;_, € Tt directly
+ll. Deterministic Re-Noise x;_1 = ./@j-1%9 +4/1 — @-7€9 (x, i)
+4. Return Xo ai-1 from t, not necessarily the previous No noise term!
+
+timestep, this enables skipping timesteps
+
+e Decouples number of denoising iterations in training & inference
+
+¢ DDPM is markovian, DDIM defines a non-Markovian forward process that results
+in the exact same marginal distributions as DDPM
+
+e DDIM discretizes the probability flow ODE
+
+(cy aeemcch ke) 25
+
+===== slide 026  [35:51] =====
+Everything covered so far is
+unconditional generation from noise!
+
+What about conditional generation?
+
+Generative
+
+Model
+
+“A photorealistic image of
+an astronaut riding a horse”
+
+| €9 (Xz, t, C)
+
+efSARBMOO 26
+
+===== slide 027  [36:38] =====
+Classifier-Free Guidance (CFG)
+
+# Problems: Model might ignore conditioning, classifier
+guidance required training separate classifier p(c|x;)
+
+= Solution: train a single model for conditional &
+unconditional generation by randomly dropping the
+condition during training
+Guidance Scale condition fidelity vs diversity trade-off
+
+Zz
+€ = €9 (xz, t, 0) + w(€9 (Xp, tc) — €9 (xp, t, O))
+Unconditional Guidance=Conditional-Unconditional
+
+Classifier-Free Diffusion Guidance
+Ho & Salimans, (2022)
+efSA2BHOO 27
+
+===== slide 028  [40:08] =====
+Case Study: Diffusion Policy
+
+=» Key: Denoises robot action sequences instead of images
+
+" DDPM training, DDIM inference, injects observations into
+noise prediction network (no future state pred required)
+
+L=MSE(e*,€9(0,,A2+e%,k)) Alt =a (AE —yeo(0,, AE, k) + V(0,071))
+
+Diffusion Policy: Visuomotor Policy Learning via Action Diffusion
+
+ofl mnes Cheng Chi et al., (2023) 28
+
+===== slide 029  [40:12] =====
+Case Study: Diffusion Policy
+
+= 0, computed once before K denoising steps
+
+=» 1D temporal U-Net with 0, conditioned via Feature-wise
+Linear Modulation (FiLM)
+
+= Handles multimodality in demonstrations!
+
+Input: Image Observation Sequence Observation O: Ons | vE@) —
+
+1 ies > oes oon
+— |} ed a 4ConviD Cross Attention
+
+pled a-x+b --
+oa Policy €o( (0, A,k) b #ConviD ixaiteinentd
+
+x: Action Emb xK p>
+a 4ConviD m
+a:x+b
+Action Sequence A Sequence A: beg FConviD
+if +—Prediction Horizon a r 5
+
+vy quasqo
+uonUanY $509
+
+wy
+
+es FiLM x: Action Emb ‘Action Emb
+conditioning Conv1D
+
+a
+l» 3
+
+es
+
+Output: Action Sequence a) Diffusion Policy ee Formulation b) CNN-based c) Transformer-based
+
+a
+
+Diffusion Policy: Visuomotor Policy Learning via Action Diffusion
+
+. Cheng Chi et al., (2023)
+eFSABHMOO
+
+===== slide 030  [43:34] =====
+Scaling Diffusion in Robotics: DiT Block Policy
+
+= Replaces cross-attention with adaptive Layer-Norm
+" Scales with Model & Data size
+
+# Stable Training
+
+# Long horizon bimanual dexterous tasks (1500+ timesteps)
+"\ DiT-Block Policy
+
+eFSABMOO
+
+Repeat Nx
+
+The Ingredients for Robotic Diffusion Transformers
+
+Dasari, Mees et al., ICRA, 2025
+
+32
+
+===== slide 031  [43:40] =====
+Flow Matching for Generative Modeling
+
+Flow Matching Lipman et al., (2023)
+
+= Learn a velocity field vg (x;, t) that transports samples from
+noise € ~N' (0,1) to data x»~p(x,) along continuous paths
+
+x =(1-tet+ txy, e~N(0,1), t€ [0,1]
+
+Straight line from noise to x9, no schedule
+
+Training: L= Ex, elllve et) — (%o — €)I|I?]
+—
+
+Predicted velocity Ground-truth velocity from noise to x9 is constant,
+independent of t
+
+Inference: Xerat = Xt + Vo(xXz, t)At
+Integrate learned velocity with Euler ODE
+
+Ellle — €9 (%, ¢)II*] OY sdule Elllve et) — (xo — €)II7]
+
+linear schedule
+
+O@/2ABMOO Diffusion, predict noise Flow Matching, predict velocity 33
+
+===== slide 032  [46:58] =====
+Rectified Flow
+
+= Retrains Flow Matching on noise-data pairs generated by
+its own flow, untangling trajectory crossings &
+straightening paths
+
+Flow Matching Rectified Flow
+Curved Paths Flow Slow Straight Paths Flow Fast
+
+Ne ie MC Aw
+
+WN YO
+NYY LO
+
+ss of, ®
+
+Sampling Duration = SSS 1g Duration
+
+Source: Alec Helbling 34
+CesSABMOO
+
+===== slide 033  [47:11] =====
+Rectified Flow
+
+= Retrains Flow Matching on noise-data pairs generated by
+its own flow, untangling trajectory crossings &
+straightening paths
+
+Flow Matching Rectified Flow
+Curved Paths Flow Slow Straight Paths Flow Fast
+
+eC NY
+
+Source: Alec Helbling 34
+O@SABMOO
+
+===== slide 034  [47:58] =====
+Rectified Flow
+
+= Retrains Flow Matching on noise-data pairs generated by
+its own flow, untangling trajectory crossings &
+straightening paths
+
+Flow Matching Rectified Flow
+Curved Paths Flow Slow Straight Paths Flow Fast
+
+eH Ee
+
+C \
+ui Ne US
+
+Source: Alec Helbling
+
+CCA BHOO 34
+
+===== slide 035  [48:00] =====
+Case Study: 1p
+
+= Finetunes a VLM to produce actions via Flow Matching
+
+=» Samples flow-time t from a shifted Beta distribution to
+focus on noisier (harder action prediction) parts of flow
+
+m™ dataset
+
+aay |
+ave
+
+Internet
+pre-training
+
+ie
+
+action expert
+(300M)
+
+18 DoF
+4 Mobile ,
+= =) @ o Manipulators .
+
+t 7 and 8 DoF
+noise Single Arm
+Manipulators 3
+
+Ty : A Vision-Language-Action Flow Model for General Robot Control
+Physical Intelligence (2024)
+
+esSAiBHKOO 35
+
+===== slide 036  [48:54] =====
+Conclusion
+
+Latent Variable Models Diffusion Models Flow Models
+AE: compressed DDPM: Iteratively denoise Flow Matching: Learns
+representation via Gaussian noise to generate velocity field to transport
+reconstruction samples noise
+VAE: constrain latent to DDIM: Faster deterministic Rectified Flow: Straighten
+follow a distribution via sampling via non-Markovian ODE trajectories via iterative
+reparametrization trick diffusion process reflow for faster, fewer-step
+
+sampling
+
+VQ-VAE: Discretize latent CFG: Steer generation by
+space using learned blending conditional &
+codebook vectors unconditional scores
+
+o=-0 Linear Schedule
+
+Diffusion (DDPM) —> DDIM <-> Flow Matching
+——_
+
+Stochastic SDE Deterministic same ODE, simpler
+
+ODE Euler solver 36
+eFSABMOO
+
+===== slide 037  [50:53] =====
+Thank you for your attention
+
+eSB OO
+

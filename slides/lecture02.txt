@@ -1,0 +1,716 @@
+# Lecture 2 — slide OCR (secondary source; verify math visually)
+# 46 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 2: Robot Control & Markov Decision Processes
+
+Oier Mees ETHziirich 9” Microsoft
+
+23.02.2026
+
+===== slide 002  [00:10] =====
+Feedback — Actions
+
+» Extended deadline for 1st homework to March 5th
+= Created a moodle forum for QA
+# Linked Course Website in MyStudies
+= Made slides & recordings available
+= login:
+= pwd: :
+# Instructions for Paper Discussion
+
+===== slide 003  [03:52] =====
+Robot Motion
+
+=" Can be represented as rigid-body motion
+
+Planar Motion Spatial Motion
+. Z
+yaw
+pitch
+a
+roll
+x
+SE(2): The special Euclidean group SE(3): The special Euclidean group
+of rigid body motion in 2D of rigid body motion in 3D
+
+es ABMOO
+
+===== slide 004  [03:58] =====
+Mathematical Representation
+
+SE(2)
+3 “Degrees of Freedom”
+cos@ —sinO x
+Tse(2) =|sin@ cos@ y} Tsz3) =
+0 0 1
+
+SO(n) = {R € R®™™ | R7R = I, det(R) = 1}
+
+eFSABMOO
+
+SE(3)
+
+6 “Degrees of Freedom”
+M1 %2 3
+T21 122 123
+T31 132 133
+
+0 0 0
+
+===== slide 005  [05:36] =====
+Chaining Transforms
+
+PEDESTRIAN
+DETECTED
+
+— 7Base Sensor
+~~ Tsensor*! Ped
+
+eFSABMOO
+
+===== slide 006  [07:15] =====
+Articulated Robot Bodies
+
+= Robots can be defined as articulated rigid bodies,
+consisting of:
+= Link: a single rigid body
+# Joint: connection between links
+= End-Effector: a device attached
+to a specific link, like end of arms
+
+LOLA Humanoid Robot @ TUM
+
+eFSArABMOO
+
+===== slide 007  [08:26] =====
+Robot Arm Articulations
+
+ras axes 5 & 6 intercept wrist flex
+ee elbow flex y
+
+lint coher rical = ‘ost
+{ ee a qn" as =i y ‘ a 9) est roll
+
+joint 7 QQ. int 3 x Sa CY “*
+4 shoulder lift \ ’ Se OS, or
+jon 24 <a spiel 8 ee
+| ee 4, shoulder pan
+joint 1°
+Franka Emika SO-101
+AT
+
+eFSABMOO
+
+===== slide 008  [09:07] =====
+Robot End Effectors
+
+a
+
+Suction Gripper Parallel Gripper Dexterous Hand
+
+eFSABMOO
+
+===== slide 009  [10:36] =====
+Robot Joints
+# A joint provides constraints on the possible motions of the
+two rigid bodies it connects.
+
+wD cb
+
+Remy” os ra
+
+ab.)
+
+Prismatic
+
+(PB) =@))> al
+oS
+Vy es
+
+Source: Modern Robotics by K. Lynch 2017
+
+eFSABHMOO
+
+===== slide 010  [11:23] =====
+Degrees of Freedom
+
+= Number of independent parameters required to
+completely specify the configuration or state of the robot
+
+Constraints c
+between two
+
+Constraints c
+between two
+
+Joint type | dof f planar spatial
+rigid bodies rigid bodies
+
+Revolute (R) 1 2 5
+Prismatic (P) ik 2 5
+Helical (H) 1 N/A 5
+Cylindrical (C) 2 N/A 4
+Universal (U) 2 N/A 4
+Spherical (S) 3 N/A 3
+
+eFSABMOO
+
+Chebychev-Grutbler—Kutzbach Formula:
+
+J
+dof= m(N-1) —- y Ci
+rigid body freedoms Gal
+
+joint constraints
+
+Source: Modern Robotics by K. Lynch 2017
+
+10
+
+===== slide 011  [12:37] =====
+Configuration Space
+
+= Set of all possible robot configurations
+
+(cy aeemcch h---e>)
+
+2R robot arm T=s'xst
+
+system topology Sample representation
+point on a plane E?
+180° 90" 180
+
+spherical pendulum 8 [-180°, 180°) x [-90°, 90°]
+0
+2r|
+7 0
+
+\ 0 Qn Oy
+
+an
+0.27) x [0, 2m)
+@
+
+rotating sliding knob | _E! x S?
+
+2a:
+
+0
+
+R! x (0,27)
+
+Source: Modern Robotics by K. Lynch 2017
+
+11
+
+===== slide 012  [13:56] =====
+Workspace
+
+" All points in space reachable by the robot’s end-effector
+
+Source: ABB, Technical Data for The IRB 120 Industrial Robot
+
+(<yaeemcch Tie)
+
+12
+
+===== slide 013  [14:43] =====
+Obstacles in Configuration Space
+
+45 90 135 180
+An obstacle in the robot’s workspace Configuration Space representation of this obstacle
+
+Source: Robot Motion Planning by JC Latombe 1991
+
+eFSABMOO 13
+
+===== slide 014  [15:43] =====
+Motion Planning in C-Space
+
+= C-Space used for robot motion planning
+= Decouples robot geometry from path planning
+
+Source: Planning Algorithms by Steven M. LaValle 2006
+O@sSABMOO
+
+===== slide 015  [16:44] =====
+Task Space
+
+= The manifold in which the robot’s task is naturally defined,
+independent of its embodiment
+
+« If Task Space dimension < Robot’s DoF = Redundancy
+
+Task: whiteboard cleaning Task: clean room floor
+Task Space: whiteboard surface R? Task Space: vacuum robot's position on the floor R?
+CCABMOO 15
+
+===== slide 016  [18:05] =====
+Question Time!
+
+Configuration Space?
+7D Manifold (6, ... 87)
+
+Workspace?
+
+Reachable physical
+space (x, y, Z)
+
+7 DoF
+eFSABHMOO
+
+Task Space?
+6D Pose of end-effector SE(3)
+
+16
+
+===== slide 017  [18:44] =====
+Question Time!
+
+= Redundancy — Null Space Motion
+
+Configuration Space? Workspace? Task Space?
+
+7D Manifold (6, ... 87) Reachable physical 6D Pose of end-effector SE(3)
+space (x,y,z)
+
+(<yaeemcch ke) 16
+
+===== slide 018  [19:20] =====
+Forward Kinematics
+
+# Given robot joints, what is the end-effector pose?
+= Mapping from C to Task Space, f: C ~X
+= x=f(q),q€R", x € SE(3) deterministic, but not bijective
+
+esSA2BHKOO
+
+===== slide 019  [20:12] =====
+Inverse Kinematics
+
+= Given end-effector pose, what are the joint configurations?
+= q=f*(x), mapping f~*:X > P(C)
+
+(<p aeemcch i.e)
+
+===== slide 020  [20:41] =====
+Inverse Kinematics
+
+# Often non-unique or has no analytical solution
+# Optimization-based IKs
+
+eFSABMOO
+
+===== slide 021  [21:30] =====
+Optimization-Based IK
+
+= Objective: Minimize the distance between the current
+end-effector and the target
+e
+
+—$——
+= Loss: L(8) = =|If(@) — Xtargetl|”
+= Update: 6,ow = 91q — “VoL (8) J,
+= Gradient of the Loss: VoL(8) = (1): e
+= Jacobian Method: 6,.w = 9014 — «J (8)" (f(8) — Xtarget)
+
+eFSARBMOO 20
+
+===== slide 022  [22:21] =====
+Converting IK to Motor Commands
+
+= IK gives the target joints, but robot can’t “jump” there
+« Time for movement?
+
+Move 1cm
+ee in Y (0,1,0)
+
+C/AmmMOO 21
+
+===== slide 023  [23:08] =====
+Trajectory Waypoint Generation: LERP
+
+= Inputs: qstart-Itarget © R®, time T, control frequency f
+=» Number of Waypoints N= |T : f]
+
+= Normalized Time Progress s; = =, Si € [0,1]
+
+= Linear Interpolation q(s;) = start + Si ‘(Gtarget—4start)
+
+Move 1cm
+
+ae Y
+& in Y (0,1,0)
+<<
+ee
+ue
+
+eFSABMOO 22
+
+===== slide 024  [24:04] =====
+Issues with LERP
+
+Instant Max Speed!
+Real motors can’t reach
+full speed in zero time
+
+High Jerk, Dirac Deltas
+Stress on actuators, vibration
+
+eFSABHMOO
+
+10
+
+Position (m)
+
+LERP Trajectory Profiles (1s Move)
+
+— Position git)
+
+|
+
+Velociff (m/s)
+
+— Velocity qit)
+
+—EEEEEEE
+
+Acceleration (m/s?)
+
+-100
+
+-150
+
+— Acceleration ait)
+
+Time (s)
+
+23
+
+===== slide 025  [24:56] =====
+Trajectory Waypoint Generation: Quintic Splines
+
+= q(t)=da)+a,t+ at? +a3t? +a,t* +ast°
+=" 6x Boundary Conditions for Smoothness:
+= Start & End with no velocity and accel. while keeping position
+= q(si) = Qstart + (dtarget—4start) f (si) 5; € [0,1]
+= Quintic Time Scaling f(s;) = 10s; — 15s;* + 6s,°
+
+eC*CABMOO 24
+
+===== slide 026  [25:32] =====
+Trajectory Waypoint Generation: Quintic Splines
+
+# Standard for industry robots like Frankas
+
+eSB OO
+
+Quintic Spline Trajectory Profiles (1s Move)
+
+Time (s)
+
+25
+
+===== slide 027  [25:54] =====
+PID Control
+
+= Given trajectory waypoints q(s;) and current
+measurement, continuously calculate corrective motor
+commands (u;)
+
+= Tracking error e(t) = Qaesirea(t) — Umeasurea (t)
+
+= Continuous form u(t) = K,e(t) +K; i e(t)dt+ Ky
+
+= Discrete form uz = Kpex + Ki Diio(@ - At) + Ka i :
+Se
+
+Proportional Integral Derivative
+
+eSB OO 26
+
+===== slide 028  [26:49] =====
+PID Control
+
+If frequency too low,
+
+Proportional Integral Derivative “Damper” might not be
+; ; . able to react fast
+“Spring” “Anti-Gravity” “Damper” enough
+The bigger the tracking Helps compensate if Stops the arm from
+error, gravity is too much from overshooting past
+the harder the robot pulls a waypoint
+q(sy)
+
+Overshoot
+(needs Derivative)
+
+Gravity
+(needs Integral) 27
+(<aeeecch Ihe)
+
+===== slide 029  [28:12] =====
+So we know how to plan & execute robot motion
+are we done?
+
+Not quite...
+
+efSAiBneod 28
+
+===== slide 030  [28:34] =====
+Robot Learning
+
+Solving Robotics via Machine Learning
+———s —_—_—_—
+
+Perception Imitation Learning
+
+Control Reinforcement Learning
+Dynamics Learning
+Representation Learning
+
+(cy aeemcch km)
+
+29
+
+===== slide 031  [30:23] =====
+Sequential Decision Making
+
+« What is the best sequence of actions to cut the sushi?
+
+The Ingredients for Robotic Diffusion Transformers
+C@SABMOO Dasari, Mees et. al., ICRA 2024
+
+30
+
+===== slide 032  [30:44] =====
+From Pixels to Decisions: Representing a Policy
+
+0.8 | Cat
+<p Tiger
+— 0.0 | Bear
+y
+
+Dog
+
+Left
+
+4] is
+Right
+oe Straight
+a
+
+Backward
+
+0 19 (alo)
+
+efSA2RBHKOO cul
+
+===== slide 033  [31:51] =====
+Mapping Observations to Actions
+
+Left
+Right
+
+Straight
+
+Backward
+
+°
+De)
+
+Or Tg (az|0;) Policy - Partially Observable at
+
+| Tg (@;|S;) Policy - Fully Observable |
+
+0, - observation
+
+a; - action
+
+s, - State
+
+(cy aeemcch ke) 32
+
+===== slide 034  [33:26] =====
+State vs Observation
+
+efS2BHOO
+
+0, - observation
+
+No matter the weather or visibility, the
+state does not change!
+
+33
+
+===== slide 035  [34:43] =====
+State vs Observation
+
+eFSABMOO
+
+0, - observation
+
+No matter the weather or visibility, the
+state does not change!
+
+33
+
+===== slide 036  [35:23] =====
+Markov Property
+
+« If you know Szthen S, not necessary to determine S3
+
+(1 }— Function
+P(St4115¢, Ge)
+
+Lossy
+")
+
+O@SARBMOO 34
+
+===== slide 037  [36:02] =====
+Alternative Notations
+
+a, - action U, - action
+S, - state x; - State
+r(s, a) - reward r(s,a) = —c(x,u) c(x,u) - cost function
+
+Richard Bellman Lev Pontryagin
+
+eFSABMOO 35
+
+===== slide 038  [36:50] =====
+Markov Decision Process
+
+= Define by M = (S,A,P,R)
+state s,, reward r,
+
+[a
+
+environment \S) Ze
+&
+
+= S:State space,s,€ES action a;
+
+= A: Action space, a,€ A
+
+robot
+
+Atay
+$
+
+i
+
+= f: Transition probability, s.4, ~ P(-l, St, a¢)
+= R&R: Reward function, r:SxA > R, % = R(S¢, Qt, St41)
+
+(cy aeemcch he) 36
+
+===== slide 039  [37:51] =====
+State Space
+
+MDP
+
+Continuous
+
+Discrete
+
+37,
+
+eFSABMOO
+
+===== slide 040  [38:56] =====
+MDP: Action Space
+
+Discrete
+
+38
+—— 4 ‘pet zh
+x *.
+
+efFSABMOO
+
+~~
+> Saue
+
+Continuous
+
+===== slide 041  [39:30] =====
+MDP: Transition Model
+
+= Uncertainty caused by sensor noise, motor overshooting...
+
+Deterministic Stochastic
+St+1 = f (St, At) Stt1 ~ PCL St, a)
+Action: turn steering wheel 5° Action: turn steering wheel 5°
+
+(cy aeemcch ke) 39
+
+===== slide 042  [41:33] =====
+MDP: Reward Function
+
+Sparse Rewards Dense Rewards
+e.g. 1 if grasped, 0 otherwise e.g. distance to object
+
+Selected affordance
+region
+
+Detected affordance
+region center
+
+Affordance Learning from Play for Sample-Efficient Policy Learning
+Borja, Mees et. al., ICRA 2022
+
+C/A2BmMOO 40
+
+===== slide 043  [41:51] =====
+Trajectory Probability
+
+= Probability of a trajectory tT = (So, do, Sy, @4, ..., Sp) under
+policy tt:
+
+= py(t) = p(So) ize (az |s¢)P (Se41/5¢, ae)
+SS ee
+
+Initial State Policy Transition Function
+Distribution
+
+e/2EMOO 41
+
+===== slide 044  [43:06] =====
+Finite-Horizon vs Infinite-Horizon MDPs
+
+# Finite-Horizon: the task has a strict time limit/steps H
+# Infinite-Horizon: interaction continues forever (T = co)or
+until a "terminal state" is reached
+= Discount Factor y: Rewards closer in time are higher weighted
+
+eFSABNMOO 42
+
+===== slide 045  [44:50] =====
+The Learning Objective
+
+=» Accumulated reward an agent receives:
+
+G= Yn orG= > vin
+
+t20
+
+=» Expected Return:
+I(r) = E,~pz(t) [Size oT] or J() = E7~p,(t) [Zeeo yr |
+
+# Optimal Policy:
+
+m* = arg max, J (7)
+
+efsSiRBHOO
+
+===== slide 046  [45:58] =====
+Thank you for your attention
+
+efsSiBniedod
+

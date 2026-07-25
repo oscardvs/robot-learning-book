@@ -1,0 +1,1063 @@
+# Lecture 7 — slide OCR (secondary source; verify math visually)
+# 40 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 7: Sequence Modeling & Transformers
+
+Oier Mees ETHziirich |” Microsoft
+
+30.03.2026
+
+===== slide 002  [00:15] =====
+Recap: Limitations of Reactive Policies
+
+One Snapshot Can’t Model Full State
+
+Memory: what did | do 10 seconds ago? How fast are
+pedestrians moving?
+Action Smoothness: single step model might produce jerky
+
+movements 2
+
+===== slide 003  [02:48] =====
+Robotics as a Sequence Modeling Problem
+
+= Robots usually operate in a POMDP, which require
+reasoning over history T = (09, Qo, 01, 24, «-», Or)
+
+Image Action
+Cee @ ro
+ACTION: Pat) ~ p(So) | | 2GacloedP Coresloe, at)
+
+[Ax, 40, AGrip] = ... t=0
+
+t
+
+Trajectory is a sequence, but the
+policy is single-step and reactive
+
+esSABMOO
+
+===== slide 004  [03:25] =====
+Autoregressive Models
+
+# Any joint distribution can be written as a product of
+conditionals (chain rule of probability)
+
+T
+Po(x) = | |p0cx | X44-1)
+
+How do we learn each conditional?
+
+(cy aeemcch km)
+
+===== slide 005  [04:56] =====
+Modeling Sequences with RNNs
+
+#" SOTA until 2016 in NLP, process sequences sequentially
+= Limitations:
+= Learn long-range dependencies, exploding/vanishing gradients
+« Parallelize training due to recurrence
+= Retain information, fixed-size h, state compresses all history
+
+Steps to reach first word: 4
+
+O(n) ewe he = f (he-1, Xt)
+
+(=)
+(0) Long Short-Term Memory
+Hochreiter & Schmidhuber (1997)
+To reach "The’, information flows through 4 hidden states. For length n: O(n). Sequence to Sequence Learning with Neural Networks
+Sutskever et al., (2014) 5
+
+(<yaeemcch ie)
+
+===== slide 006  [07:22] =====
+Transformer
+
+= Replace recurrence with attention, giving direct O(1),
+equal access to the entire history
+
+Transformer vs RNN: path length to attend past words
+
+{the | [robot | [picked [up | {the} [spoon
+
+ee) Late eg Sarees
+
+me OE) -0-0-0-0
+"spoon" reaches “The” in step — same cost regardess of distance fo teach “The” information fows trough 5 hidden states For ength Of)
+
+Attention Is All You Need
+
+. Vaswani et al., (2017)
+eFSABMOO
+
+===== slide 007  [07:31] =====
+Transformer: Attention Mechanism
+
+ienbed) (2—proect QV a eamat ) (S—wabhind ae
+
+{_ The MI robot } (picked ) up ae the] { spoon score(q, k) = q- ki/ Vd
+
+The query vector for “spoon” is dot-producted with every Key vector. A high score means
+that key matches what the query is looking for. These are raw unnormalized scores.
+
+2
+kK ——— Q $n ee = 2
+juery Value put
+The robot picked up the
+
+*« Compare current hidden state (query)
+K =) y to all past hidden states (keys)
+
+¢ Construct attention distribution to
+figure out what parts of the history are
+relevant via a softmax
+
+Attention(Q, K,V) = softmax (2
+
+Vda
+
+eFABMOO
+
+===== slide 008  [07:43] =====
+Transformer: Attention Mechanism
+
+1—embed 2— project Q,K.V 3—raw scores 4—softmax 5 —weighted sum
+
+The robot picked up the Xa, Xa, sy Xn + EMbed — @:, 2, ..., En
+
+Each input token is embedded into a high-dimensional vector. These embeddings carry
+semantic meaning — "robot" and "spoon" live in very different regions of the embedding
+
+space.
+
+* Compare current hidden state (query)
+=) V to all past hidden states (keys)
+
+Construct attention distribution to
+figure out what parts of the history are
+relevant via a softmax
+
+Attention(Q, K,V) = softmax (
+
+efsAiBHeOO
+
+===== slide 009  [07:55] =====
+Transformer: Attention Mechanism
+
+1—embed 2— project Q.K,V 3—raw scores
+
+(_me_) (oeee_) (oxtea_} (00) (te) [sen }
+
+The robot picked up the
+
+Attention(Q, K,V) = softmax (
+
+(cy aeemcch ke)
+
+(i)
+
+OH &
+
+output = 3) a - vi
+
+The output is a weighted blend of all Value vectors, weighted by ai. “spoon” now carries a
+blended representation absorbing context from the entire sequence it attended to.
+
+(Th
+v(robot)
+
+icked
+
+Ou
+oO
+O
+up @ vr)
+@ vine)
+B@ vs
+
+poon)
+
+O Query OKey O Value © Output
+
+* Compare current hidden state (query)
+to all past hidden states (keys)
+
+¢ Construct attention distribution to
+figure out what parts of the history are
+relevant via a softmax
+
+===== [08:25] revisit of slide 8 =====
+
+===== slide 010  [08:49] =====
+Transformer: Attention Mechanism
+
+ented) (2—popa@Kv) (8—raw scores) (4— sonmax
+
+(te {robot} ( pickes |( up} {the | ( spoon [oe
+
+The output is a weighted blend of all Value vectors, weighted by ai. “spoon” now carries a
+blended representation absorbing context from the entire sequence it attended to.
+
+(i)
+
+(a)
+
+B
+
+GB
+
+up @«
+‘ Be
+wv
+
+(up)
+(the)
+
+f° |
+be
+
+(spoon)
+
+7 ¢ Compare current hidden state (query)
+. _ to all past hidden states (keys)
+Attention(Q, K,V) = softmax ( or) V ¢ Construct attention distribution to
+sf figure out what parts of the history are
+relevant via a softmax
+
+efSA2BHKOO
+
+===== slide 011  [08:54] =====
+Positional Encodings
+
+=» Attention has no inherent notion of order
+# Inject order information to tokens
+
+Absolute Positional Encoding Relative Positional Encoding
+A fixed vector PE is added to each A bias b(i-j) based on
+token embedding before the the distance between tokens is added to
+transformer sees it. the attention score, not the embedding.
+@ token embeddings @ context tokens (keys), query = "spoon"
+The robot || picked up the SEED The robot picked up the
+
+| offset from query
+
+@ fixed position vectors @ relative bias per token
+
+PE(0) PE(1) PE(2) PE(3) PE(4) PE(5) b(-5) b(-4) b(-3) b(-2) b(-1)
+
+= | added to attention score
+
+@ inputs to transformer @ biased attention scores
+
+e+PE() || e+PE(1) || e+PE(2) || e+PE() || e+PE4) || e+PEQ) s+b(-5) s+b(~4) s+b(-3) s+b(-2) s+b(-1)
+
+| never seen during training
+
+efSA2RBHOO
+
+===== slide 012  [10:51] =====
+Original Transformer Architecture
+
+Cross-attention
+
+Same as self-attention, but Q comes from the
+decoder, K and V come from the encoder »
+
+Encoder
+Bidirectional self-attention
+
+Every token attends to every other
+
+token, past and future
+
+| Ik.)
+
+a bidiy
+
+K, V to cross-attention.
+
+encoder output (K, V)
+
+Encoder
+x N Ipyers
+
+{ ‘Add & Norm |
+| Feed-forward network
+two linear layers + ReLU
+
+& >
+{ Add & Norm |
+ce = J
+
+Multi-head self-attention
+bidirectional — sees all tokens
+
+| Source embedding
+
+EEE
+"The robot picked...”
+
+causal
+
+5} Multi-head cross-attention
+
+output prediction
+
+Linear + softmax
+next token probability
+
+Add & Norm
+Feed-forward network
+two linear layers + ReLU
+rN
+
+Add & Norm
+ES,
+Q: decoder K,V: encoder
+x
+
+Add & Norm
+rN
+
+Masked MH self-attention
+causal — past output only
+
+enh
+Target embedding
+
+eS)
+“Il robot ha..." (shifted right)
+
+PE
+
+Decoder
+
+Causal self-attention
+Each token only attends to itself and
+past tokens
+
+Key position (attends to —>)
+3 4
+
+1 2 5 6 7 8 9
+
+Query position
+
+@ can attend (score kept)
+
+masked (-s +0 after softmax)
+
+===== slide 013  [12:50] =====
+Training
+
+input (ground truth, shifted right)
+
+L © JL mm Jere Jeers JL) Teacher Forcing
+[ Decoder-only transformer + causal mask | maximize the likelinood of the
+predicted distribution (one step ahead) next correct token Xt given the
+Ge GE Ga> GaD GaD true preceding tokens x1..-1
+per-token loss: —log p_O(xt | x1..x+.1)
+Ee > 0.329
+: ies Crdes Entropy Loss
+(w_) 0.616 1
+(spoon | > 0.386 L= 7) logpe (x: | tee)
+average es 0.897 = t=1
+sige eons te) 1x forward pass computes all
+
+efSA2RBHOO
+
+[robot] ckea J(u} spoon | T losses with Transformers
+XT forward passes with RNNs.
+
+===== slide 014  [14:51] =====
+Language Tokenization
+
+" Characters: a=0, b=1, c=2....
+= Small vocabulary
+= Large number of tokens
+=" Words: cat=0, car=1, dog=2, ...
+# Large vocabulary
+= Small number of tokens
+= What about new words?
+
+Ideally we would like something in between
+
+(<yaeemcch he)
+
+===== slide 015  [15:11] =====
+Byte-Pair Encoding
+
+« Tokenize based on groupings of characters, prioritizing by
+frequency
+
+=» Generalizes to novel combinations of characters
+
+function BPE (strings C, number of merges k)
+
+V <all unique characters in C # initial vocabulary is characters
+fori=1tokdo # repeat k times
+t,, tp <— most frequent pair of adjacent tokens in C
+
+tvew <tr t+tpr # concatenate into new token
+V<-V+tnew # add to vocabulary
+replace each (t,, tg) in C with tyew # update corpus
+
+return vocab V
+
+Neural Machine Translation of Rare Words with Subword Units
+
+; Sennrich et al., (2015) 12
+eFSABMOO
+
+===== slide 016  [16:52] =====
+BPE Example
+
+= BPE compression factor scales with corpus size
+
+"The robots melted the robot's unbearably cheesy fondue"
+
+O—start 1—"h 2—"the’ 3—"to 4—"rob 5 — “tobo’ 6 — “robot 7 —resuit
+rent tokentraike
+ez) After many merges: common words become single tokens. Rarer words split
+Gi Ley =) =) [ove \e Je I a Ist YI J Soe GgoealG |e) into subwords — ‘unbearably’ . ‘un'+b'+'ear'+‘ably’, ‘fondue’ .. ‘f+'on'+‘d'+ue’
+{ ably }| _ \[eh |[ ee IC s 1e3) _ (1 }(on }(@ (ue ) Any unknown word remains representable.
+vocabulary learned
+(ve)
+token count
+34 tokens -20 trom start
+compression achieved
+
+eS
+54 chars — 34 tokens compression ratio: 0.63*
+
+(<yaeemcch i---m->) 13
+
+===== slide 017  [16:57] =====
+BPE Example
+
+= BPE compression factor scales with corpus size
+
+© "The robots melted the robot's unbearably cheesy fondue"
+
+0—star 1—"th 2—"the 3—"to 4—"rob -
+
+robo" 6 — "robot
+
+Compression summary
+characters (start) 54 tokens
+
+after BPE merges 34 tokens
+
+37% 0.63x
+
+fewer tokens compression ratio
+
+merge rules learned
+
+Real LLMs use 50k—100k vocab with millions of merges — common words become 1 token, rare domain words split into subwords.
+
+(cy aeemcch ke)
+
+key tokens
+“the”, "robot" . 1 token
+“unbearably” -. 4 tokens
+“fondue” — 4 tokens
+
+13
+
+===== slide 018  [17:45] =====
+Large Language Models
+
+= Decoder-only architectures — simpler to scale
+=» Extend BPE to work on byte-level —> no unknown tokens
+= Techniques for scaling:
+
+« Rotary Position Embeddings (RoPE)
+
+= Rotates Q and K vectors by an angle proportional to their position, so
+that Q - Kdepends only on the relative distance between tokens
+
+=» FlashAttention:
+
+» Attention with O(n) memory instead of O(n?) by tiling the computation
+in fast SRAM, never materializing the full attention matrix
+
+— » RoPE + FlashAttention make training on longer sequences practical
+
+C/cAmmMOO 14
+
+===== slide 019  [20:21] =====
+Scaling LLMs
+
+GPT-1
+2018
+
+fe)
+117M params
+1B tokens
+
+Pretraining + fine-tuning
+
+efSA2BHOO
+
+GPT-2
+2019
+
+1.5B params ae
+10B tokens etl
+300B tokens
+Zero-shot generalization
+In-context
+
+learning emerges
+
+aL)
+
+===== slide 020  [21:55] =====
+The Bitter Lesson— Sutton (2019)
+
+= Methods that scale with compute ultimately beat hand-
+
+engineered solutions
+— In-context learning is an emergent property of scale
+
+175B Params
+
+ecuracy (%)
+
+13B Params
+
+AC
+
+1.3B Params
+
+1
+10
+Number of Examples in Context (K)
+
+Language Models are Few-Shot Learners
+. Brown et al., OpenAl (2020) 16
+eFSABMOO
+
+===== slide 021  [23:25] =====
+Scaling Laws
+
+= Given compute budget, scale data & model size equally
+= Optimal model size n* « c°5, data D* « c®*5>, compute C ~ 6 xN xD
+= ~20 tokens per parameter for compute-optimality
+
+— 7M — 125M — 250M — 500M — 1B — 258 — 58 — 10B == envelope
+
+training loss vs compute optimal model size N* vs compute optimal training tokens D* vs compute
+
+1008 = = - - ci
+os et ae -
+a
+E a
+s Py & 2
+= Es Pad A 27 cpta®
+s 2 108 2 3 2 ~
+2 Ey - g <
+= a 7 ba - = 100 ral
+E E se . or
+é one
+A o7 5 of
+8 2 08 4 7
+ee 7 ore
+100M o- wt
+opus
+- IB “e
+- optimal scaling frontier bo
+~* ~ ~ s ~* se E Dd = ~ ~
+
+s s s s $
+compute (logis FLOPs) compute (logs» FLOPs)
+
+Training Compute-Optimal Large Language Models
+
+; Hoffmann et al. (2022) alr
+eFSABMOO
+
+===== slide 022  [25:15] =====
+Scaling Laws: Extrapolating Performance
+
+= Fit power law on cheap runs — extrapolate to predict
+
+optimal N and final loss before committing compute
+
+5.0-
+
+validation loss
+
+100M
+
+eFSA2ABMOO
+
+1B
+
+108 1008
+model size N
+
+isoFLOP curves — fit on small runs, predict large model performance
+
+compute budget...
+—— Cc=109 trained
+— €=1071
+— c=10
+— power law fit (N* locus)
+— extrapolation
+
+training tokens D
+
+tokens vs model size — compute-optimal to inference-optimal
+
+== Chinchilla frontier (D* = 20 x N+) LLaMA 3 (70B) a
+jor - © SPT2K8 —undertrained 7 acreoaon
+@ Chinchilla / LLaMA 1-2 — compute-optimal 7 tegion
+
+inference-optimal:
+
+@ LLaMA3 —inference-optimal deliberately
+over-trained
+
+Chinchilla Je, 7
+* undertrained
+1T- as 53 (3008 tokens,
+ds -3.57
+LLaMA J465B) ee aa
+ri
+7
+1008 - Z z
+a
+we
+wa
+108 - x e
++
+as) v 7 GPT-2
+vy
+a
+B-7
+7 GPT-1
+100M 1B 10B 1008 1T
+
+model size N (params)
+
+18
+
+===== slide 023  [27:24] =====
+How can we extend LLMs & Transformers to Vision?
+
+(cy aeemcch ke)
+
+===== slide 024  [27:57] =====
+Image Tokenization
+
+= Split image to patches, flatten & add positional encodings
+
+Ww
+oan (-
+projection
+
+denis patchy 768 > 768 patch embedding
+
+a fat learned weights d= 768 dims
+224x224 image (16*16x3 RGB) 8
+14x14 = 196 patches
+
+(16x16 px each)
+
++
+
+positional embedding
+encodes patch position
+
+patch token
+
+transformer
+1 of 196 tokens
+
+same as for text tokens
+
+x 196 patches > sequence of 197 tokens a patch + 1 [CLS])
+
+An Image is Worth 16x16 Words: Thenstermnare for Image Flecognition at Scale
+Dosovitskiy, Beyer et al. (2020) 20
+
+es) | [Le
+
+Ps
+
+efSiBeeod
+
+===== slide 025  [29:43] =====
+How does the Transformer know which text tokens
+correspond to which visual tokens?
+
+efSiBnieo
+
+21
+
+===== slide 026  [30:40] =====
+CLIP: Two-Tower Contrastive Alignment
+
+He
+| cosine similarit Fonningi
+image1 = — BR ctr r tro rT nl
+— image image | IT L) text ’ Eliab
+ee | encoder ~” Prot: el I i) aio D< | encoder <— orest
+(ViT) | rt i | | Tia B (transformer)
+= | "city at
+image N image emb. text emb.
+Learnable temperature, entropy of the
+; resulting probability distribution
+veneer the |} wo
+" ‘Encoder ~ N
+| " " 4 l : esii/t eSii/T
+Lop =-= log ————- + log —————-
+- oli) [in ]us fue] — Yuan 2N al pa ue esij/t py esji/t
+
+[ett | be
+
+Ly
+
+ly
+
+[eT ly Te | bv Ts
+
+Image-to-Text
+Loss
+
+Text-to-Image
+Loss
+
+Learning Transferable Visual Models From Natural Language Supervision
+
+(cy eemcch Tim)
+
+Radford et al. (2021)
+
+22
+
+===== slide 027  [31:48] =====
+Llava: Early-Fusion
+
+=» Prepends image tokens to the text sequence, LLM
+processes everything in single unified self-attention pass
+
+unified token sequence into LLM
+
+(Gig) See
+
+CLIP MLP image tokens (196) text tokens
+spe! ban Banna image tokens prepended to text tokens
+always frozen
+image input patch embeddings trainable
+
+LLM (LLaMA)
+self-attention over all tokens jointly
+
+text prompt
+"describe this"
+
+| text output
+"a cat sitting on a mat"
+
+Visual Instruction Tuning
+
+erammoe Liu et al. (2023) 23
+
+===== slide 028  [33:39] =====
+Flamingo: Late-Fusion via Gated Cross-Attention
+
+= Vision is injected at every layer via cross-attention, the LM
+never sees image tokens directly
+
+= Sele!
+
+imgge frozen self-attention - Chinchilla LM
+vision
+enced gated cross-attention
+
+ler
+(econ > Q from text - KV from vision
+H x © x + tanh(a) - x-attn(Q, K, V)
+
+Perceiver H J
+resampler ¢
+
+compresses to 1 frozen self-attention - Chinchilla LM
+ixed-size K, V ; 3 )
+
+v
+
+a learned, init = 0
+fanh(0) = 0 > x © x
+LM fully preserved
+
+Perceiver resam \pler
+tanh gate a (one per layer)
+
+v
+
+gated cross-attention
+Q from text - KV from vision
+x € x+ tanh(a) - x-attn(Q, K, V)
+
+v
+
+frozen self-attention - Chinchilla LM
+\ )
+
+| veetxtoutput
+Flamingo: a Visual Language Model for Few-Shot Learning
+
+ofc meen Alayrac et al. (2022) 24
+
+===== slide 029  [35:28] =====
+Native Multimodal Models
+
+# Instead of adding vision to an existing LLM, train all
+modalities jointly from scratch
+
+any combination of inputs interleaved token sequence (any order, any mix)
+
+: __> |e e.g. image caption task:
+(ue feh2 (img }[img }{ img }{ txt )( txt ][ txt] > "describe this image”
+autio {auc ene,
+
+e.g. audio transcription:
+
+aud |{ aud |{ aud |{ aud }{ txt | > "transcribe this"
+
+A \—> |e e.g. video QA:
+video video enc. (vid }( xt )( vid }{ txt }[ vid }( ot) — freely interleaved
+|_| e e.g. multimodal reasoning:
+text pekenizes fimg }{ txt }{(aud ]{img ]{txt ]( aud] any mix, any order
+
+each modality is optional
+
+| unified multimodal transformer
+
+trained from scratch — every weight has always seen every modality
+
+y
+
+text (+ image) output 25
+eFSABMOO
+
+===== slide 030  [36:57] =====
+Native Multimodal Models
+
+# Instead of adding vision to an existing LLM, train all
+modalities jointly from scratch
+
+any combination of inputs interleaved token sequence (any order, any mix) -
+
+image —vision ene. ecronimade: Caption) task: ; ; - |
+
+rs {img }[img }{img |{ txt }{ txt ]{ txt ] > "describe this image’
+audio |~ *\audio enc.
+
+e.g. audio transcription:
+
+aud }{ aud |{ aud |{ aud |{ txt | ~ "transcribe this"
+
+—> |e e.g. video QA:
+video video enc. (vid {txt )( vid (txt [vid (xt } freely interleaved
+= % e.g. multimodal reasoning:
+text tokenizer [img }{ txt ]{ aud |{ img |{ txt {aud} any mix, any order
+
+each modality is optional
+
+trained from scratch — every weight has always seen every modality
+
+y
+
+text (+ image) output
+( ge) outp' 25
+
+| unified multimodal transformer
+
+(cy aeemcch i.e)
+
+===== slide 031  [38:33] =====
+Transformer — LLMs — VLMs —Native Multimodal models
+
+Can we extend it to robot actions?
+
+eFSABHMOO 27
+
+===== slide 032  [39:32] =====
+Robotics as Multimodal Sequence Modeling
+
+eFSABHOO
+
+Language Image Answer
+Ooged DOooe @ fom)
+
+ACTION:
+[Ax, 46, AGrip] =...
+
+“Pick up the
+
+spoon”
+
+28
+
+===== slide 033  [40:19] =====
+Robot Action Tokenization for VLAs
+
+Per-Dimension, Per-Timestep Binning
+Quantile bounds prevent outliers from expanding the discretization
+range and wasting bin resolution
+
+step 1 — quantile normalization per dimension
+
+i= Qes=+004 Qus=+2:30
+i robot A (small gripper) “~_ robot B terde arm)
+clip normalised [-1, +1] — identical for every robot oti
+t 1
+-1 0 +1
+
+step 2 — divide [-1, +1] uniformly into 256 bins - bin width = 2/256 = 0.0078
+
+bin oO ++ 256 equal bins --- bin 265 |
+
+step 3 — N-dim action at timestep t > N discrete tokens
+240 201
+as a7
+step 4 — inject action tokens into pre-trained language model vocabulary - train with next-token prediction
+
+RT-2: Vision-Language-Action Models Transfer Web OpenVLA: An Open-Source Vision-Language-Action
+@/ 2 wm @eledge to Robotic Control Brohan et al. (2023) Model Kim et al. (2024) 29
+
+action 183
+ae R? =
+
+107
+
+ae
+
+018
+
+a aa
+
+===== slide 034  [42:50] =====
+Action Chunking
+
+= Predict k future actions for smoother behavior z(a;.14;|04)
+
+action chunking
+predict K actions at once, execute all K before re-querying the model
+
+t+4 45 +6 +7
+
+chunk 1 — execute all 4
+
+suery 2 {a.]
+aaa
+
+chunk 2 — execute all 4
+
+action chunking + temporal ensemble
+re-query every a w= oe a i = Ois oldest prediction
+
+t+4 t+5  t+6 1.0 qt = 1.0 highest weight
+
+query at t+1
+
+075
+query at t+2
+query at t+3
+
+264] i Wo = 0.61
+5 , Me COOH! lowest weight
+t+3 overla
+E 05
+C) 10 20 30 40 50
+oldest age of prediction newest
+
+/=w,
+
+Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware
+Zhao et al. (2023)
+
+30
+
+===== slide 035  [48:29] =====
+Naive Action Tokenization
+
+As frequency increases:
+
+=" Correlation between token increases
+
+5Hz
+Data Control Frequency (Hz)
+
+eFSABMOO 32
+
+===== slide 036  [50:55] =====
+Effective Action Tokenization
+
+= How to compress continuous robot data?
+« Byte-Pair Encoding (BPE) not suited for continuous data
+= VQ learned compression complex to train
+= Key idea: Discrete Cosine Transform (DCT) ~ JPEG compression
+
+Frequency components
+
+Byte ee ee
+Pair
+Low: ompe —_ Compressed
+
+33
+
+efSiBeieo
+
+===== slide 037  [50:57] =====
+FAST: Efficient Action Tokenizer for VLAs
+
+" Scales to higher frequencies and trains 5x faster
+
+FAST: Efficient Action Tokenization for Vision-Language-Action Models
+Pertsch*, Stachowicz*, Ichter, Driess, Nair, Vuong, Mees et al. RSS 2025
+
+O@esSABMOO Finalist Best Conference Paper Award 34
+
+===== slide 038  [52:55] =====
+FAST: Efficient Action Tokenizer for VLAs
+
+——~
+
+Generality Dexterity
+
+FAST: Efficient Action Tokenization for Vision-Language-Action Models
+Pertsch*, Stachowicz’*, Ichter, Driess, Nair, Vuong, Mees et al. RSS 2025
+eFSABMOO Finalist Best Conference Paper Award
+
+35
+
+===== slide 039  [53:23] =====
+Conclusion
+
+= Robotics is a sequence modeling problem
+« Transformers as a scalable architecture — LLMs
+
+« Different architectures for multimodal inputs — VLMs,
+Native Multimodal models
+
+# Naive robot tokenization breaks at high frequency control
+= Compression-based techniques like FAST popular
+
+CcABMoOoO 36
+
+===== slide 040  [55:06] =====
+Thank you for your attention
+
+eCefSA2BHKOO
+

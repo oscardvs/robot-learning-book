@@ -1,0 +1,651 @@
+# Lecture 5 — slide OCR (secondary source; verify math visually)
+# 33 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 5: Reinforcement Learning II
+
+Oier Mees ETHziirich §” Microsoft
+
+16.03.2026
+
+eFSABMOO
+
+===== slide 002  [00:09] =====
+Recap: RL Algorithm Taxonomy & Trade-offs
+Deep RL (Discrete) Deep RL (Continuous)
+
+Value Iter.
+
+peed eal O SARA Double DON T-Opt (CEM)
+
+Needs Dynamics Model V Train+Test X Model-free X Model-free X Model-free
+State Space Discrete, small Discrete, small High-dim images High-dim images
+Action Space Discrete Discrete Discrete Continuous
+Policy (train time) Tabular Tabular Neural Net Actor + Critic NNs
+Off-policy N/A cy V (Replay Buffer) v (Replay Buffer)
+Convergence Vv Guaranteed v Tabular+explore X No guarantee X Brittle
+
+Bellman TD updates from Replay buffer + Actor learns
+
+Key Innovation contraction experience Target network arg max_aQ
+
+eFSABMOO
+
+===== slide 003  [02:01] =====
+Value-Based Methods: learn what every possible actions
+is worth & hope argmax will extract the best policy
+
+Policy Gradients: what if we optimize our policy directly
+to make good actions more likely?
+
+eFSABMOO
+
+===== slide 004  [02:36] =====
+Recap: The Learning Objective
+
+= Accumulated reward an agent receives:
+
+G= > vit
+
+t20
+
+=» Expected Return:
+
+J(m) = Ep~p_(t) ») rn
+
+t20
+
+# Optimal Policy:
+
+m™* = arg max] (7)
+1
+
+eFSABMOO
+
+===== slide 005  [03:20] =====
+Recap: Trajectory Probability
+
+# Probability of a trajectory tT = (So, do, Sy, Q4, ..., Sp) under
+policy tt:
+
+" Dr(t) = p(So) Iltzo To (az|s¢)P(St41|S¢, Ae)
+ee Sa
+
+Initial State Policy Transition Function
+Distribution
+
+(cy aeemcch ke)
+
+===== slide 006  [03:46] =====
+How Good is the Policy?
+
+= Let 7g(als) be the policy we optimize
+= 9* = argmaxg E,~p,(r)LDt=0 R(s¢, at) |
+ee
+
+J@)
+
+" J(0) = E~p,()[R(t)] * yee RC) = — Yi Leae Tit
+
+Monte Carlo Sampling: Sum over samples from 7g
+
+(<yaeemcch ka)
+
+===== slide 007  [06:57] =====
+How to get the Gradient?
+
+= Let 7g(als) be the policy we optimize
+
+=» 9* =arg max Er~pg(t) [Dtzo R(sp, a) ]
+
+J(@)
+= R(t) = Yizo Rp ae)
+# JO) = Ep @l[R@]
+Vo J(8) = Vo J pe(t)R(z) dt
+= { Vo pe(t)R(t) dt
+
+(cy aeemcch i.e)
+
+===== slide 008  [11:10] =====
+How to get the Gradient?
+
+Chain Rule h ( V ( )- ' ) YoPa(7) -
+Vor (x(0) = A v9x (0) Po\T)Vg 108 Pa\t) = Pot p (t) = VePatt
+
+~~“
+
+Vx
+Log Derivative Trick Vlog x = —
+x
+
+1
+Vo log(p9(t)) = a VoPo(t)
+
+Policy Gradient Theorem:
+
+Vo J(@)= J Ve pe(t)R(t) dt
+= J po(t) Velog pg (t)R(t) dt
+= E,W~9(z) [Vo log pg (tT) R(t)]
+
+—__ Sampling still non-differentiable, but
+We can sample this! we can differentiate wrt to 0! 7
+
+Can’t sample this
+
+efsSA2BHOO
+
+===== slide 009  [13:26] =====
+How to get the Gradient?
+
+i a! |
+
+Trajectory Distribution Pe (t) = p(So) | | (4g |S¢)P (Sta11St, 4)
+T t=0
+
+logpo(c) = logp(s0) + log ro arise) + logp(Se+1lse ae)
+
+Policy Gradient Theorem:
+Vo J(@)= E,~9(2) [Vo log pg (t) R(r)]
+
+—
+Vo lloaetSo) + Lis loge (aels¢) + log p (Spt, a1)]
+
+T-1 T-1
+Val (@) = EL po (t) (x Vo log mg ‘also (> R(St, ea)
+t=0 t=0
+
+eSB OO
+
+===== slide 010  [13:49] =====
+REINFORCE
+
+1. Initialize 7g
+2. While not converged do
+|. Collect samples {t‘} by rolling out policy zg
+Il. Compute gradient V9J/(@) ~
+all = = =
+~ Lio |(Le=0 Vo log mo (aie|siz))(Zt=0 R(sit,ait))]
+lll. Update 6 — 6 + aVogJ(@)
+3. Return 7
+
+Simple statistical gradient-following algorithms for connectionist reinforcement learning
+Williams, R. J. (1992)
+
+eFSABMOO
+
+===== slide 011  [14:54] =====
+Intuition Behind Gradient
+
+= Policy Gradient:
+
+Volpa(8) == >y (> Vo log m9 (ai2\s; ) (> R(Sit, i )
+
+—
+
+Imitation gradient, weighted by reward => © Upweight good trajectories
+Downweight bad ones
+
+=» BC Gradient:
+
+N-
+1
+Velac(@) = y
+
+(S Yoogxe(eulss))
+
+C/ABmMOO
+
+===== slide 012  [18:01] =====
+Causality
+
+arm moves correctly toward cup, but overshoots. first half of the trajectory was good!
+What will REINFORCE do? but REINFORCE penalizes all the
+actions in the trajectory
+
+Causality: Policy behavior at t’ does not affect reward at time t when t < t’
+
+rt rot
+». Vo log 19 (a¢|sz) (> R(s;!, =)
+t=0
+
+t'=t
+———
+sum of future rewards Reward- To-Go
+C/AEmMOO 11
+
+Vol (0) = Ey ~po(t)
+
+===== slide 013  [19:30] =====
+High Variance
+
+t1: arm moves vaguely t?: arm reaches cup perfectly
+toward cup but overshoots
+
+__ +p Se a a
+
+R=99 R=101
+
+REINFORCE: Both have great return, lets make both behaviors more likely!
+
+A@ = Vg log tg (als) - R(t)
+A@ = Vg logmg(als): 99 Huge gradient for your optimizer!
+
+Effective signal is 10199 = 2 —» Signal-to-Noise: an ;
+2/100 = 2% of the gradient is informative
+
+efSA2BHOO 12
+
+===== slide 014  [19:39] =====
+Reducing Variances with Baselines
+
+T-1 T-1
+Vo] (8) = Ex~po(z) ») Vo log 19 (a; |s¢) (> R(sz',,") — s)
+t=0 t
+
+t'=t
+
+substract a constant baseline, often mean reward
+
+. _— N-1
+fy —E > b= a) Re)
+i=0
+
+R=99—-100=~-1 R= 101-100 =1
+
+by substracting average reward, we get negative gradients for below average behavior
+
+Subtracting a baseline does not change the
+Why can we do this? gradient in expectation, it is unbiased.
+
+E[Vo log po (t) b] = | p9(t)Vo log pe (z) b dr = | Vope(t)b dt = Vp | po(t) dt = bVg1 =0
+
+(<yaeemcch k---e->) 13
+
+===== slide 015  [21:39] =====
+Advantage Function
+Vel (8) = E,W p9(t) y Va log 19 (a; Sz) ( Rp; a.) — s)
+t'=6
+
+Reward-To-Go
+
+Q” (St, ar) = = Exy| Derat R(S¢', az") | St, ar |
+
+What could be the ideal baseline?
+v"(s)= Eg~ 9 (| s) [Q”(s,a)]
+
+Accounts for the specific difficulty of each state, ensuring the robot is only
+rewarded for actions that outperform its own average expectation in that situation
+
+C/ABMOO 14
+
+===== slide 016  [23:01] =====
+Advantage Function
+
+How much better it is to take a action a in state s?
+A™(s,a) = Q™(s,a) —V™(s)
+ri
+
+». Vo log 119 (az |s¢) A” (St, At)
+t=0
+
+Vol (8) > EL W~pg(t)
+
+Q” (Sz, A¢) = Eng [rr R(Sz1, Az") | Se, Qe | - expected return by taking action a from state s
+V"(s) = Eg-ng(.| s)|Q” (Ss, a)] - expected return from state s
+
+(<yaeemcch he)
+
+===== slide 017  [24:20] =====
+Distribution Shift & Sample Efficiency
+
+T-1 T-1
+VoJ(@) = EF ~p(t) ») Vo log m9 (a¢|Sz) (> R(Sp1,¢") — s)
+
+t t=0 t'=t
+
+assumes samples from current policy
+
+|. Collect samples {r"} by rolling out policy mg
+ll. Compute gradient VoJ(@) ~
+
+a = =
+Wino [(XIEo Vo log mg (ai ¢|si1)) (Lio R(sit aie))]
+Il. Update @— 8+ aVe](G) qm We need to throw away old data &
+collect new data every gradient step! ®
+
+Vanilla policy gradient is On-Policy, unlike Off-Policy algorithms like DQN that can reuse past data
+
+(cy aeemcch i.e) 16
+
+===== slide 018  [25:39] =====
+Policy Gradients Off-Policy Version
+
+= Can we use data from previous policy p(t) ?
+
+Importance Sampling
+
+°° — Target p(x) - new policy pe(T) Ex~p(x) Lf (x)] = =Jrey (x)d x
+
+== Proposal q(x) - old policy p(t)
+@ Samples from q(x)
+@ Weight w=p(x)/q(x) aia) 7 )
+
+I (x oe
+fe x)
+
+°
+rs
+
+p(x)f (x)dx
+
+°
+o
+
+°
+iS
+
+Probability Density
+
+014 = E
+
+x~q(x)
+
+f@ )
+
+= ; q needs to have non-zero
+Trajectory Space (r) support where p(x) > 0
+to remain unbiased
+
+efSA2RBHOO 17
+
+===== slide 019  [29:28] =====
+Policy Gradients Off-Policy Version
+RL objective with importance sampling
+
+J@) = Ey) Pew r(o|
+
+T
+Po (T) _ p(sy9 It =1 19 (A; |5¢)P(St44 Spr) -||[4 a (alse)
+P(t) p(s1) ie 11 (Az|S¢)P (Sts St At) t=1 7 (ay|S¢)
+How do derive the gradient to update our new policy z,: with samples from old 7g ?
+
+T T
+VoJ(6') = Ee ~pgr(t) (x Vo" log ra (als (> (spr, 2) — 3]
+t=1
+
+=e
+
+new policy
+
+eFSABMOO
+
+===== slide 020  [31:03] =====
+Policy Gradients Off-Policy Version
+
+T
+
+T
+VotJ(0') = E.-pata =e (> Vor loer(a)) (> r(sz", «)) — 3]
+t=1
+
+t=t
+
+old policy importance weights
+
+Er T T
+‘(azls,)
+= Exapg(t) (1 et (> Vor log ra (als (> r (ser, «)) - )
+
+t=1 tist
+
+I
+
+substitute from previous slide.
+this product can lead to exploding/vanishing
+gradients for large T!
+
+(<yaeemcch i.e)
+
+===== slide 021  [31:13] =====
+Policy Gradients Off-Policy Version
+
+In practice, we often consider expectations over timesteps instead of trajectories
+
+T
+Tl g'\ Sit, Aj
+Vr] (0! ) me Lyry torso dus) g! r( LC it) V9 log 91 (a; ¢|Sir) (> r(sipr, a) —
+
+os — oe
+
+more send to compute, but hard to measure
+Tt (Sa) _ Tp (A|S) Tt (S) _ Te (AS)
+m9(sa) me(Q\S) mo(s)  m@(Qls)
+™ Often approximate with 1
+
+Final form:
+
+Lean H(aielsie) ,
+we WD, Qantas) SE Vo logreg (ai Sy (y Sith At! )-
+6 N ha Li 19 (ai t|s; t) g! 108 Tg ( it| it) 4 ( it it’)
+(cy aeemcch (E---e->) 7
+
+===== slide 022  [32:34] =====
+Off-Policy Policy Gradients Algorithm
+
+Take multiple gradient steps on the same batch
+
+. Collect samples {r"} by rolling out policy 74
+ll. Compute gradient using {t'} samples V,g/J(0’) =
+1 Tot (Ai t|Si,t)
+= toa De=1 els.) 2 log m9’ (ait Sit) (om r(Sien ip) — b)
+|. Update 6 < 6+ aV,J(@)
+
+eFSABMOO 21
+
+===== slide 023  [34:24] =====
+Entropy Regularization
+
+= What if the support set is zero, p(x) > 0 but q(x) = 0?
+
+= New policy zg: assigns probability to action-state pairs that
+1g never took.
+X Importance weight explodes, estimator gets biased!
+
+" Solution: Add entropy bonus to avoid policy becoming
+
+too deterministic uv |emperature parameter
+L(6') = Lpg(8') + BH(tt9¢ |s))
+Discrete Shannon Entropy Continuous Differential Entropy
+d
+
+H(t’) = — ». Tg'(a | s) logmtg(a | s) H(z’) = ate + log(27)) + > log;
+
+aeA .
+jt 22
+eFSABMOO
+
+===== slide 024  [37:37] =====
+Policy Gradients with Constraints
+
+« What if our policy changes a lot before sampling new
+data?
+
+T
+Tt (ai,e|Si,
+VoJ(0") ») y ieee fe ; Vor log Tg (ait |Sit) (> r(Sih ou) = 7
+
+=1 t=1 t'=t
+
+Unlikely wl, under zg gets high reward, 7g: makes it much more
+0.10 (new) _ 20
+0.005 (old) —
+
+likely and gradient explodes! w =
+
+" Solution: constrain the policy to not change too much
+during gradient updates
+
+Es~rg[Dxi (eC |S) Il C1 s))] sé
+
+C/cAmmMOO 23
+
+===== slide 025  [38:16] =====
+Trust Region Policy Optimization (TRPO)
+
+« Maximize advantage from old policy while not deviating
+too much
+
+Tg'(a|s)
+maximizegy L(6') = Esa~ng 2
+
+1g (als)
+
+subject to E,.7,[Dx_(te(- | 5) Il terC | 5))] S€
+
+A™®(s,a)
+
+Monotonic improvement guarantee
+x Requires the Fisher Information Matrix to solve the constraint optimization, is
+O(N?) number of trainable parameters
+A Conjugate gradient approximation reduces this to 0(kn) = O(n), but still ~20x
+more expensive than a standard gradient step
+x Scaling to deep networks requires additional approximations like K-FAC
+(Kronecker-Factored Approximate Curvature)
+Trust region policy optimization
+Schulman, Levine, et al., (2015)
+O@SABMOO 24
+
+===== slide 026  [41:20] =====
+Proximal Policy Optimization (PPO)
+
+« What if just clip importance ration instead of expensive
+constraints to avoid getting too large?
+
+L(6') = Esa~ng nin (oe A™6(s, a), clip roe 1—e,1+ c) A™®9(s, 0)
+eS a
+
+1g (als) 1g (als)
+Force the importance sampling ratio to stay within a safe interval
+
+Scales linearly O(N) with the number of trainable parameters
+Significantly easier to implement, works with standard optimizers like Adam
+Foundation to train LLMs with RLHF or GRPO
+No monotonic improvement guarantee
+x Near-on-policy, needs many samples
+
+Proximal Policy Optimization Algorithms
+Schulman, et al., (2017)
+efSABHKOO 26
+
+===== slide 027  [42:04] =====
+Case Study: OpenAl Dexterous Hand
+
+= PPO sim2real achieves human-level dexterity on 24 DoF
+
+Rubber Glove
+
+Solving Rubik’s Cube With a Robot Hand
+OpenAl et al., (2019)
+
+(<yaeemcch i---e->)
+
+27
+
+===== slide 028  [44:45] =====
+Full PPO Objective
+
+LPP 0") = Esa~ng Lo"? (8") — C1 (Ver (s) — V°9T9)? + coH (tt9/)(s)]
+
+Clipped Surrogate For Advantage Entropy Bonus
+Objective
+“Actor” “Critic”
+ey,
+
+Combines the best of value-based
+methods and policy gradients!
+
+efSABHOO 28
+
+===== slide 029  [45:14] =====
+Actor Critic Methods
+
+" Actor: uses Policy Gradients to predict continuous actions
+" Critic: uses Value learning to evaluate goodness of a state
+
+=" Actor-Critic: @ Low variance from critic, continuous actions from
+actor, direct policy optimization
+
+« Learns from every step via TD updates, at the cost of small
+bootstrapping bias
+
+= Optimal baseline to lower variance via advantage
+" Robotics: often asymmetric information via privileged info for critic
+X Actor and Critic still near-on-policy, needs many samples
+
+e/AEMOO 29
+
+===== slide 030  [46:53] =====
+Soft Actor-Critic
+
+" Critic trained fully off-policy on a replay buffer!
+Exploration: Entropy Bonus
+
+[Actor (9) = Es~Dreplaya~Trgy [aH (1tg')(s)-Qg(s, a)|
+
+Exploitation: if | were to do this action
+today, how many points would | get?
+
+target network
+
+i 2
+ad) as ae a (c (s,a) — ("+ Y (Q5 (s’,a’) + cnnay(s9))) |
+
+t actual reward received this state leads to high
+How many points did | think this past ewer ee ghee yOu
+action a in this past situation s was worth? many different ways to
+
+(<eeecch Ihe) succeed 30
+
+===== slide 031  [49:29] =====
+Reparameterization Trick
+= Problem: Update Actor based on the Critic's score.
+a~ N(ug'(s),o9(s)) > Stochastic & Non-differentiable
+
+Mean Std Dev
+Action Dist. Action Dist.
+
+a= for(s,€) = Ug (Ss) + dg/(s)Oe€ where € ~ N(0,1)
+
+sampled from a fixed distribution without
+weights, so no gradients needed!
+
+[Actor (0’) — Es~D,eplay€~N (0,1) [aH (119') (s) ~ Qe (s, fa (s, €))|
+
+(yy aeemcch k---e->) 31
+
+===== slide 032  [50:21] =====
+Conclusion
+
+REINFORCE, optimize policy directly
+= Causality + Baseline: reduce variance
+» Advantage Function: V(s) as optimal baseline
+Importance Sampling: multiple gradient steps on batch
+Entropy Regularization: maintain support
+TRPO: bound how much policy changes via KL
+PPO: Clip ratio instead, still near-on-policy
+
+SAC: fully off-policy critic via replay buffer, most sample
+efficient
+
+33
+
+(yy aeemcch (h---e->)
+
+===== slide 033  [52:16] =====
+Thank you for your attention
+
+efSAiBHOO
+

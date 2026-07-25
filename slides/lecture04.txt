@@ -1,0 +1,915 @@
+# Lecture 4 — slide OCR (secondary source; verify math visually)
+# 48 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 4: Reinforcement Learning |
+
+Oier Mees ETHziirich 8” Microsoft
+
+09.03.2026
+
+===== slide 002  [00:58] =====
+Recap: Imitation Learning
+
+" Data: Given trajectories collected by an “expert”
+“demonstrations” D = {(s,,Q,,...,S¢)} (>
+
+Dataset
+(S1, 4,» Sz)
+
+" Goal: Learn a policy zg that “imitates” the expert’s
+behavior — X we can’t get better than the expert!
+
+===== slide 003  [01:29] =====
+Recap: Markov Decision Process
+
+= Define by M = (S,A,P,R)
+state s,, reward 7;
+
+[Y
+
+environment 65 ge robot
+ae
+
+= S:State space,s,€S action a;
+
+= A: Action space, a,€ A
+
+|
+
+= f: Transition probability, s.4, ~ P(-l, St, a¢)
+= R&R: Reward function, r:SxA > R, % = R(S¢, Qt, St41)
+
+===== slide 004  [02:13] =====
+Recap: The Learning Objective
+
+= Accumulated reward an agent receives:
+T-1
+
+G= >t orG= > vit
+t=0
+
+=» Expected Return:
+J(m) = E7~p,(t) [Size r, | or J(r) = E,~p,(t) [Deo yr]
+
+# Optimal Policy:
+
+m™* = arg max] (7)
+T
+
+===== slide 005  [08:24] =====
+Don't Wait for the Cliff
+
+" J (a) = Ep z(t) [Ditzo yr] = Es,,a0,51..170 + yr + Y°T2 + sss |
+Se ee
+
+Can we estimate J (7) without unrolling
+each episode to the end?
+
+===== slide 006  [08:54] =====
+Don't Wait for the Cliff
+
+= J(m) = Ep z(t) [Diteo yr] = Es4,a0,51..170 + YT + Y°T2 |
+_—_—_—__—_—
+
+Can we estimate J (7) without unrolling
+each episode to the end?
+
+===== slide 007  [10:39] =====
+Bootstrapping: Recursive Shortcut
+
+Decompose infinite sums of rewards:
+
+». y'R(St, at) = R(So, a) + vy), y' *R(S¢, at)
+t=0 t=1
+
+—
+this is V !
+
+= Bellman Expectation Equation
+V"(s)=Eg ~m(-|s), s’ ~P(|s,a)I7(S, a) + yV™(s’ )|
+‘$e.
+
+value now = immediate reward + discounted value of next state
+allows value estimation without full rollouts
+
+===== slide 008  [12:07] =====
+state s,, reward r,
+
+environment 5) & ~ robot
+ae
+
+# Optimal Value: ‘ |
+V*(s) = max V™(s) action a,
+
+Optimal Policy
+
+# Optimal Policy:
+m* = arg max J (72) = arg max Es,~p(s) V (So) |
+
+m*(s) = argmaxEy pj. [r(s,a) + W"(s')]
+
+===== slide 009  [14:59] =====
+Value Iteration
+=" How can we compute the optimal policy in practice?
+
+1. Initialize Vo(s;) =0 Vs, ES
+2. Fork = 0,1,2... until maxs, |Vi41 (s¢) — Ve(sz)| < €:
+Update Vi41(si) — max [r(s¢,a) + VEs,,, ~P¢|s,a)Ve(Se+1)]
+3. Extract policy m*(s;) = arg max [r(spya) +7Es,,, ~PC|spa)V* (St+1)]
+
+Convergence proof via Bellman contraction
+
+X Assumes dynamics model
+
+X Needs to sweep through all states 0(|S|?|A|)
+State space must be discrete & small
+
+11
+
+===== slide 010  [16:42] =====
+Value Iteration - Gridworld
+
+VALUE ITERATION
+
+STATUS
+
+LEGEND
+Goal (+1)
+Danger (-1)
+Wall (blocked)
+
+_ LowV(s)
+
+High V6)
+
+VALUE SCALE (V RANGE)
+
+ACTIONS.
+
+thes
+
+rt
+
+===== slide 011  [17:01] =====
+Value Iteration - Gridworld
+
+VALUE ITERATION
+
+Alara STATUS
+
+LEGEND
+Goal (+1)
+Danger (-1)
+Wall (blocked)
+LowV(s)
+High V6)
+
+VALUE SCALE (V RANGE)
+
+w RESET
+ACTIONS.
+
+thes
+
+===== slide 012  [17:35] =====
+Value Iteration - Gridworld
+
+VALUE ITERATION
+
+STATUS
+
+LEGEND
+Goal (+1)
+Danger (-1)
+Wall (blocked)
+Low V(s)
+High V6)
+
+VALUE SCALE (V RANGE)
+
+w RESET
+ACTIONS.
+
+thes
+
+===== slide 013  [17:43] =====
+Policy Evaluation
+=" How good is our policy?
+
+1. Initialize Vo(sp) =O Vs, ES
+2. Fork = 0,1,2... until maxs, |Vi41 (s¢) — Ve(sz)| < €:
+Update Viera (St) S Ea ~1(-Is¢) [r(Sse, a) + VES. 41~Pcispa) [Vi (St+1)]
+
+Convergence proof via Bellman contraction
+A Cheaper than value iteration 0(|S|7), still sweep through all states
+X Assumes dynamics model
+
+State space must be discrete & small
+
+als)
+
+===== slide 014  [18:51] =====
+Value Iteration vs Policy Evaluation
+
+= Value Iteration:
+Viera (St) — ee [r(sp,a) + VES. 44 ~pcjspa) Ve (Se+1)]
+
+= Policy Evaluation:
+Vie+1 (St) _ Ea ~10(-IS¢) [r(st, a) + Yes. 1 ~PCispa) [Vi (St41)]
+
+===== slide 015  [19:36] =====
+Policy Iteration
+
+« Alternates between finding out how good we are and
+trying to be even better this just one step of eval iteration
+
+until convergence
+1. Initialize 29 (s,) arbitrarily Vs; € S
+2. For j = 0,1,2,... until tj44= 7;
+
+Policy Evaluation V,...,(s;) < E, wrjClse) [7 (St:@) + VEseaspcispay Ve (Se+1)]
+Policy Improvement 7;,. (s;) = arg max [r(sz,a) + VEs,., ~P(spa)V™ (St41)]
+
+find best action according to one-step
+look-ahead
+
+15
+
+===== slide 016  [21:22] =====
+Policy Iteration - Gridworld
+
+POLICY ITERATION
+
+lV(s'01] Improve: njea(s) = argnaxetr(s,a) + y-Es-plV"-J(s*)]]
+Policy Inpro status
+4
+8
+Evaluation
+
+8.08096
+
+3(My) = VM3(Sq)
+
+STEP +
+LEGEND
+
+==) © Goal (+1)
+
+Danger (-1)
+
+| nee Myst = 1 wall
+or Low)
+© High vis)
+
+16
+
+===== slide 017  [21:33] =====
+Limitations of V (s) for Robotics
+
+" Acting with V(s), requires querying Dynamic Models at
+test time, for every state-action combination
+m* (St) = arg max [r(st,a) + VEs.44 ~P(-|s,a)V* (St41)]
+
+need dynamics model at test time!
+
+i
+5 ae
+TO FIND
+SIMULATE ALL HIGHEST ,
+ACTIONS (P) VALUE (V)
+(REQUIRES DYNAMICS MODEL) 4
+¥
+
+EXECUTE
+; BEST ACTION
+(az)
+
+c \ Se +
+@ SENSE & PLANNING act
+
+‘START END
+
+17
+
+===== slide 018  [23:16] =====
+Q-Values
+
+= V*(s,): Expected discounted return starting from state s,,
+acting optimally afterwards
+
+V*(sz) = max|r(s¢, a) + VEsu41~P(-lspa) LV *(St41) I
+= Q*(s;,a): Expected discounted return from state s;,,
+committing to action a first, acting optimally afterwards
+Q*(Sst,a) =r(sz,a) + Eg, 4 ~PC-lspa) lv max Q*(S¢+1, de+1)|
+ee, at+1
+still needs dynamics model during training =)
+
+V" (sp) = max Q* (sp, a)
+
+===== slide 019  [24:39] =====
+Q-Value Iteration Test Time
+
+=» No dynamics model needed during test time!
+
+*(s;) = arg max Q*(s;, a)
+a
+
+E
+BEST ACTION
+(GA)
+
+fe Ya Sf
+@ sense € Qact
+> |
+
+ae,
+
+===== slide 020  [25:02] =====
+Q-Learning - Removing the Dynamics Model
+
+=» Dynamics model might be unknown, too complex or slow
+
+# The Solution? Replace Expectation with Experience
+
+1. Execute action and observe transition (s;, Qt, 7, S¢+1)
+2. TD target = r(sz,a¢) + y max Q(sz41,@),17 (Sz, az) if s¢44 terminal
+a
+3. Q(Sz,a¢) — (1 — a) Q(sz, a;) + a [TD target]
+=_e’ =_ew
+old estimate new experience
+
+sample
+learning rate
+
+20
+
+===== slide 021  [27:33] =====
+Q-Learning - Gridworld
+
+- LEARNING
+
+Q
+
+xX
+
+xm}
+x x
+KOON
+
+T
+
+===== slide 022  [28:36] =====
+Off-Policy vs On-Policy
+
+= Does it matter which policy collects the transition
+(St, At, T, St41) uSed to update our TD target?
+
+TD target = r(s;,a;) + y max Q(s;43,a)
+fem, gee a
+
+what —=——
+happened max assumes future
+optimal action, regardless
+of past behavior
+
+# Off-Policy learns from “any” data, even sub-optimal
+behavior —> reuse experience (Experience Replay Buffer)
+
+22
+
+===== slide 023  [29:14] =====
+Off-Policy vs On-Policy
+= Q-Learning Off Policy target:
+
+TD target = r(s;, az) + y max Q(s;¢43,a)
+a
+
+he
+What is the best | could
+= SARSA On-Policy target: Gornext@
+
+TD target = r(sz,a;) +y Q(St41,4t41)
+————
+
+What am | actually going
+to do next?
+
+23
+
+===== slide 024  [31:27] =====
+Q-Learning vs SARSA - Gridworld
+
+= SARSA learns “safer” behaviors
+
+===== slide 025  [31:33] =====
+RL Taxonomy
+
+Exact Solution Methods
+
+¢ Value Iteration
+¢ Policy Iteration
+* Q-Value Iteration
+
+Convergence proof via Bellman contraction
+Sweep through all states
+Needs dynamics model
+x State space must be discrete & small
+Tabular representation
+
+Value-based Methods
+
+* Q-Learning (off-policy)
+¢ SARSA (on-policy)
+
+Converges to Q* (tabular, sufficient exploration)
+No dynamics model needed (model-free)
+Learns from interaction
+
+X State space must be discrete & small
+
+X Tabular representation
+
+25
+
+===== slide 026  [32:13] =====
+The Curse of Dimensionality:
+Scaling to Image Observations
+
+Atari game observation space=25684*84*4
+
+26
+
+===== slide 027  [33:13] =====
+Case Study: Deep Q-Learning (DQN)
+
+« First time a single algorithm learned to play 49 different
+games from raw pixels
+
+=» Launched Deep Reinforcement Learnina in 2013
+
+Playing Atari with Deep Reinforcement Learning
+
+Volodymyr Mnih Koray Kavukcuoglu David Silver Alex Graves _Toannis Antonoglou
+Ryeen Wiseman Nitin Rina Personal note: Martin just
+
+had started his sabbatical
+
+DeepMind Technologi
+7 aaa at a small startup called
+{vlad, koray, david, alex.graves, ioannis,daan,martin.riedmiller} @ deepmind.com DeepMind, when | joined
+Uni Freiburg
+Abstract
+
+We present the first deep learning model to successfully learn control policies di-
+rectly from high-dimensional sensory input using reinforcement learning. The
+model is a convolutional neural network, trained with a variant of Q-learning,
+whose input is raw pixels and whose output is a value function estimating future
+rewards. We apply our method to seven Atari 2600 games from the Arcade Learn-
+ing Environment, with no adjustment of the architecture or learning algorithm. We
+find that it outperforms all previous approaches on six of the games and surpasses
+a human expert on three of them.
+
+27
+
+===== slide 028  [34:46] =====
+DQN Algorithm
+
+Algorithm 1 Deep Q-learning with Experience Replay
+Initialize replay memory D to capacity N
+Initialize action-value function Q with random weights
+for episode = 1, M do
+Initialise sequence s; = {x} and preprocessed sequenced ¢) = $(81)
+fort =1,T do
+With probability « select a random action a;
+otherwise select a; = max, Q*(¢(sz), a; 4)
+Execute action a; in emulator and observe reward r; and image 441
+Set Si41 = S¢,@¢,Z¢41 and preprocess $141 = (S441)
+Store transition (¢;, az, 74, d¢41) inD
+Sample random minibatch of transitions (¢;, a;,7;, 6;41) from D
+Se { tj for terminal $541
+J ry +ymMaxe Q(¢;+41, a’; 9) for non-terminal ¢;+1
+Perform a gradient descent step on (y; — Q(¢;, a5; 9))” according to equation 3
+end for
+end for
+
+28
+
+===== slide 029  [34:56] =====
+Experience Replay Buffer
+
+= Store transitions in buffer Deepjlay = {Gr ae 71 St+a)}tL1 Instead of
+discarding them
+
+#» Sample random minibatch each update —breaks
+temporal correlations (creates i.i.d. samples)
+
+= Each transition reused many times— more sample
+
+efficient
+Update Qp
+aN
+
+Interact with Environment
+
+Sample
+Minibatch
+
+Drepla
+(S1, a4, - yD)
+
+29
+
+===== slide 030  [35:59] =====
+Delayed Target Network
+
+2
+
+» L6)= E(s,,ap,7¢5t+1)~Dreplay [(r6se, at) +y Max, Q(St44, a; 8) — Q(sz, ag; 6)) |
+
+—_"eEEeE ——— ~T
+target prediction
+
+optimizer unstable & diverges —_—_—_————>
+moves every step moves every step
+
+2
+. L(6) = E(s,ap7S¢4+1)~Dreplay (rs. a;) + ymax Q(s¢+1, a, e ~ Q(sz, at; ®)
+
+copy of @ frozen for updated every
+some steps, step
+then @” < 6
+
+« Freezing 0" makes the target fixed —» stable supervised regression
+30
+
+===== slide 031  [37:30] =====
+DQN
+
+= Discrete action space, image state space, sparse & dense
+
+rewards
+
+B. Rider | Breakout | Enduro | Pong | Q*bert | Seaquest | S. Invaders
+Random 354 1.2 0 —20.4 157 110 179
+Sarsa [3] 996 5.2 129 —19 614 665 271
+Contingency [4] 1743 6 159 —-17 960 723 268
+DQN 4092 168 470 20 1952 1705 581
+Human 7456 3l 368 —3 18900 28010 3690
+
+31
+
+===== slide 032  [37:58] =====
+The Overestimation Bias
+
+» Max is not symmetric, it amplifies positive noise leading to
+systematic overestimation
+yj =7(Spae) +y max Q(St41,4; 07)
+In DQN, same
+
+network selects and
+evaluates action
+
+= Double DQN: same two networks as DQN, just rerouted
+yj =7(Spar)t+yvQ (Seo arg max Q(St41,4; 9); a-)
+——
+
+ad
+online network target network
+selects action evaluates it
+
+Deep Reinforcement Learning with Double Q-learning
+Van Hasselt et al., 2015 32
+
+===== slide 033  [39:11] =====
+DQN — Scaling to Continuous Action Spaces
+
+= Robots have often continuous action spaces - L
+a = [T1,T2,T3,Ts,Ts,T6,T7]) € R’ * &
+=" How do you compute arg max Q(sz, a, 8) over an infinite
+action space?
+= Discretization
+» Sampling + CEM
+# Learn arg max with second network (DDPG)
+
+33
+
+===== slide 034  [41:12] =====
+Case Study: Spatial Discretization
+
+Quusn'S,> a,)
+>, | See ....
+ae —
+
+ie ;
+Cae = best push
+Qrrasp(St> 4,)
+Raw
+:| Se —
+AAS :
+ROE est grasp
+
+heightmap s, Noushing
+i 8 Ps (WenseNet- cy
+
+x16
+
+N grasping
+(enseNet- sve
+
+Learning Synergies between Pushing and Grasping with Self-supervised Deep Reinforcement Learning
+Zeng, Song et al., 2018
+34
+
+===== slide 035  [42:58] =====
+Case Study: Spatial Discretization
+
+Learning Pushing and Grasping
+
+wr 2
+
+Learning Synergies between Pushing and Grasping with Self-supervised Deep Reinforcement Learning
+Zeng, Song et al., 2018
+
+eFSARBMOO
+
+===== slide 036  [44:05] =====
+Monte Carlo Sampling
+
+= How to compute argmax Q(s;,a,0) over an infinite action
+a
+space?
+
+argmaX,¢p7Q(s,a;8) argmax Q(s, a; 8)
+a®~Uniform(.A), i=1...N
+
+(a Works because Q(s;, a, 8) is smooth in a,
+dense enough sampling always finds a
+point near the true peak
+
+» Requires N forward passes per action
+selection, scales poorly
+
+! Quality depends entirely on N and luck,
+no guarantee of finding the true argmax
+
+eFSABHMOO 36
+
+===== slide 037  [44:58] =====
+Cross-Entropy Method (CEM)
+
+» Sample smarter by iteratively concentrating on high Q
+
+1. Sample N actions from a® ~ N (uy, o%),i = 1...N
+2. Keep top Mwith highest Q, Eset = {a | Q(s,a) € top M}
+3. Refit up.4, = mean(Eset), 0x41 = Std(Esez) to elite set & repeat
+
+No gradients needed — works as a
+black-box optimizer on any Qg
+
+A Finds only one mode, if Qg is multimodal,
+converges to whichever peak it lands first
+
+4, Optimization at test time, pays NxK
+= forward passes every single control step
+
+eFSA2RBHOO 37
+
+===== slide 038  [46:13] =====
+Case Study: QT-Opt
+
+« First time Q-Learning + CEM scales to real robots with
+image obs—> 96% grasp success on unseen objects
+" Off-policy Q-learning: replay buffer stores 580k real grasps
+
+* Camera view \ a
+yy ’
+By || i>
+il sy
+
+=~ 7
+
+QT-Opt: Scalable Deep Reinforcement Learning for Vision-Based Robotic Manipulation
+Kalashnikov et al., 2018
+
+eFSABMOO 38
+
+===== slide 039  [46:28] =====
+Case Study: QT-Opt
+
+« First time Q-Learning + CEM scales to real robots with
+image obs 96% grasp success on unseen objects
+= Off-policy Q-learning: replay buffer stores 580k real grasps
+
+Training time
+
+¥ 7 Distributed RL
+we = Reward: Grasp success 1
+\ > E - determined by subtracting (po 1 \
+as &
+
+H
+pre and post-drop images ee H i Learned
+
+(weights.
+1
+
+Inference time ny,
+Critic Function
+
+Q(State, Action)
+Cross-Entropy Method
+arg max Q(State, Action)
+Action
+
+QT-Opt: Scalable Deep Reinforcement Learning for Vision-Based Robotic Manipulation
+Kalashnikov et al., 2018
+
+‘SON|EA-D
+
+C/AmBmMOO 38
+
+===== slide 040  [46:34] =====
+Case Study: QT-Opt
+
+« First time Q-Learning + CEM scales to real robots with
+image obs 96% grasp success on unseen objects
+= Off-policy Q-learning: replay buffer stores 580k real grasps
+
+Input: 472x472 Image
+and gripper aperture
+
+Output: Gripp
+and displac
+i |
+
+bh
+
+QT-Opt: Scalable Deep Reinforcement Learning for Vision-Based Robotic Manipulation
+Kalashnikov et al., 2018
+
+eFSARBHMOO 38
+
+===== slide 041  [46:38] =====
+Deep Deterministic Policy Gradient (DDPG)
+
+= CEM solves arg max at test time, DDPG learns it during
+training
+Instead of:
+
+(i).
+max S,,a7:0 NxK passes
+ao max oy’ ( £ ) [ p |
+
+Learn a network pg such that:
+
+a* = arg
+
+Mg (S¢) © argmaxQ(s;,a;6) [1 forward pass]
+a
+
+= Two Networks:
+= Critic Q(s;'a’ 0) —> same as DQN, trained with TD loss
+= Actor ug (s;) —> new, trained to maximize Q
+
+C/AEMOO 39
+
+===== slide 042  [48:27] =====
+DDPG
+
+= Actor update: ask critic which action is better, move ygin
+that direction
+
+Vol) ~ Bs |VaQ(s.a;6)| _ . -Vouo(s)
+
+Hg(S)
+
+= Exploration: A deterministic actor never explores, but
+unlike DQN we can't use e-greedy, we add gaussian noise
+at = Ug (St) +é, E~ N (0, a)
+
+Continuous control with deep reinforcement learning
+Lillicrap et al., 2015
+
+CABMOO 40
+
+===== slide 043  [49:54] =====
+DDPG
+
+Deep Reinforcement Learning for Robotic Manipulation with Asynchronous Off-Policy Updates
+Gu et al., 2016
+
+eFSARBMOO
+
+41
+
+===== slide 044  [50:18] =====
+DDPG
+
+Test time = 1 forward pass, runs at any control frequency
+
+Handles high-dimensional continuous actions, no CEM needed at test time
+
+x Notoriously brittle, very sensitive to hyperparameters, often fails to converge
+X Noise o must be tuned manually, too small: no exploration, too large: unstable
+
+0.4
+0.3 <= 1 worker Jf ta a LV
+= 2 workers 4 V VW
+5 (0.2 a
+} jf
+$ o1
+o
+-
+» 0.0
+u“
+o
+* -0.1
+-0.2 *
+-0.3
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+hours
+Deep Reinforcement Learning for Robotic Manipulation with Asynchronous Off-Policy Updates
+Gu et al., 2016
+
+OCS ARBMOO 41
+
+===== slide 045  [50:26] =====
+DDPG
+
+Test time = 1 forward pass, runs at any control frequency
+
+Handles high-dimensional continuous actions, no CEM needed at test time
+
+x Notoriously brittle, very sensitive to hyperparameters, often fails to converge
+X Noise o must be tuned manually, too small: no exploration, too large: unstable
+
+ia
+
+Single Worker - 2.5 hears 1.5x
+
+Deep Reinforcement Learning for Robotic Manipulation with Asynchronous Off-Policy Updates
+Gu et al., 2016
+
+C/A2EMOO 41
+
+===== slide 046  [50:30] =====
+DDPG
+
+Test time = 1 forward pass, runs at any control frequency
+
+Handles high-dimensional continuous actions, no CEM needed at test time
+
+x Notoriously brittle, very sensitive to hyperparameters, often fails to converge
+X Noise o must be tuned manually, too small: no exploration, too large: unstable
+
+0.4
+
+0.3 1 worker oOo“ \ j Y
+
+0.1
+
+0.0
+
+test reward
+
+-0.1
+
+—0.2
+
+-0.3
+0.5 1.00 1.5 2:0 2.5 3.0 3.5 4.0
+hours
+Deep Reinforcement Learning for Robotic Manipulation with Asynchronous Off-Policy Updates
+Gu et al., 2016
+
+OeFSABMOO 41
+
+===== slide 047  [50:44] =====
+RL Algorithm Taxonomy & Trade-offs
+Deep RL (Discrete) Deep RL (Continuous)
+
+cere ee Q-Learning DQN DDPG
+Q-Val. Iter. SARSA Double DQN QT-Opt (CEM)
+Needs Dynamics Model v Train+Test X Model-free X Model-free X Model-free
+State Space Discrete, small Discrete, small High-dim images High-dim images
+Action Space Discrete Discrete Discrete Continuous
+Policy (train time) Tabular Tabular Neural Net Actor + Critic NNs
+Off-poli N/A Q-Learn ¥ v (Replay Buffe v (Replay Buffer)
+policy SARSA X play Buffer) (Replay Bui
+Convergence v Guaranteed Vv Tabular+explore X No guarantee X Brittle
+Raviinnovarion Bellman TD updates from Replay buffer + Actor learns
+¥ contraction experience Target network arg max_aQ
+
+42
+
+eFSABHMOO
+
+===== slide 048  [52:23] =====
+Thank you for your attention
+
+eFSARBMOO
+

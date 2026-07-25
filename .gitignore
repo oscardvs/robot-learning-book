@@ -4,3 +4,4 @@ build/*.html
 *.log
 *.toc
 *.out
+video/

@@ -1,0 +1,734 @@
+# Lecture 3 — slide OCR (secondary source; verify math visually)
+# 49 slides
+
+===== slide 001  [00:00] =====
+Robot Learning: From Fundamentals to
+Foundation Models
+
+Lecture 3: Imitation Learning
+
+Oier Mees ETHziirich ™ Microsoft
+
+02.03.2026
+
+eFsSABMOO
+
+===== slide 002  [00:13] =====
+Feedback — Actions
+
+=» Moved from 3 papers to 2 papers per lecture
+= Extra paper slots on Thursdays in IFW A 32.1
+=» HW 2 released, due on March 12th
+
+=» We can see when you use Al in autograder
+
+(cy aeemcch Uke)
+
+===== [02:06] revisit of slide 1 =====
+
+===== slide 003  [02:09] =====
+Recap: Mapping Observations to Actions
+
+rf _ Bae 73 r TH | i: Right
+
+Straight
+Backward
+Or lg (a t | Or) Policy - Partially Observable
+| Tg (@;|S;) Policy - Fully Observable |
+a, - action: the decision taken by the agent at time t tT trajectory: sequence of state and actions (sj, aj, ...,S7,ar)
+0, - observation: what the agent observes at time t r(s,a) reward: how good is s,a ?
+
+S, - State: the “state” of the world at time t
+
+efSAiBHKOO
+
+===== slide 004  [02:39] =====
+Imitation Learning
+
+« Data: Given trajectories collected by an “expert”
+“demonstrations” D = {(s,,@,,...,S¢)} (>
+
+Dataset
+(S1, 4,» Sz)
+
+" Goal: Learn a policy zg that “imitates” the expert’s
+behavior
+
+(yy aeemcch ie)
+
+===== slide 005  [03:55] =====
+Behavioral Cloning
+
+1. Given expert demonstrations: D = {(s,, qj, ...,S,)}
+
+2. For deterministic policy, regress to expert’s actions:
+
+foal A a
+myn Di usa)eD \|a — al |? where a = 719(s)
+
+3. Deploy policy 7g on robot
+
+efSAiRBHKOO
+
+===== slide 006  [05:07] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+ce QUADCOPTER ;
+= NAVIG IGATION IN TH FOREST
+
+ema UNDER’ THE TREE ae alie ix
+
+i ie
+
+eFSARBNMOO
+
+10
+
+===== slide 007  [05:11] =====
+What can go wrong?
+
+Supervised Learning
+
+Inputs are independently,
+identically distributed (i.i.d.)
+and independent of
+predicted labels!
+
+p(x)
+
+ef iBned
+
+Behavioral Cloning
+
+ats
+
+7 53 Small error in predicted
+action can lead to drift
+
+away from training data
+Sy distribution!
+
+Pexpert + Pr (s)
+
+States visited States visited
+by expert by the policy
+
+===== slide 008  [08:47] =====
+What can go wrong?
+
+p(x)
+
+Supervised Learning
+
+Inputs are independently,
+identically distributed (i.i.d.)
+and independent of
+predicted labels!
+
+Behavioral Cloning
+
+at:
+
+7 53 Small error in predicted
+action can lead to drift
+
+away from training data
+Sy distribution!
+
+Pexpert + Pr (s)
+
+States visited States visited
+by expert by the policy
+
+===== slide 009  [09:10] =====
+Does it work?
+
+AVIDIA.
+
+|
+oe
+
+It began its driving lessons in.a parking lot
+
+End to End Learning for Self-Driving Cars
+Bojarski, et. al., 2016
+
+===== slide 010  [10:00] =====
+Does it work?
+
+AVIDIA.
+
+even leaving the road to stay safe.
+
+End to End Learning for Self-Driving Cars
+Bojarski, et. al., 2016
+
+eFSARBMOO
+
+===== slide 011  [11:48] =====
+Why did it work?
+
+===== slide 012  [13:09] =====
+Why did it work? Data Augmentation!
+
+=» Add “fake” data that illustrates corrections with side-
+facing Cameras  Paug = {center a), (Oe. + 5), (Orignsa — 4)}
+
+Action Label: Steer Right
+
+Action Label: Go Straight
+
+Action Label: Steer Left
+
+i i)
+|
+x
+
+» — s>.
+Saas
+—_—==_—
+
+>
+
+Qa
+
+===== slide 013  [13:11] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+Sigs <a Pie coits
+
+10
+
+===== slide 014  [13:58] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+my trail heading left ip trail straight ahead i@ trail heading right
+
+which direction ts the trail heading to?
+
+eFSARBMOO 10
+
+===== slide 015  [14:24] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+How we solved the problem
+
+eFSABHMOO
+
+===== slide 016  [14:28] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+How the classifier works
+
+eFSArABMOO
+
+===== slide 017  [14:38] =====
+Learning to Fly in Swiss Forests
+
+=» Same camera trick
+
+Training the classifier
+
+a,
+
+esSABHMOO
+
+===== slide 018  [17:13] =====
+Upper Bound of Behavioral Cloning
+
+T: time horizon
+€: probability of 7, making a mistake at any steps
+
+_)0 ifa=n*(s)
+e(s.a) {° otherwise
+
+P(a#m*(s)|s)<e6, VS€ Dtrain
+
+E ») c(sp ay) | < eT + (1 —©)(e(T — 1) + ---) = O(eT?)
+, t
+
+Distribution shift causes the error to grow quadratically!
+
+More analysis: “A Reduction of Imitation Learning and Structured Prediction to No-Regret
+
+Online Learning” by Ross et al., 2011. 11
+eFSABHMOO
+
+===== slide 019  [18:02] =====
+Upper Bound of Behavioral Cloning
+
+T: time horizon
+e: probability of 7, making a mistake at any steps
+
+_)0 ifa=n*(s)
+eG) {° otherwise
+
+P(a#m*(s)|s)<e, Vs € Drain
+
+E ») c(sp, ay) | < eT + (1 — ©)(e(T — 1) + ---) = O(€T?)
+t
+
+Distribution shift causes the error to grow quadratically!
+
+More analysis: “A Reduction of Imitation Learning and Structured Prediction to No-Regret
+
+Online Learning” by Ross et al., 2011. 11
+eFSABMOO
+
+===== slide 020  [18:43] =====
+Aggregating Corrective Behavior
+
+Dagger: Dataset Aggregation
+
+Roll out policy zg and collect states: (s’;, @, ...,5’¢)
+Query/label expert action at visited states a* ~ wexpert(-| s’)
+Aggregate corrections with existing data D < D u {(s’,a*)}
+Update policy 86 <— arg min L(ttg,D)
+
+= fe
+
+~ S4 Algorithm will converge p;,(s) = Pexpert
+S3 Achieves O(eT) instead of BC O(eT?)
+So x Hindsight labeling & expert querying difficult
+
+St Paradox BC works better if the data has
+
+sal
+OCSA2BMOO more mistakes and recoveries! 13
+
+===== slide 021  [20:30] =====
+Aggregating Online Interventions
+
+Human Gated Dagger
+
+Roll out policy zg and collect states: (s’;, @,...,5’¢)
+Expert intervenes at time t when policy makes mistake
+Expert provides partial demo (si, af, ..., Sy)
+
+Aggregate new demos D< Du {(sj,aj)}i=t
+Update policy mg < min L(ttg,D)
+
+af eh
+
+a Se Lets the human take control!
+
+a, is, X How to detect when an intervention is needed?
+
+esFSABMOO 14
+
+===== slide 022  [22:29] =====
+Case Study: Language Ambiguities
+
+Fetch the round yellow thing
+Place it left of the object on the
+
+Do you mean the lemon in the bottom
+middle? —_
+
+Composing Pick-and-Place Tasks By Grounding Language
+Mees and Burgard, ISER 2020 15
+
+efSARBHOO
+
+===== slide 023  [24:00] =====
+Case Study: Language Ambiguities
+
+“Pick up the blue stuff” 1. Train referential expression
+comprehension model with ranking loss
+aml (0, m, + S(0; | 7%) — S(o; I7:)) +
+frank = =).
+A, max(0,m, + S(o, | 7) — S(o; | 7; ))
+2. Train referential expression generation model
+
+L£gen = — Plog Pn | %)
+
+u
+Lmmi =) [As max(0,mz + log P(r; | %) —log P(r | %))]
+
+3. If at test time there are multiple objects within
+margin m, generate descriptions and ask
+user
+
+Do you mean this
+blue bowl on the table?
+
+‘S
+
+eFSABHMOO 16
+
+===== slide 024  [25:24] =====
+Case Study: Language Ambiguities
+
+Composing Pick-and-Place Tasks By Grounding Language
+Mees and Burgard, ISER 2020
+
+eFSABMOO
+
+===== slide 025  [25:28] =====
+Why might we still fail to mimick the expert?
+
+Non-Markovian behavior
+
+2) (a;|0;) 7) (az|01, sae), Or)
+action depends only on Human behavior might be affected
+current observation by past observations, emotions,
+
+privileged information etc.
+
+eFSABMOO 18
+
+===== slide 026  [28:49] =====
+Adding History to Policy
+
+= Encode with some sequence to sequence architecture
+
+Seq2Seq
+
+Model
+
+x Adding history to the policy doesn’t always make things better!
+
+(<yaeemcch i.e) 20
+
+===== slide 027  [31:33] =====
+Causal Confusion
+
+= Policy might infer spurious correlations!
+
+1. Data: every time the robot opens the drawer,
+the gripper grasps the handle with 10 N
+
+2. Model learns: if history shows a gripper force
+spike of 10 N, pull to open
+
+3. Test time: gripper slips and only reads 2 N, the
+pull command is never triggered
+
+x Policy thinks history of gripper sensor causes open drawer
+instead of the visual state!
+
+More analysis: “Causal Confusion in Imitation Learning” by de Haan et al., 2019. 21
+O@SABMOO
+
+===== slide 028  [31:53] =====
+Why might we still fail to mimick the expert?
+
+Multimodal behavior
+Stochasticity: Many (infinite) ways to close a drawer with a 7-DoF robot!
+
+Expert Inconsistency: Humans operators might use different ‘modes’ across trials
+
+efSABHOO 22
+
+===== slide 029  [33:29] =====
+Multimodal Behavior
+
+" Deterministic MSE BC policy will fail due to “averaging” of
+modes!
+
+(cy eemcch k---e->) 23
+
+===== slide 030  [34:18] =====
+Mixture of Gaussian Distributions
+
+= More expressive than a single gaussian
+= Need to predefine number of gaussians
+
+Hy, 2X1, X2 Wi W2
+malo) = > wi M Hi 2)
+i
+
+C/AimBmMOO 24
+
+===== slide 031  [37:09] =====
+Autoregressive Discretization
+
+" Discretization great for representing multimodal
+distributions
+
+# Impractical to scale to higher dimensions (exponential)
+
+# Solution: per-dimension discretization with sequence
+model So Met M2
+
+p(a | Ss) = P( ato, At1, 44,2 | St) =
+p( at,2 | St, Ato, At1 Yp( at | St, ato Yp( Ato | Se )
+
+eFSABMOO 25
+
+===== slide 032  [37:13] =====
+Autoregressive Discretization
+
+" Discretization great for representing multimodal
+distributions
+
+# Impractical to scale to higher dimensions (exponential)
+
+# Solution: per-dimension discretization with sequence
+model a
+
+eCABMoo 25
+
+===== slide 033  [39:08] =====
+Diffusion
+
+=" Models complex distributions over continuous variables
+= We can replace images with robot actions, more on W6
+
+Forward Process
+Xj41 = Xj + noise
+
+xT
+Generative Backward Process
+
+learn f(x;) =xi-1 in practice f(x;) = noise, x;_1= x; — f(x)
+
+eFSABMOO 26
+
+===== slide 034  [39:10] =====
+Latent Variable Models
+
+= Output still gaussian, but receives additional input
+# Can represent “any” distribution
+= Popular: conditional VAEs
+
+Conditional Decoder
+nm(alo,z) = faton)
+
+es Nt OMe Sm
+Zleft ~ N(O,D Zright ~ N (0,1)
+
+efSAiBHOO
+
+27
+
+===== slide 035  [40:57] =====
+Learning Multiple Tasks
+
+Latent Variable Models are different from task conditioning
+
+“one task” “multiple tasks”
+Tg (az | St) Tg (a; | sz, task id )
+Single task Task conditioned
+Behavior Cloning Behavior Cloning
+(Pomerleau 1991) (Rahmatizadeh 2018)
+
+C/cAiBmMOO 28
+
+===== slide 036  [41:26] =====
+Learning Multiple Tasks
+
+“Move the sliding door to the left” Tg (az | Sz, task id )
+
+Did it succeed? Where is the threshold, 50%?
+
+C/ABmMOO 29
+
+===== slide 037  [41:48] =====
+Learning Multiple Tasks
+
+“Move the sliding door to the left” Tg (az | St, task id )
+
+Did it succeed? Where is the threshold, 50%?
+
+efsSABHKOO 29
+
+===== slide 038  [43:06] =====
+How to Scale Control to “Any” Tasks?
+
+Tasks are often continuous, not discrete
+
+“one task” “multiple tasks” “any tasks”
+To(at|St) To(az|s¢, task id) T9(Gt|St, Sg)
+Single task Task conditioned Goal state conditioned
+Behavior Cloning Behavior Cloning Behavior Cloning
+(Pomerleau 1991) (Rahmatizadeh 2018) (Lynch 2019)
+
+current
+
+_
+
+30
+
+===== slide 039  [43:16] =====
+Let’s put everything together!
+
+How can we learn any task with a latent variable model
+that handles multimodality?
+
+===== slide 040  [43:33] =====
+Case Study: Play Data
+
+" No upfront tasks
+" Scalable, reset-free data collection
+= Rich and highly multimodal behaviors
+
+32
+
+===== slide 041  [44:35] =====
+Case Study: Learning Policies from Play Data
+
+Sequence
+
+ooooo
+
+L
+
+===== slide 042  [44:37] =====
+Case Study: Learning Policies Play Data
+
+Sequence
+
+DOO
+
+===== slide 043  [46:06] =====
+Case Study: Learning Policies from Play Data
+
+Sequence
+
+OOOO
+
+Sample
+latent
+
+Goal
+Goal features
+
+Action
+likelihood
+
+Initial
+state
+
+Lio
+
+37
+
+===== slide 044  [46:41] =====
+Case Study: Learning Policies from Play Data
+
+Unstructured
+data
+Latent
+<a Plan
+
+“| Latent
+“ee Action Action
+° =z22,| decoder || likelihood
+Li
+
+Current
+
+—tenguage “Push the pink
+
+block to the right”
+
+38
+
+===== slide 045  [48:18] =====
+The Math Behind Goal-Conditioned Latent
+Variable Models
+
+trajectories; latent plans
+
+Po (t, Z) ==> when z continuous, marginalization becomes intractable
+
+Optimize surrogate objective; variational lower bound of marginal log-likelihood
+
+log pe(t) = —KL (gg (zIt)
+
+|pe(z)) + Egg (ZIT) [log pg (tIz)]
+ee
+
+Regularization: Reconstruction:
+are latent plan z close to our how well does latent plan z explain
+prior distribution over t ? the expert behavior T ?
+
+C/A2EMOO 39
+
+===== slide 046  [48:45] =====
+The Math Behind Goal-Conditioned Latent
+Variable Models
+
+Sequence
+OUOO | Le Posterior uN Same
+| fometar n Recognition) = ian
+‘ = il
+alm Goal ie [_] |Action ee
+Es decoder ee
+tod iL]
+state rr
+fownat iad
+Posterior - Prior -
+Plan Recognition _ Plan Proposal Action Decoder
+
+log pe(tlc) = —KL(qg(ZIt,¢) || pe(Zlc)) + Egyziz,c) [log pe(tlz,¢)]
+
+ce (Se, Sq)
+40
+
+eFSABHMOO
+
+===== slide 047  [49:27] =====
+My PhD: Natural Language + Learning from Play
+
+CALVIN: A Benchmark for Language- Grounding Language with Visual
+conditioned Policy Learning for Long- Conditioned Imitation Learning Affordances over Unstructured Data
+horizon Robot Manipulation Tasks over Unstructured Data Mees, et al. ICRA 2023.
+
+Mees et. al., RA-L 2022 Mees, et al. RA-L 2022. Finalist Best Paper Award ICRA 2023
+Best Paper Award RA-L 2022
+
+Affordance Learning from Play for _ Latent Plans for Task Agnostic Offline
+Sample-Efficient Policy Learning Reinforcement Learning
+Borja*, Mees* et. al., ICRA 2022 Rosete*, Mees* et. al., CoRL 2022
+
+C/cAmmMOO 41
+
+===== slide 048  [49:38] =====
+Conclusion: Behavioral Cloning Failures
+
+Distribution Shift
+
+= Dagger
+= Human Gated Dagger
+
+|
+
+Detect when to intervene
+
+(cy aeemcch ke)
+
+Non-Markovian Behavior
+
+= Privileged Observation
+= History & Causal
+Confusion
+
+Multimodal Behavior
+
+Mixture of Gaussians
+Autoregressive
+Discretization
+
+Diffusion
+
+Latent Variable Models
+
+42
+
+===== slide 049  [50:28] =====
+Thank you for your attention
+
+efsSiBmieod
+

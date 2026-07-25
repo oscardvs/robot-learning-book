@@ -9,7 +9,24 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phase 2 BLOCKED — waiting on slide PDF password.**
+**Current status: Phase 2 — slides reconstructed from the recordings (no password).
+Phase 3 (per-lecture notes) starting.**
+
+### The slide-password problem and how it was solved
+The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
+not have. The password is shown on-screen in Lecture 2 (~00:36, "here is the login
+details") but the course **redacted the login/pwd values before uploading to
+YouTube** — the fields are blank in the public video, so it is not recoverable, and
+recovering deliberately-hidden credentials is out of scope anyway. Wayback has no
+archived PDF. **No cracking attempted.**
+
+**Chosen fix (user-approved): reconstruct each deck from the 1080p recordings.**
+The recordings are full-screen slide captures. `scripts/extract_slides.py` recovers
+the decks; verified pixel-perfect and legible, including animated/interactive demo
+slides captured at their final built state. This *satisfies hard rule #4* — slide
+images are the ground truth for notation; I read equations from the images, not the
+OCR. In parallel the user may email ETH CVG for the password; if it arrives, swap in
+the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 
 ---
 
@@ -19,9 +36,10 @@ course mentor **Marc Pollefeys**.
 - [x] **Phase 1 — Transcripts.** 11/11 downloaded, cleaned, verified.
 - [ ] **Phase 2 — Slides.** ⛔ All 11 PDFs are AES-256 encrypted with a *user*
       password. Downloaded but unreadable. **Asked the user for the password.**
-- [ ] **Phase 3 — Per-lecture notes** (one lecture per session; needs slides)
-- [ ] **Phase 4 — Notation pass**
-- [ ] **Phase 5 — Chapters** (checkpoint: approve ch. 1 voice before writing more)
+- [~] **Phase 3 — Per-lecture notes.** L1 done (`notes/lecture01.md`). L2–11 pending.
+- [ ] **Phase 4 — Notation pass** (needs all notes; L1 has almost none)
+- [~] **Phase 5 — Chapters.** Drafting **Ch.1 early** from L1 notes to get the voice
+      approved before investing in the rest (checkpoint). Notation provisional until Ph4.
 - [ ] **Phase 6 — Front/back matter**
 - [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
 - [ ] **Phase 8 — PDF build**
@@ -31,7 +49,7 @@ course mentor **Marc Pollefeys**.
 
 | # | Lecture | Transcript | Slides | Notes | Chapter |
 |---|---------|-----------|--------|-------|---------|
-| 1 | Introduction to Robot Learning | ✅ 9,480 w | 🔒 locked | ☐ | ☐ |
+| 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 (rebuilt) | ✅ | draft |
 | 2 | Robot Control & MDPs | ✅ 7,085 w | 🔒 locked | ☐ | ☐ |
 | 3 | Imitation Learning | ✅ 7,842 w | 🔒 locked | ☐ | ☐ |
 | 4 | Reinforcement Learning I | ✅ 7,651 w | 🔒 locked | ☐ | ☐ |
