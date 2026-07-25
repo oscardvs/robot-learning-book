@@ -29,7 +29,7 @@ export function XRef({ kind, anchor, number }: { kind: string; anchor: string; n
  * are where the author corrects a date, flags a mis-attribution, or supplies context
  * the lecture skipped — so they must never read as if the lecturer said them.
  */
-export function EditorNote({ children }: { children: ReactNode }) {
+export function EditorNote({ children }: { children?: ReactNode }) {
   return (
     <aside className="my-7 border-l-2 border-demo/60 bg-demo-soft/40 py-4 pl-5 pr-4">
       <p className="u-label mb-2 text-demo">Editor’s note</p>
@@ -41,7 +41,7 @@ export function EditorNote({ children }: { children: ReactNode }) {
 }
 
 /** A quotation or a definition lifted from the course, set apart from the prose. */
-export function Aside({ children }: { children: ReactNode }) {
+export function Aside({ children }: { children?: ReactNode }) {
   return (
     <blockquote className="my-7 border-l-2 border-policy/50 bg-policy-soft/30 py-4 pl-5 pr-4 font-body text-[1.03rem] not-italic leading-relaxed text-ink [&_p]:my-1.5">
       {children}
