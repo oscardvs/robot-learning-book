@@ -1,0 +1,396 @@
+# Reinforcement Learning I: Value Functions
+
+Imitation learning has a ceiling, and the ceiling is the person who provided the data. A policy trained to copy a teleoperator will inherit their hesitations, their inefficient trajectories, and their inability to do things they cannot do — and no amount of extra data changes that, because every additional demonstration is another sample from the same imperfect source. Reinforcement learning gives up the demonstrations in exchange for the ability to exceed them. Instead of being told what to do, the robot tries things, receives a reward, and adjusts. That trade is the subject of this chapter and the next.
+
+This chapter takes the route through **value functions**: learn how good situations and actions are, and derive behavior from that. Chapter 5 takes the other route, optimizing the policy directly. The two halves of reinforcement learning have different strengths, and the reason to learn value methods first is that they contain the idea the whole field is built on — that a long-horizon problem can be collapsed into a one-step recursion.
+
+## Why reinforcement learning optimizes expectations
+
+Before any algorithm, a question about the objective, because the answer explains a design choice that would otherwise look arbitrary.
+
+Picture a car on a mountain road. The reward is $+1$ for staying on the road and $-1$ for going over the cliff. Now try to optimize that with gradient descent. The reward as a function of the car's position is a **step function**: flat at $+1$, flat at $-1$, and discontinuous at the edge. Its gradient is zero everywhere it is defined and undefined where it is not. There is no direction to descend. Gradient-based optimization, the engine of everything else in this book, has nothing to work with.
+
+And yet reinforcement learning learns this task. The resolution is that reinforcement learning never optimizes the reward. It optimizes the **expected** reward, and the expectation is smooth even when the reward is not.
+
+Here is the mechanism. Model going off the road as a Bernoulli event whose probability depends on the policy's parameters. Nudge the parameters slightly and the probability of falling changes slightly, so the *average* reward changes slightly — smoothly, differentiably — even though no individual outcome has changed at all. Geometrically, taking the expectation convolves the discontinuous reward with the policy's probability density, and convolution with a smooth kernel smooths a discontinuity. The step function becomes a sigmoid-shaped surface with a gradient everywhere.
+
+This is why @eq:objective was written as an expectation in Chapter 2, and why policies in this book are stochastic distributions rather than deterministic functions. It is not a modeling nicety. **Optimizing over distributions is what makes a non-differentiable objective differentiable**, and it is the reason reinforcement learning can attack problems where the thing you care about is a discrete success or failure. Chapter 10 pushes this to its logical end, training language models to reason with nothing but a binary correct-or-not signal.
+
+## Value functions: not waiting for the cliff
+
+The objective $J(\pi) = \mathbb{E}_\tau[\sum_t \gamma^t r_t]$ has a practical defect. To evaluate it you must unroll an entire trajectory. To find out that driving toward the cliff is bad, you have to drive off the cliff. On a real robot that is an expensive way to learn, and for a long-horizon task it is also a slow one: a single scalar at the end of a thousand steps says almost nothing about which of those steps was the mistake.
+
+The fix uses the Markov property. Define a quantity like $J$ but anchored to a state:
+
+> The **value function** $V^\pi(s)$ is the expected return the policy $\pi$ will collect starting from state $s$.
+
+It relates to the objective in the obvious way — average over where you might start:
+
+$$J(\pi) = \mathbb{E}_{s_0 \sim \rho_0}\big[ V^\pi(s_0) \big]$$ {#eq:jfromv}
+
+Now the essential move. Split the infinite sum of discounted rewards into the first term and everything after it:
+
+$$\sum_{t\ge0} \gamma^t r(s_t,a_t) \;=\; r(s_0,a_0) \;+\; \gamma \underbrace{\sum_{t\ge1}\gamma^{t-1} r(s_t,a_t)}_{\text{a value function again}}$$
+
+The bracketed remainder has exactly the form of the thing we started with, one step later. Taking expectations gives the **Bellman expectation equation**:
+
+$$V^\pi(s) \;=\; \mathbb{E}_{a\,\sim\,\pi(\cdot\mid s),\; s'\,\sim\,P(\cdot\mid s,a)}\Big[\, r(s,a) \;+\; \gamma\, V^\pi(s') \,\Big]$$ {#eq:bellmanexp}
+
+**In words.** The value of where you are equals the reward you get now plus the discounted value of wherever you end up next.
+
+**The symbols.** $V^\pi(s)$ is the value of state $s$ under policy $\pi$. $a \sim \pi(\cdot \mid s)$ is the action the policy picks; $s' \sim P(\cdot\mid s,a)$ is the next state the world produces. $r(s,a)$ is the immediate reward and $\gamma$ the discount factor.
+
+**Why this shape.** This is called **bootstrapping**, and it is the most important idea in the chapter: an infinite-horizon problem has been reduced to a **one-step recursion**. You need a one-step look-ahead and your current estimate of $V$ for everything beyond it — never a full rollout. The Markov property is what licenses the step, because it guarantees that $s'$ summarizes the future without reference to how you arrived. Notice also what has been bought: the credit-assignment problem is now local. If driving toward the cliff has low value, that shows up in the value of the state *before* the cliff, which shows up in the state before that, and the information walks backwards through the state space without anybody driving off anything (@fig:bootstrap).
+
+![Bootstrapping: the infinite discounted sum splits into an immediate reward plus a discounted value, which turns the objective into a one-step recursion. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_007.jpg){#fig:bootstrap width=80%}
+
+## Optimality
+
+@eq:bellmanexp describes the value of a *given* policy. We want the best one. Define the **optimal value**
+
+$$V^*(s) = \max_\pi V^\pi(s)$$
+
+— the ceiling any policy could reach from $s$ — and note that an optimal policy has to reach that ceiling from *every* state simultaneously. That such a policy exists is a non-trivial theorem, and it is what makes the next line meaningful:
+
+$$\pi^* = \arg\max_\pi J(\pi) = \arg\max_\pi \mathbb{E}_{s_0\sim\rho_0}\big[V^\pi(s_0)\big], \qquad \pi^*(s) = \arg\max_a\, \mathbb{E}_{s'\sim P(\cdot\mid s,a)}\big[\,r(s,a) + \gamma V^*(s')\,\big]$$ {#eq:optimal}
+
+**In words.** The best policy is the one with the highest expected return; and if you already know the optimal values, the best action in any state is simply the one whose immediate reward plus discounted next-state value is largest.
+
+**The symbols.** $V^*$ is the optimal value function, $\pi^*$ an optimal policy.
+
+**Why this shape.** The second equality is the payoff of the whole construction, and it is worth pausing on how strange it is. Behaving optimally over an infinite horizon requires, apparently, planning infinitely far ahead. @eq:optimal says that if you possess $V^*$, optimal behavior is a **greedy one-step look-ahead**: compare actions by immediate reward plus the value of where they land, take the best, forget the rest. The entire infinite-horizon plan has been compressed into the function $V^*$, and acting on it is local. Every algorithm in this chapter is a way of getting hold of $V^*$, or something like it (@fig:optimal).
+
+![Optimal value and optimal policy: with $V^*$ in hand, acting optimally reduces to a one-step greedy comparison. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_008.jpg){#fig:optimal width=80%}
+
+## Value iteration
+
+The first algorithm computes $V^*$ by applying the recursion until it stops changing. Replace the expectation over the policy's actions in @eq:bellmanexp with a maximum over actions, and iterate:
+
+\begin{algorithm}[H]
+\caption{Value iteration}
+\KwIn{states $\mathcal{S}$, actions $\mathcal{A}$, reward $r$, transition model $P$, discount $\gamma$, threshold $\delta$}
+\KwOut{optimal values $V^*$ and a greedy policy $\pi^*$}
+initialize $V_0(s) \leftarrow 0$ for all $s \in \mathcal{S}$\;
+\For{$j = 0, 1, 2, \ldots$}{
+  \ForEach{$s \in \mathcal{S}$}{
+    $V_{j+1}(s) \leftarrow \max_a \big[\, r(s,a) + \gamma \, \mathbb{E}_{s' \sim P(\cdot \mid s,a)} V_j(s') \,\big]$\;
+  }
+  \If{$\max_s |V_{j+1}(s) - V_j(s)| < \delta$}{\textbf{break}\;}
+}
+extract $\pi^*(s) = \arg\max_a \big[\, r(s,a) + \gamma\,\mathbb{E}_{s'\sim P} V^*(s') \,\big]$\;
+\end{algorithm}
+
+**In words.** Guess that every state is worth nothing, then repeatedly update each state's value to the best one-step outcome available from it, until the numbers settle.
+
+**The symbols.** $V_j$ is the estimate after $j$ sweeps; $\delta$ is the convergence threshold; the subscript $j$ counts sweeps, not time steps.
+
+**Why this shape.** The initialization at zero is arbitrary and the algorithm converges regardless, which is a consequence of the **Bellman contraction**: applying the update to any two value functions brings them strictly closer together, so repeated application drives everything to the same fixed point.
+
+> **Editor's note.** The lecture states the contraction property without proving it. The reason is short enough to be worth having. Write the update as an operator $\mathcal{T}$ acting on value functions. For any two value functions $U$ and $W$, the largest disagreement after one update is at most $\gamma$ times the largest disagreement before it: $\|\mathcal{T}U - \mathcal{T}W\|_\infty \le \gamma\,\|U - W\|_\infty$. The $\gamma$ appears because the only place $U$ and $W$ enter the update is inside the discounted term, and the maximum over actions cannot amplify a difference. So each sweep shrinks any error by at least a factor of $\gamma$, which means the iteration converges geometrically to a unique fixed point — and that fixed point satisfies @eq:optimal, so it is $V^*$. Note where this argument breaks later in the chapter: it holds for a table, and it does not hold once $V$ or $Q$ is a neural network, because a gradient step is not the operator $\mathcal{T}$. The $\max$ rather than an expectation over $\pi$ is what makes the fixed point *optimal* rather than merely consistent with some policy. And the policy extraction at the end is separate from the value computation, which is the structural fact that @eq:optimal established: the values are the hard part, and behavior falls out of them.
+
+### Worked example: watching values propagate
+
+The lecture demonstrates this on a gridworld with a $+1$ goal, a $-1$ hazard, walls, and a stochastic agent that moves as intended 80% of the time and drifts sideways 10% each way. The behavior it shows is that value spreads outward from the goal, one step of the grid per sweep. That is easiest to verify on a corridor.
+
+Take four states in a line, $s_1$ through $s_4$. Moving right from $s_3$ enters the terminal goal $s_4$ and collects $r = +1$; every other transition collects $0$. Let $\gamma = 0.9$ and let motion be deterministic. Initialize all values to zero and sweep:
+
+| Sweep | $V(s_1)$ | $V(s_2)$ | $V(s_3)$ |
+|---|---|---|---|
+| $j=0$ | 0 | 0 | 0 |
+| $j=1$ | 0 | 0 | **1.000** |
+| $j=2$ | 0 | **0.900** | 1.000 |
+| $j=3$ | **0.810** | 0.900 | 1.000 |
+| $j=4$ | 0.810 | 0.900 | 1.000 |
+
+Read the arithmetic. In the first sweep only $s_3$ changes, because only from $s_3$ does a single action produce reward: $\max_a[r + \gamma V_0(s')] = 1 + 0.9 \times 0 = 1$. In the second sweep $s_2$ can now see a non-zero value one step away: $0 + 0.9 \times 1.000 = 0.900$. In the third, $s_1$ sees $s_2$: $0 + 0.9 \times 0.900 = 0.810$. The fourth sweep changes nothing, so the algorithm stops.
+
+Two things to take from the table. First, this is **dynamic programming in its purest form** — the reward at the goal has walked backwards to every state that can reach it, with no trajectory ever executed. Second, the discount is visible as a distance measure: $0.9^k$ is the value of being $k$ steps from a unit reward, so $\gamma$ has quietly determined how far the robot is willing to travel for a payoff. With $\gamma = 0.5$ the value at $s_1$ would be $0.25$, and a competing reward of $0.3$ two steps in the other direction would win (@fig:vi).
+
+Now put the stochasticity back, because it is where the expectation in @eq:bellmanexp earns its keep. Suppose that, as in the lecture's gridworld, an action succeeds with probability 0.8 and slips sideways with probability 0.1 each way; model that in the corridor as: with probability 0.8 the agent moves as intended, and with probability 0.2 it stays where it is. Redo the first sweep at $s_3$, where moving right reaches the goal:
+
+$$V_1(s_3) = 0.8 \times \big(1 + 0.9 \times 0\big) \;+\; 0.2 \times \big(0 + 0.9 \times 0\big) = 0.8.$$
+
+At convergence the same state is worth
+
+$$V^*(s_3) = 0.8 \times 1 + 0.2 \times 0.9\, V^*(s_3) \;\Longrightarrow\; V^*(s_3) = \frac{0.8}{1 - 0.18} = 0.976,$$
+
+where the second term is the agent slipping, staying put, and facing the same situation one discounted step later. Two lessons. Unreliable actuators lower the value of every state, which is correct and is the mechanism by which a value function accounts for a robot's imperfection rather than assuming it away. And the self-referential form of that last equation — $V^*(s_3)$ on both sides — is why value iteration is iterative rather than a formula: for anything larger than a corridor you cannot solve the system in closed form, so you apply the update until it stops moving.
+
+![The value-iteration update. Values are computed by repeated one-step maximization, and the reward propagates backwards through the state space one sweep at a time. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_009.jpg){#fig:vi width=80%}
+
+### Where value iteration stops
+
+Three limitations, and each one determines a section of the rest of this chapter.
+
+It **needs a model of the dynamics.** The expectation $\mathbb{E}_{s'\sim P}$ requires knowing $P(s' \mid s,a)$ — for every state and action. For a robot, that means having a model of the physics of contact, friction and deformation, which is exactly what nobody has.
+
+It **sweeps every state, every iteration.** The cost is $O(|\mathcal{S}|^2|\mathcal{A}|)$ per sweep. For chess or a warehouse grid this is arithmetic. For anything with images it is impossible.
+
+It is **tabular**, so the state space must be discrete and small enough to enumerate. Chapter 2 already noted that robot state spaces are continuous, which means there is no table.
+
+## Policy evaluation and policy iteration
+
+A cheaper variant answers a narrower question: not "what is the best possible behavior?" but "how good is the policy I already have?" Drop the maximum and take the expectation under the policy instead:
+
+$$V_{j+1}(s) \leftarrow \mathbb{E}_{a\sim\pi(\cdot\mid s)}\big[\, r(s,a) + \gamma\,\mathbb{E}_{s'\sim P} V_j(s') \,\big]$$ {#eq:polyeval}
+
+**In words.** Compute what this particular policy is worth from each state, by averaging over the actions it would take rather than the best action available.
+
+**Why this shape.** Removing the maximization drops the cost to $O(|\mathcal{S}|^2)$, since you no longer compare all actions in every state. It is called **policy evaluation**, and on its own it improves nothing — it measures. But measurement plus a greedy step gives an algorithm:
+
+\begin{algorithm}[H]
+\caption{Policy iteration}
+\KwIn{initial policy $\pi_0$, model $P$, reward $r$, discount $\gamma$}
+\KwOut{optimal policy $\pi^*$}
+\For{$j = 0, 1, 2, \ldots$}{
+  \textbf{evaluate:} iterate \eqref{eq:polyeval} under $\pi_j$ until $V^{\pi_j}$ converges\;
+  \textbf{improve:} $\pi_{j+1}(s) \leftarrow \arg\max_a \big[\, r(s,a) + \gamma\,\mathbb{E}_{s'\sim P} V^{\pi_j}(s') \,\big]$\;
+  \If{$\pi_{j+1} = \pi_j$}{\textbf{break}\;}
+}
+\end{algorithm}
+
+Policy iteration is guaranteed to converge, and the argument is a nice one: there are finitely many deterministic policies, every improvement step produces a policy at least as good as the last, and strictly better unless it is already optimal — so the algorithm cannot cycle and cannot run forever. The return curve it produces is monotone, which is a property value iteration does not offer and which matters when you must deploy intermediate results.
+
+It still needs the model. Everything so far does.
+
+## Q-values: absorbing the model into the estimate
+
+Here is a problem with $V$ that is specific to robotics, and it is not the training-time problem. Suppose someone hands you $V^*$. To *act* on it you must evaluate @eq:optimal, which requires $\mathbb{E}_{s'\sim P}$ — a forward model — at every state, for every candidate action, **at test time**, at control frequency. A 7-DoF arm running at 50 Hz would have to roll a physics model forward for every action it considers, twenty milliseconds at a time. The model you do not have is now needed in the inner loop of the controller.
+
+The fix is to store the expectation instead of computing it. Define a value that is conditioned on the action as well as the state:
+
+$$Q^*(s,a) \;=\; r(s,a) \;+\; \mathbb{E}_{s'\sim P(\cdot\mid s,a)}\Big[\, \gamma \max_{a'} Q^*(s', a') \,\Big], \qquad V^*(s) = \max_a Q^*(s,a)$$ {#eq:qstar}
+
+**In words.** The Q-value of an action is what you will get in total if you commit to that action now and behave optimally afterwards; the value of a state is the Q-value of its best action.
+
+**The symbols.** $Q^*(s,a)$ is the optimal action-value function; $a'$ ranges over actions available at the next state $s'$.
+
+**Why this shape.** Compare the two ways of acting. With $V^*$: $\pi^*(s) = \arg\max_a \mathbb{E}_{s'}[r + \gamma V^*(s')]$, which needs $P$. With $Q^*$: $\pi^*(s) = \arg\max_a Q^*(s,a)$, which needs nothing but a lookup and a comparison. **The transition expectation has been baked into the stored quantity during training, so no model is needed at test time.** That is precisely the trade a robot wants to make: pay once, offline, rather than every 20 milliseconds. The price is that $Q$ is a higher-dimensional object than $V$ — it is indexed by states *and* actions — so there is more of it to learn and it is somewhat harder to estimate. For model-free robotics that price is worth paying, and every algorithm in the rest of this chapter pays it (@fig:qvalue).
+
+![From $V$ to $Q$: conditioning the value on the action absorbs the transition expectation into the learned quantity, so acting requires no dynamics model. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_017.jpg){#fig:qvalue width=78%}
+
+Note carefully what has *not* been fixed. @eq:qstar still contains $\mathbb{E}_{s'\sim P}$, so computing $Q^*$ by iteration still needs the model during training. Removing it there is the next step.
+
+Before that, the intermediate algorithm deserves a name, because it completes the family of exact methods. **Q-value iteration** is value iteration run on @eq:qstar instead of @eq:bellmanexp: initialize $Q_0(s,a) = 0$, and sweep
+
+$$Q_{j+1}(s,a) \leftarrow r(s,a) + \gamma\,\mathbb{E}_{s'\sim P(\cdot\mid s,a)}\Big[\max_{a'} Q_j(s',a')\Big]$$ {#eq:qvi}
+
+until the values settle. It converges by the same contraction argument, costs more than value iteration because the table it fills is indexed by state *and* action, and still requires the model. Its point is structural rather than practical: it isolates the two things Q-learning does. The move from @eq:bellmanexp to @eq:qvi buys **model-free acting**. The move from @eq:qvi to Q-learning, next, buys **model-free learning**. They are separate victories, and conflating them is the most common confusion about what Q-learning is for.
+
+## Q-learning: replacing the expectation with experience
+
+The trick is almost too simple. An expectation over next states is an average of what happens. Instead of averaging analytically with a model, **take the single sample the world just gave you.**
+
+\begin{algorithm}[H]
+\caption{Q-learning (tabular)}
+\KwIn{learning rate $\eta$, discount $\gamma$, exploration scheme}
+\KwOut{action-value table $Q$}
+initialize $Q(s,a)$ arbitrarily\;
+\For{each step of interaction}{
+  choose $a_t$ from $s_t$ (e.g. $\epsilon$-greedy on $Q$) and execute it\;
+  observe reward $r_t$ and next state $s_{t+1}$\;
+  $y \leftarrow r(s_t,a_t) + \gamma \max_{a} Q(s_{t+1}, a)$ \tcp*{TD target; drop the second term if terminal}
+  $Q(s_t,a_t) \leftarrow (1-\eta)\,Q(s_t,a_t) + \eta\, y$\;
+}
+\end{algorithm}
+
+**In words.** Act, see what happens, form a slightly better estimate of the action's worth by combining the reward you just got with your current estimate of the next state's best value, and move your stored estimate part of the way toward it.
+
+**The symbols.** $y$ is the **temporal-difference target** — a one-sample estimate of the right-hand side of @eq:qstar. $\eta \in (0,1]$ is the learning rate, controlling how much of the old estimate is replaced. The subscript $t$ counts interaction steps.
+
+**Why this shape.** Writing the update as a blend, $(1-\eta)\,\text{old} + \eta\,\text{new}$, is the same running-average form used everywhere in stochastic approximation, and it is doing the job the model used to do: a single sample of $s_{t+1}$ is a terrible estimate of an expectation, but averaged over many visits with a small step size it converges to the right one. **The world is being used as its own simulator.** The cost is speed. A model-based method can evaluate all outcomes of an action without trying any of them; Q-learning has to actually try, which is why it is slower on the lecture's gridworld than value iteration is, and why sample efficiency dominates every practical discussion in this field.
+
+### Worked example: one Q-learning update
+
+Concrete arithmetic, because the update is easy to mis-remember. Suppose $\eta = 0.5$, $\gamma = 0.9$, the current estimate is $Q(s_t,a_t) = 0.20$, the observed reward is $r_t = 0$, and at the next state the best stored value is $\max_a Q(s_{t+1},a) = 1.00$. Then
+
+$$y = 0 + 0.9 \times 1.00 = 0.90, \qquad Q(s_t,a_t) \leftarrow 0.5 \times 0.20 + 0.5 \times 0.90 = 0.55.$$
+
+The estimate moved from 0.20 to 0.55 — halfway to the target, not all the way. If the same transition repeats, the next update gives $0.5 \times 0.55 + 0.5 \times 0.90 = 0.725$, then $0.8125$, converging geometrically on $0.90$. With $\eta = 1$ it would jump straight to $0.90$ and would also chase every piece of noise in a stochastic environment; that is the trade-off $\eta$ controls.
+
+### Off-policy and on-policy
+
+Now a question the lecture puts to the room, and the answer is the definition of an important term. Does it matter *which policy* collected the transition we just learned from?
+
+**It does not.** Look at the target: $r_t + \gamma\max_a Q(s_{t+1},a)$. The $\max$ evaluates the *best available* next action, regardless of what the behaving policy would actually have done. So the update is learning about the greedy policy while behaving however it likes. This property is called being **off-policy**, and its consequences are large: Q-learning can learn from random exploration, from an old version of itself, from a human's demonstrations, from data collected months ago by a different policy. It is what makes an **experience-replay buffer** possible, and through that, everything in the deep-learning half of this chapter.
+
+The contrast makes it sharper. **SARSA** uses the action actually taken next instead of the best one:
+
+$$\underbrace{r(s_t,a_t) + \gamma \max_a Q(s_{t+1},a)}_{\textbf{Q-learning (off-policy): "the best I could do next"}} \qquad\qquad \underbrace{r(s_t,a_t) + \gamma\, Q(s_{t+1},a_{t+1})}_{\textbf{SARSA (on-policy): "what I will actually do next"}}$$ {#eq:qsarsa}
+
+**In words.** Q-learning evaluates the future assuming you will behave perfectly from here; SARSA evaluates it assuming you will behave the way you are actually behaving, mistakes and exploration included.
+
+**Why this shape.** The difference produces genuinely different behavior, and the standard illustration is **cliff walking**: a grid where the shortest path to the goal runs along the edge of a cliff, and stepping off is catastrophic. Q-learning learns the optimal path, which is the one along the edge, because the $\max$ assumes it will never make a mistake. SARSA learns a path that keeps a safe distance, because its target includes the exploratory actions that occasionally push it off — so the states near the edge acquire low value, correctly, *for a policy that sometimes slips*. Neither is wrong. Q-learning answers "what is best if I act perfectly?" and SARSA answers "what is best given that I am the one doing it?", and for a robot that will in fact slip, the second question is sometimes the one you meant (@fig:qsarsa).
+
+![Q-learning's off-policy target compared with SARSA's on-policy target. The maximum makes Q-learning indifferent to which policy generated the data. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_023.jpg){#fig:qsarsa width=80%}
+
+Where we stand: **exact methods** (value iteration, policy iteration, Q-value iteration) need a model and a small discrete state space; **model-free value methods** (Q-learning, SARSA) drop the model but are still tabular. Both are unusable on a robot with a camera. That is the next problem.
+
+## Deep reinforcement learning with discrete actions: DQN
+
+Count the states of an Atari game. The standard input is a stack of four grayscale frames at $84\times84$ pixels, each pixel taking one of 256 values, so the number of distinct inputs is
+
+$$256^{84\times84\times4} = 256^{28{,}224} \approx 10^{67{,}963}.$$
+
+For scale, the observable universe contains on the order of $10^{80}$ atoms. There is no table. There will never be a table. This is the **curse of dimensionality**, and it is the wall every tabular method hits.
+
+**DQN** goes through it by replacing the table with a function. A convolutional network takes the stack of raw pixels and outputs a vector of Q-values, one per discrete action, and is trained with the Q-learning update of the previous section. That is the entire idea, and in 2013 it produced the first single algorithm — one architecture, one set of hyperparameters — to learn to play 49 different Atari games from pixels alone.
+
+> **Editor's note.** The lecture reports both that DQN "launched deep reinforcement learning in 2013" and that it learned 49 games. Both are right, for different papers: the 2013 arXiv preprint introduced the method on seven games, and the 2015 *Nature* paper reported the 49-game result. The lecturer adds a personal note — one of DQN's authors, Martin Riedmiller, had been his professor in Freiburg before leaving for what was then "a small startup called DeepMind."
+
+Two engineering ideas make it work, and both are about restoring assumptions that deep learning needs and reinforcement learning breaks.
+
+**Experience replay.** Store every transition $(s_t, a_t, r_t, s_{t+1})$ in a buffer $\mathcal{B}$ and train on random minibatches drawn from it, rather than on consecutive experience. This fixes two problems at once. Consecutive transitions are strongly correlated — successive frames of a game are nearly identical — and stochastic gradient descent assumes something closer to independent samples; sampling randomly from a large buffer approximately restores that. And each transition gets reused many times instead of once, which matters enormously when transitions come from a real robot. Replay is only legitimate because Q-learning is off-policy: the data in the buffer was collected by older policies, and an on-policy method could not touch it (@fig:replay).
+
+![Experience replay. Transitions are stored and sampled at random, which decorrelates the training batches and reuses each expensive interaction many times. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_029.jpg){#fig:replay width=76%}
+
+Before the second idea, it is worth seeing how the tabular update of the previous section becomes a loss function, because the translation is the whole of "deep" Q-learning. The tabular rule was
+
+$$Q(s_t,a_t) \leftarrow (1-\eta)\,Q(s_t,a_t) + \eta\,y \qquad\Longleftrightarrow\qquad Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \eta\,\big(y - Q(s_t,a_t)\big),$$
+
+which is a step of size $\eta$ in the direction of the error $y - Q(s_t,a_t)$. Now recall that a gradient step on a squared loss $\tfrac{1}{2}(y - Q_\phi)^2$ moves $Q_\phi$ by exactly $\eta\,(y - Q_\phi)$ times the gradient of $Q_\phi$ with respect to its parameters. So the tabular update *is* gradient descent on a squared error, in the special case where the "parameters" are the table entries themselves and each entry has its own independent gradient. Replacing the table with a network changes nothing about the loss; it only means that updating one state's value now perturbs the values of similar states, which is both the generalization we want and the reason the convergence guarantee is gone.
+
+**A delayed target network.** Here is the instability that replay does not fix. The Q-learning update regresses $Q_\phi(s_t,a_t)$ toward a target built out of $Q_\phi(s_{t+1}, \cdot)$ — the same network. Every gradient step moves the prediction *and* the target, and the target moves in a direction that depends on the prediction. Regression onto a moving target that chases you is a recipe for oscillation or divergence. The fix is to freeze a copy:
+
+$$L(\phi) = \mathbb{E}_{(s_t,a_t,r_t,s_{t+1})\sim\mathcal{B}}\Big[\Big(\, r(s_t,a_t) + \gamma \max_a Q_{\bar\phi}(s_{t+1},a) \;-\; Q_\phi(s_t,a_t) \,\Big)^2\Big]$$ {#eq:dqnloss}
+
+**In words.** Train the network so its prediction for the action you took matches the reward you received plus the discounted best value a slowly-updated copy of itself assigns to where you ended up.
+
+**The symbols.** $\phi$ are the parameters of the action-value network — the **critic** — and $\bar\phi$ are the parameters of the **target network**, a copy updated either by periodic assignment $\bar\phi \leftarrow \phi$ every $N$ steps or by slow averaging. $\mathcal{B}$ is the replay buffer.
+
+**Why this shape.** With $\bar\phi$ held fixed, the quantity inside the square is a constant label as far as the gradient is concerned, and @eq:dqnloss becomes an ordinary supervised regression — stable, well-understood, and something Adam can optimize. Freezing the target trades correctness for stability: the labels are stale, so the fixed point is approached more slowly, but it is approached rather than orbited. The overbar convention is used throughout this book for a frozen or slowly-moving copy of a network, and it recurs in Chapter 5 for the same purpose (@fig:target).
+
+![The delayed target network. Regressing onto a target computed by a frozen copy of the network turns an unstable moving-target problem into ordinary supervised regression. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_030.jpg){#fig:target width=76%}
+
+> **Editor's note.** The lecture writes the action-value network's parameters as $\theta$ and the target as $\theta^-$, following the DQN paper. This book reserves $\theta$ for the policy or actor and uses $\phi$ for value networks, with an overbar for targets, so that Chapter 5's actor-critic algorithms and this chapter's DDPG can share one convention. See the notation table in the back matter; the mathematics is identical.
+
+### Overestimation, and Double DQN
+
+One more defect, and it is a statistical one rather than an engineering one. The target in @eq:dqnloss contains $\max_a Q_{\bar\phi}(s_{t+1},a)$, a maximum over *estimates*. Estimates have noise. The maximum of several noisy numbers is systematically larger than the maximum of their true values, because the maximum operator selects for whichever estimate happens to be too high. So the target is biased upward, the bias feeds into the next estimate, and Q-values inflate over training. Noise is being amplified rather than averaged away.
+
+**Double DQN** fixes it with the two networks already lying around, by splitting the roles of *selecting* the best action and *evaluating* it:
+
+$$y = r(s_t,a_t) + \gamma\, Q_{\bar\phi}\Big(s_{t+1},\ \underbrace{\arg\max_a Q_{\phi}(s_{t+1},a)}_{\text{online network selects}}\Big)$$ {#eq:doubledqn}
+
+**In words.** Let one network choose which action looks best, and a different network say how good that action actually is.
+
+**Why this shape.** The bias came from using the same noisy estimates to both pick the maximum and report its value. If the online network's noise makes an action look good, the target network — whose noise is independent — will usually not agree, and the reported value is not inflated. The fix costs nothing, since both networks already exist for the stability reason above. It is a good example of a pattern that recurs in this book: a small statistical correction that turns an algorithm from marginal to reliable (@fig:double).
+
+![Overestimation bias and the Double DQN correction: decouple the selection of the maximizing action from the evaluation of its value. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_032.jpg){#fig:double width=76%}
+
+## Continuous actions
+
+DQN outputs one Q-value per action, which presumes a finite list of actions. A robot's action is a vector of joint torques or end-effector displacements, $a = [\tau_1, \ldots, \tau_7] \in \mathbb{R}^7$. There is no list, and $\arg\max_a$ over an uncountable set is not an operation you can perform. Three routes around this, in increasing sophistication.
+
+### Route one: discretize
+
+Grid the action space and apply DQN. Simple, and exponentially bad: $b$ bins per dimension over 7 dimensions gives $b^7$ actions, and the output layer of the network must have that many units.
+
+But there is a special case where discretization is inspired rather than crude, and it is worth the detour because it is one of the most elegant results in robot learning. For **top-down grasping and pushing**, the action is essentially *where* on the table to act, plus an orientation. That is a location in the image. So discretize the action space by identifying it with the *pixels of a top-down view*: run a fully convolutional network on an RGB-D heightmap and have it output a **dense Q-map**, one Q-value per pixel per gripper rotation — sixteen rotations in the original work. The $\arg\max$ is then a maximum over an image, which is trivial.
+
+Why this is more than a trick: the network is convolutional, so a grasp learned at one location transfers to every other location for free, and the spatial structure of the problem is built into the architecture rather than learned from data. It is the same argument the Transporter Networks of Chapter 3's reading list make.
+
+The result the lecture highlights is what the system discovered on its own. Given only a grasp-success reward, the robot **learned to push before grasping** — to separate a cluttered pile of objects and then pick from it. Nobody programmed a pushing behavior or rewarded singulation. It emerged from the Bellman backup: configurations that are too cluttered to grasp acquire low value, so actions that lead out of them acquire high value, and pushing is such an action. This is the clearest demonstration in the chapter of what reinforcement learning gives you that imitation cannot — a behavior nobody demonstrated, discovered because it serves the objective (@fig:spatial).
+
+![Spatial action discretization. A fully convolutional network maps a top-down heightmap to a dense Q-map, one value per pixel and rotation, so maximizing over actions becomes maximizing over an image. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_034.jpg){#fig:spatial width=82%}
+
+### Route two: sample
+
+If you cannot maximize analytically, sample candidates and take the best one you find. The crudest version draws actions uniformly, evaluates $Q_\phi(s, a^{(i)})$ for each, and returns the winner. It works better than it sounds, because $Q_\phi(s,\cdot)$ is a smooth function of the action — nearby actions have similar values — so a scattering of samples gives a reasonable picture of the landscape. It costs $N$ forward passes and offers no guarantee of finding the true maximum.
+
+Sampling smarter gives the **cross-entropy method**, which is iterative sampling with a distribution that tightens around the good region:
+
+\begin{algorithm}[H]
+\caption{Cross-entropy method for action selection}
+\KwIn{state $s$, critic $Q_\phi$, samples $N$, elites $M$, iterations $K$}
+\KwOut{an approximate maximizer $a^*$}
+initialize $\mu_0, \sigma_0$ (e.g. covering the action limits)\;
+\For{$k = 0, \ldots, K-1$}{
+  sample $N$ candidate actions $a^{(i)} \sim \mathcal{N}(\mu_k, \sigma_k)$\;
+  evaluate $Q_\phi(s, a^{(i)})$ for all $i$ and keep the $M$ best as the elite set $E$\;
+  $\mu_{k+1} \leftarrow \mathrm{mean}(E)$, \quad $\sigma_{k+1} \leftarrow \mathrm{std}(E)$\;
+}
+\Return{$a^* = \mu_K$}
+\end{algorithm}
+
+**In words.** Guess a region of the action space, try a batch of actions from it, keep the ones that scored best, re-centre your guess on them, and repeat until the guesses concentrate.
+
+**The symbols.** $\mu_k, \sigma_k$ are the mean and standard deviation of the sampling distribution at iteration $k$; $N$ is the number of samples per iteration, $M$ the number of elites kept, $K$ the number of iterations.
+
+**Why this shape.** The method is entirely black-box — it never differentiates $Q_\phi$, only evaluates it — which makes it usable when gradients are unavailable or unhelpful, and it is the reason the same algorithm reappears in Chapter 8 for planning inside a learned world model. Two costs. It is **unimodal** by construction, since it fits a single Gaussian, so if the action landscape has two good regions it will collapse onto one and may pick the wrong one. And it pays $N \times K$ forward passes **at every control step** — not once per episode, but every time the robot decides anything. At 50 Hz with $N = 64$ and $K = 3$ that is nearly ten thousand network evaluations per second, which is where the "real-time control constrains model size" theme of this book starts to bite.
+
+The demonstration that this works at scale is **QT-Opt**: Q-learning with cross-entropy action selection, trained on a farm of around seven real robot arms with an off-policy replay buffer of **580,000 real grasps**, reaching **96% grasp success on objects it had never seen**. Note which properties of the method that result depends on: off-policy learning, so months of old data from other robots stays usable, and a replay buffer, so every one of those 580,000 expensive grasps is trained on many times.
+
+### Route three: learn the maximizer
+
+The third route removes the search entirely by training a second network to output the maximizing action:
+
+$$\mu_\theta(s) \;\approx\; \arg\max_a Q_\phi(s,a)$$ {#eq:ddpgactor}
+
+**In words.** Instead of searching for the best action at every step, learn a function that just tells you what it is.
+
+**The symbols.** $\mu_\theta$ is the **actor**, a deterministic policy with parameters $\theta$; $Q_\phi$ is the **critic**, exactly the DQN network of @eq:dqnloss with parameters $\phi$.
+
+**Why this shape.** Test time becomes a single forward pass, which is what a 50 Hz controller needs. This is **DDPG**, and it is the first **actor-critic** architecture in this book: two networks with different jobs, the critic scoring actions and the actor producing them. The critic trains exactly as before, on the temporal-difference loss. The actor's job is to climb the critic's landscape, and the gradient follows from the chain rule:
+
+$$\nabla_\theta J(\theta) \;\approx\; \mathbb{E}_{s}\Big[\, \nabla_a Q_\phi(s,a)\big|_{a=\mu_\theta(s)} \cdot \nabla_\theta \mu_\theta(s) \,\Big]$$ {#eq:dpg}
+
+**In words.** Ask the critic which direction in action space would increase the value, then move the actor's parameters so that its output shifts in that direction.
+
+**The symbols.** $\nabla_a Q_\phi$ is the gradient of the critic with respect to its *action* input, evaluated at the action the actor currently produces; $\nabla_\theta \mu_\theta$ is the Jacobian of the actor's output with respect to its parameters.
+
+**Why this shape.** The two factors are exactly the two questions that need answering: *which way should the action move?* — a question only the critic can answer — and *how do I change the weights to move the action that way?* — a question only the actor can answer. Multiplying them is the chain rule, and the result is called the **deterministic policy gradient**. It is worth noticing that this requires the critic to be differentiable with respect to the action, which it is, being a neural network; the gradient signal that trains the policy comes from inside another learned model rather than from the environment. That idea — one network supplying gradients to another — is what Chapter 8's world models take to its conclusion (@fig:ddpg).
+
+![DDPG: an actor trained to output the action that maximizes a learned critic, with the actor's gradient obtained by differentiating the critic with respect to its action input. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_042.jpg){#fig:ddpg width=80%}
+
+Two practical matters, and they are the reason DDPG has a bad reputation. A deterministic actor never explores — it outputs the same action in the same state forever — so exploration has to be injected by hand. $\epsilon$-greedy is unsuitable, since a random action on a robot arm means a violent lurch; instead Gaussian noise is added to the actor's output:
+
+$$a_t = \mu_\theta(s_t) + \epsilon, \qquad \epsilon\sim\mathcal{N}(0,\sigma)$$ {#eq:ddpgnoise}
+
+and $\sigma$ becomes a hand-tuned parameter with no good setting: too small and the robot never discovers anything, too large and the critic is trained on garbage and the whole system destabilizes. The second matter is the general one. **DDPG is notoriously brittle** — sensitive to hyperparameters, seeds and reward scaling, and quite capable of failing to converge on a problem it solved yesterday. The honest summary is that it was the first method to make continuous-action deep reinforcement learning work at all, and that the algorithms of Chapter 5 exist partly to make it work reliably.
+
+## The chapter in one table
+
+Six algorithms, four questions each, and the shape of the trade-offs is the thing to carry forward.
+
+| | Exact (VI / PI / Q-VI) | Q-learning / SARSA | DQN / Double DQN | DDPG / QT-Opt |
+|---|---|---|---|---|
+| Dynamics model | needed, train and test | model-free | model-free | model-free |
+| State space | discrete, small | discrete, small | high-dimensional images | high-dimensional images |
+| Action space | discrete | discrete | discrete | **continuous** |
+| Policy | a table | a table | a network | actor + critic networks |
+| Off-policy | — | Q-learning yes, SARSA no | yes, via replay | yes, via replay |
+| Convergence | guaranteed | guaranteed if tabular and exploring | no guarantee | no guarantee, brittle |
+| Central idea | Bellman contraction | temporal difference from experience | replay plus target network | actor learns the argmax |
+
+Read the table left to right and it is a story of giving up guarantees to gain applicability. The exact methods are provably correct and useless on a robot. DDPG is applicable to a real arm and comes with nothing but empirical evidence. Everything in between is a partial trade (@fig:taxonomy).
+
+![The taxonomy of value-based methods: what each one requires, what it can handle, and what it guarantees. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_047.jpg){#fig:taxonomy width=85%}
+
+## Where this breaks
+
+**Exploration is unsolved, and on hardware it is dangerous.** Every algorithm here assumes the robot will try things. Trying things means executing actions your value estimates say are uncertain, which on a real arm can mean collisions, dropped objects and broken hardware. The Gaussian-noise scheme of @eq:ddpgnoise is a poor answer that happens to be widely used. Nothing here addresses safe exploration, and the field's honest position is that most successful real-robot reinforcement learning either happens in simulation or starts from a good imitation-learned policy.
+
+**Sample efficiency remains the wall.** QT-Opt's 580,000 grasps is the headline result of this chapter and also its indictment: that is a robot farm running for months. Chapter 5's soft actor-critic improves matters, and Chapter 8's world models improve them dramatically by training inside a learned simulator — DayDreamer gets a real quadruped walking from one hour of interaction — but nothing in this chapter is deployable on a single robot in an afternoon.
+
+**Deep Q-learning has no convergence guarantee, and the guarantees it lost were the reason to trust it.** Tabular Q-learning converges. Replace the table with a network and the contraction argument no longer applies: the update is no longer a contraction in any norm you can point to, and divergence is a real, observed phenomenon. Replay and target networks are patches that make it work in practice, discovered empirically. This is the gap Chapter 2's further-reading list warned about, and it is why the honest reading of published results in this area is cautious.
+
+**The reward function is assumed, and everything depends on it.** This chapter treats $r(s,a)$ as given. Chapter 2 already noted that a dense reward is what makes learning tractable and also what makes reward hacking possible; here the danger is sharper, because reinforcement learning will find whatever the reward actually says rather than what you meant. A grasp reward computed from gripper closure can be maximized by closing on nothing.
+
+**Continuous actions are handled by three imperfect workarounds.** Discretization is exponential except in the special case where the action is a location in an image. Sampling is unimodal and costs thousands of forward passes per second. Learning the maximizer is fast and brittle. There is no clean answer in this chapter, and Chapter 5 gets a better one by abandoning the $\arg\max$ altogether.
+
+**The $\max$ operator is a liability in more ways than one.** Overestimation bias was one symptom, patched by Double DQN. The deeper issue is that maximizing over actions is what forces all this machinery — the discretization, the sampling, the learned maximizer — and it is exactly the operation that the policy-gradient methods of the next chapter never perform.
+
+## What this connects to
+
+**Backwards.** This chapter attacks @eq:objective from Chapter 2 directly, using the Markov property of @eq:markov to turn it into the recursion of @eq:bellmanexp. It exists because of Chapter 3's ceiling: a policy that copies an expert cannot beat the expert, and the pushing-before-grasping result is the concrete demonstration of what breaking that ceiling looks like. The stochastic-policy argument that opened this chapter is the reason Chapter 2 defined policies as distributions and the reason Chapter 3's mode-averaging failure mattered.
+
+**Forwards.** Chapter 5 keeps the objective and changes the strategy: rather than learning values and reading a policy off them, it differentiates $J(\theta)$ with respect to the policy's parameters and does gradient ascent. That removes the $\arg\max$ problem entirely, at the cost of high variance and a new appetite for data — and the two halves then merge, because the best-performing methods are actor-critic algorithms that use a value function to reduce the variance of a policy gradient. The **advantage function** of Chapter 5, $A^\pi = Q^\pi - V^\pi$, is built from precisely the two objects defined here.
+
+Three specific threads run onward. **Experience replay and off-policy learning** are what make Chapter 5's soft actor-critic the most sample-efficient method in the book, and what make Chapter 11's data-flywheel argument conceivable at all: a robot that can learn from every rollout it has ever performed, however bad, is only possible off-policy. **The cross-entropy method** returns in Chapter 8 as the planner inside a learned world model, where the thing being evaluated is not a critic but an imagined future. And **the temporal-difference target** — a prediction that regresses onto a slightly-improved version of itself — is the shape of nearly every self-improving system in the second half of this book.
+
+## Further reading
+
+- **T. Salimans, J. Ho, X. Chen, S. Sidor and I. Sutskever, "Evolution Strategies as a Scalable Alternative to Reinforcement Learning" (2017).** A method with no value function, no temporal difference and no gradient through the policy at all: perturb the weights, keep what works, and parallelize across a thousand workers. Read it against this chapter's machinery as a serious question about how much of that machinery is necessary, and alongside the Augmented Random Search paper from Chapter 2's list.
+- **A. Zeng, S. Song, S. Welker, J. Lee, A. Rodriguez and T. Funkhouser, "Learning Synergies between Pushing and Grasping with Self-supervised Deep Reinforcement Learning" (2018).** The spatial-discretization result of this chapter, and the source of its most striking finding. Read it for the architecture — a fully convolutional network producing a dense Q-map — and for the emergence of pushing as a prerequisite to grasping without any reward for pushing.
+- **J. Luo, C. Xu, J. Wu et al., "Precise and Dexterous Robotic Manipulation via Human-in-the-Loop Reinforcement Learning" (2024).** The practical state of the art in getting this chapter's methods to work on real hardware within a working day rather than a working year, by combining reinforcement learning with human corrections. It is also the most direct bridge between Chapter 3's human-gated DAgger and the reinforcement learning here.

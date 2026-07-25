@@ -53,9 +53,9 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | # | Lecture | Transcript | Slides | Notes | Chapter |
 |---|---------|-----------|--------|-------|---------|
 | 1 | Introduction to Robot Learning | ✅ 9,480 w | ✅ 44 | ✅ | ✅ 12 pp (voice ckpt) |
-| 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ✅ 26 pp |
+| 2 | Robot Control & MDPs | ✅ 7,085 w | ✅ 46 | ✅ | ✅ 24 pp |
 | 3 | Imitation Learning | ✅ 7,842 w | ✅ 49 | ✅ | ✅ 22 pp |
-| 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ☐ |
+| 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ✅ 24 pp |
 | 5 | Reinforcement Learning II | ✅ 7,482 w | ✅ 33 | ✅ | ☐ |
 | 6 | Generative Models | ✅ 7,437 w | ✅ 37 | ✅ | ☐ |
 | 7 | Sequence Modeling & Transformers | ✅ 8,104 w | ✅ 40 | ✅ | ☐ |
@@ -114,6 +114,13 @@ Everything downstream (Phases 3–9) depends on this.
 `\SetKwInOut`-defined `\Input` / `\Output`. The latter aligns its colon in a fixed-width
 box that wraps in this 7in geometry, leaving a stray `:` on its own line. `\KwIn`/`\KwOut`
 print "Input:" / "Output:" inline and render correctly.
+
+**Chapter length.** Chapters are landing at **22–26 pages**, below the brief's 25–40
+target. This is deliberate: each chapter already covers everything in its `notes/` file,
+and hard rule #1 forbids inventing content to reach a page count. The source lectures are
+45–70 min (7–10k transcript words), which is simply less material than a 35-page textbook
+chapter. Where extra length was genuinely available it was added as marked
+`> **Editor's note.**` background (rule #2) or as step-by-step derivation, not padding.
 
 Cross-chapter `@eq:` / `@fig:` references only resolve when the chapters are built
 together — a single-chapter build reports "undefined references", which is expected and
