@@ -58,7 +58,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 4 | Reinforcement Learning I | ✅ 7,651 w | ✅ 48 | ✅ | ✅ 24 pp |
 | 5 | Reinforcement Learning II | ✅ 7,482 w | ✅ 33 | ✅ | ✅ 21 pp |
 | 6 | Generative Models | ✅ 7,437 w | ✅ 37 | ✅ | ✅ 20 pp |
-| 7 | Sequence Modeling & Transformers | ✅ 8,104 w | ✅ 40 | ✅ | ☐ |
+| 7 | Sequence Modeling & Transformers | ✅ 8,104 w | ✅ 40 | ✅ | ✅ 19 pp |
 | 8 | World Models | ✅ 9,791 w | ✅ 45 | ✅ | ☐ |
 | 9 | Generalist Robot Policies | ✅ 9,107 w | ✅ 55 | ✅ | ☐ |
 | 10 | Embodied Reasoning & Test-time Scaling | ✅ 7,491 w | ✅ 44 | ✅ | ☐ |
