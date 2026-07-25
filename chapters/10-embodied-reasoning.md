@@ -1,0 +1,326 @@
+# Embodied Reasoning and Test-time Scaling
+
+Chapter 9 ended with a working recipe and an implicit promise: collect more teleoperation data, scale the model, and the policies get better. The promise is not false, and it is not the whole story. Consider what data actually buys you. It gives the model a **better prior over behaviors** — it compresses the distribution of demonstrations into the weights — and that is genuinely valuable. What it does not give is a way to handle a situation the demonstrations do not cover. Every policy in this book so far, including the best of Chapter 9, has no mechanism for working its way out of an out-of-distribution situation. It fails.
+
+The analogy that makes this concrete is one level up. Language models train on orders of magnitude more data than the largest robot policies, and **all of the internet turned out not to be enough** to solve the problems people want them to solve. The response in that field was not more data but a different axis: **train specifically for reasoning.** The reason to expect that to help is that reasoning is **compositional** — it consists of reusable pieces of logic and knowledge that can be recombined to solve novel problems from things already known. You need not have seen a situation before if you can reason your way through it.
+
+So this chapter asks: **will a robot that thinks harder act better?** The answer turns out to be yes, with an inference-cost problem that takes the second half of the chapter to resolve, and with a caution about *why* it works that is the most interesting part.
+
+## Embodied chain-of-thought
+
+The idea is simple to state. Instead of mapping image and instruction directly to actions, **insert intermediate reasoning steps**: have the model first produce a plan, identify the next sub-task, decide the movement, and ground all of it in the image — then act. Chain of thought, applied to the physical world (@fig:ecotidea).
+
+![Standard policies map images directly to actions and often fail on novel tasks; embodied chain-of-thought inserts grounded intermediate reasoning before the action. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_005.jpg){#fig:ecotidea width=80%}
+
+### Where the reasoning data comes from
+
+The obvious objection comes first: nobody is going to annotate a large robot dataset with plans, sub-task descriptions, bounding boxes and gripper positions. That is not scalable.
+
+So do not ask a human. **Distil internet-scale foundation models to annotate the robot data you already have.** The lecture names the suite used: Gemini for high-level plans and descriptions, OWLv2 with SAM and Grounding DINO for detection and segmentation, and a vision-language model for the rest. Run them over existing trajectories and produce grounded reasoning for each. A generated example, verbatim from the slide:
+
+```
+TASK:          Place the watermelon on the towel
+PLAN:          1. Move to watermelon  2. Firmly grasp it  3. …
+SUBTASK:       The watermelon is the first object the robot needs to
+               interact with → Move to the watermelon
+MOVE:          The watermelon is behind the robot, so it needs to move
+               backward → Move backward
+GRIPPER POS:   [156, 55]
+VISIBLE OBJS:  Watermelon [126, 146, 141, 125], Towel [20, 59, 218, 198], …
+```
+
+Notice the structure. The first three fields are **semantic** — what to do and why. The last three are **visual** — where things are, in image coordinates. The reasoning is not free-form text; it is a schema that forces the model to commit to specific, checkable claims about the scene (@fig:annotation).
+
+![The annotation pipeline: a suite of foundation models generates grounded reasoning for existing robot trajectories, producing a reasoning dataset with no human labeling. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_006.jpg){#fig:annotation width=82%}
+
+### Architecture and result
+
+The model is an autoregressive vision-language-action model — Chapter 9's architecture — that predicts the reasoning fields and *then* the action tokens, so that **the action tokens are conditioned on the reasoning tokens.** The lecture's phrase for what this enforces is "think carefully and look carefully before acting."
+
+Evaluated in deliberately hard real-world out-of-distribution scenarios — distractor objects, unusual spatial relations, unseen objects and unseen instructions — the result is the one worth memorizing:
+
+| Model | Success rate |
+|---|---|
+| Embodied chain-of-thought (7B) | ≈65 |
+| RT-2-X (55B) | ≈47 |
+| OpenVLA (7B) | ≈36 |
+| Octo | ≈19 |
+
+Two comparisons matter. Against **OpenVLA — the same model without the reasoning** — the gain is about **30%**, achieved with **no additional robot data**. And a 7-billion-parameter model beats a 55-billion-parameter one. The claim to take from this is precise: for the teleoperation data you have already collected, reasoning buys roughly 30% better generalization for free (@fig:ecotresults).
+
+![Embodied chain-of-thought against other generalist policies on out-of-distribution tasks. The comparison that matters is against OpenVLA, which is the same model without reasoning. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_010.jpg){#fig:ecotresults width=78%}
+
+### Two benefits that were not the goal
+
+**The policy became interpretable, and therefore correctable.** The reasoning steps are human-readable, so when the robot fails you can see what it believed. Better, you can **edit the reasoning chain during inference** — and because the action tokens are conditioned on it, the behavior changes accordingly. The lecture's example: the instruction is "pick up any object that is not yellow", the robot reasons incorrectly ("move to the yellow cloth, move left"), a corrected reasoning chain is substituted ("the eggplant is a non-yellow object and should be picked up, move to the eggplant"), and the robot does the right thing.
+
+This is a genuinely unusual property. Every other policy in this book is a black box you can only retrain. This one has a text interface to its intentions, at inference time, on a real robot.
+
+**The reasoning transferred to robots it was never trained on.** The reasoning was trained on a **single dataset** — the WidowX platform — and then asked to produce reasoning for other Open X-Embodiment datasets: different robot, different camera, different everything. The chains stayed plausible.
+
+The explanation matters more than the result. Many of the reasoning sub-tasks — identify the object, describe its position, decide a direction — are **close to what the vision-language model was pre-trained on**. So embodied chain-of-thought is not teaching new reasoning; it is **unlocking reasoning the backbone already had**. Which suggests reasoning may be a way to transfer capability across embodiments without collecting and annotating demonstrations for each new morphology — a different answer to Chapter 9's cross-embodiment problem than architectural heads or padded action spaces (@fig:transfer).
+
+![Reasoning trained on one platform transfers to unseen robots and cameras, because much of what it asks for is close to the vision-language backbone's pre-training tasks. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_013.jpg){#fig:transfer width=82%}
+
+The idea has been adopted in industry and academia — Gemini Robotics VLA 1.5 incorporates it as a core component — and has produced a family of follow-ups: adding depth tokens and spatial reasoning traces, visual chain-of-thought over predicted future frames, transferring action-free reasoning learned from human video by decoupling reasoning training from action prediction, and self-supervised bootstrapping of the reasoning itself.
+
+## The inference cost, stated plainly
+
+Reasoning multiplies the tokens generated per action, and the lecture gives the number without softening it:
+
+| | Inference speed |
+|---|---|
+| Autoregressive vision-language-action model (OpenVLA, 7B) | **4 actions per second** |
+| The same model with embodied chain-of-thought | **4 seconds per action** |
+
+A sixteen-fold swing, from 4 Hz to 0.25 Hz. Chapter 2 explained why that is disqualifying rather than merely slow: below a few hertz there is no closed control loop, and the lecturer's account of the first rollouts — watching the lead authors run the real WidowX at what he guesses was around 1 Hz — is that it was painful to watch.
+
+So the question that organizes the rest of the chapter: **can we get the benefits of reasoning without the inference cost?**
+
+## Why does embodied reasoning work at all?
+
+Before answering that, the lecture pauses, and the reason it pauses is worth reproducing because it is a statement about how to do research.
+
+Machine learning has a tendency to observe that something works, get excited, and move on. But **without understanding why something works, you cannot know when it will fail, or how to improve it** — you cannot build on it in a principled way. As the lecturer puts it: the same scientific rigor we apply when experiments fail should apply when they succeed.
+
+Three hypotheses, each with a different practical consequence (@fig:hypotheses).
+
+**Hypothesis one: better representation learning.** The reasoning traces supply extra supervision that shapes the model's internal representations — signalling that this object's location matters, that this movement is relevant — forcing richer, more grounded scene representations. **If this is the mechanism, what matters is the training signal, not generating reasoning at test time.** You could train with reasoning and deploy without it, and keep the benefit at full speed.
+
+**Hypothesis two: an improved learning curriculum.** Predicting continuous robot actions is wildly out of distribution for a model pre-trained on visual question answering, so fine-tuning straight from one to the other is hard. Reasoning may act as an implicit curriculum: first learn easier intermediate mappings, like movement description to action, then work up to pixels-to-actions. **If this is the mechanism, reasoning could be pure scaffolding** — provided in context during training with no loss on it, then removed at inference.
+
+**Hypothesis three: increased policy expressivity.** Simply having more tokens in context increases the transformer's expressive capacity, **even if the tokens are semantically meaningless.** This is not speculation; it is documented in the language-model literature, where transformers use intermediate tokens as a scratch space for hidden computation and improve even when those tokens carry no meaning.
+
+The third hypothesis raises the question that ought to be uncomfortable. **How much of the benefit comes from the semantic content of the reasoning, and how much from the extra compute the extra tokens buy?** If mostly the latter, the careful grounding — the foundation-model annotation pipeline, the bounding boxes — matters much less than assumed, and the same gain could be had far more cheaply.
+
+![The three hypotheses for why embodied reasoning helps, in one figure: representation learning, curriculum, and expressivity from extra in-context tokens. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_019.jpg){#fig:hypotheses width=82%}
+
+## Testing the hypotheses, and the resulting recipes
+
+The three mechanisms are isolated empirically on the LIBERO-90 benchmark, and the results decide the design.
+
+| Variant | Success rate | Reasoning at test time? |
+|---|---|---|
+| Embodied chain-of-thought, full | ≈90 | yes |
+| **Reasoning dropout** | ≈89.5 | optional |
+| **Reasoning pre-training** | ≈87 | no |
+| Reasoning scaffolding | ≈84 | no — in context, no loss |
+| Standard vision-language-action model | ≈82 | — |
+| Thinking tokens | ≈79.5 | null tokens |
+
+Read the last two rows first. **Thinking tokens — meaningless null tokens — perform worse than the standard policy.** Hypothesis three does not carry the benefit here. That is a notable result, because it is the hypothesis with the strongest support in the language-model literature, and in this setting it fails. The lecturer notices this live, correcting himself mid-sentence from "better than the standard VLA" to "it's a bit worse".
+
+And read the top three rows for the practical payoff: **two variants that remove reasoning at test time perform almost as well as full reasoning.** Hypothesis one is substantially right, which means the inference cost is avoidable.
+
+**Reasoning pre-training** is two stages. Stage one: fine-tune the vision-language model to predict **only the reasoning** — plan, sub-task, movement, bounding boxes, gripper position — with no action loss and no action prediction at all. Stage two: take that model and fine-tune it to predict **continuous actions only**, with no reasoning. What transfers between the stages is the representations, and nothing else. At deployment there is no reasoning to generate, so there is no cost.
+
+**Reasoning dropout** is a single joint stage. Train to predict reasoning and actions together, as in the original, but **randomly drop the reasoning** with some probability, so the model also learns to emit actions *not* conditioned on it. At test time you can switch reasoning on or off in **one model** (@fig:dropout).
+
+![Reasoning pre-training transfers representations from a reasoning-only stage to an action-only stage; reasoning dropout trains both jointly with the reasoning randomly removed, so one model can run either way. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_022.jpg){#fig:dropout width=80%}
+
+On the real Bridge WidowX setup the trade-off is visible in two numbers per method — success rate and inference rate. Full embodied chain-of-thought reaches about 78% success at well under 1 Hz. The two lite variants reach about 70% and 61% at **about 3.5 Hz — the same frequency as a standard policy, which itself reaches only about 50%.** So the lite variants are faster than reasoning policies and stronger than non-reasoning ones, which is the whole objective (@fig:bridgeresults).
+
+![The real-robot trade-off: full reasoning is strongest and slowest, a standard policy is fastest and weakest, and the lite variants occupy the corner that matters. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_023.jpg){#fig:bridgeresults width=82%}
+
+**Which to use** depends on the constraint. The original is too slow for most real-time settings. **Reasoning pre-training** is right when your reasoning and action data are **not paired** — when the reasoning comes from simulation or human video rather than from the same trajectories. **Reasoning dropout** is the most flexible, since one model serves either latency budget.
+
+## Test-time compute scaling
+
+Everything so far uses a **fixed** compute budget: the original model was trained on a fixed number of reasoning steps and always produces all of them. The natural next question is whether letting the model think *longer on harder problems* helps.
+
+The first objection is a fair one. Is this not just planning, which the field has had since the 1970s? The lecture answers with a comparison that is the clearest thing in it, running from hand-specified domains to open-ended ones, each column trading explicit structure for generality:
+
+| | Classical planning (A\*, STRIPS, PDDL) | Learned planning (chess, Go, Atari) | Language-model reasoning (CoT, GRPO, R1) |
+|---|---|---|---|
+| World model | hand-specified transition function | learned policy and value network | implicit in the weights, no explicit model |
+| Search | explicit tree search — A\*, BFS, DFS | Monte Carlo tree search, many simulations per move | token generation, sequential reasoning |
+| Verifier | goal test, exact and hand-specified | win or loss, exact from the rules | rule-based reward — a maths grader, a unit test |
+| Scope | known, structured, discrete domains | discrete games, bounded action space | open-ended tasks — language, code, robots |
+
+Read it as a single trend: as the domain becomes less structured, every component becomes less explicit, until the world model is only implicit in the weights and the "search" is the act of generating tokens.
+
+### The canonical evidence: Go
+
+The clearest demonstration that test-time search is worth real compute comes from AlphaGo (@fig:alphago). Reading the Elo ratings:
+
+| | Elo |
+|---|---|
+| Raw policy network, **no test-time search** | ≈3030 |
+| Full AlphaGo Zero, with tree search | ≈5190 |
+| *Superhuman performance* | ≈3650 |
+
+The raw network is below superhuman; adding search at test time takes the same network well past it. And the slide gives a rule of thumb that makes the exchange rate explicit: **gaining about 120 Elo requires either doubling the model size or doubling the test-time search budget.** The two are interchangeable, which is what licenses the framing of test-time compute as an axis you can scale along instead of parameters.
+
+The consequence printed on the slide: improving the raw policy from 3000 to 5200 Elo without search **would require scaling the model by around 100,000 times.**
+
+> **Editor's note.** The lecturer flags that these numbers are probably inflated, because AlphaGo was trained by playing against earlier checkpoints of itself. It is also worth noting that applying the 120-Elo rule literally to a 2,200-point gap gives $2^{2200/120} \approx 3\times10^5$ rather than $10^5$, so the slide's figure should be read as an order of magnitude rather than a calculation. The conclusion does not depend on the factor: it is very large either way.
+
+The remark the lecture adds is the strongest form of the argument, and it is empirical rather than theoretical: as far as he is aware, **no model has ever surpassed human performance at Go without test-time search.** Every Go agent uses it.
+
+### Does it hold in language? Yes, with a flip
+
+Games have perfect verifiers and well-defined search spaces. Language does not, so the transfer is not obvious. The result is that **compute-optimal test-time scaling beats a roughly 14 times larger model at equal compute** — but only on some problems.
+
+The mechanism is worth naming, because it is Chapter 4's cross-entropy method in a new domain: fine-tune the model on **its own failed attempts** together with a learned **verifier**, so it learns to produce a better answer given a previous wrong one; then at test time generate several answers and let the verifier pick the best. Thinking, in this scheme, is **search over the model's own output distribution guided by a reward signal.**
+
+The printed numbers show where it works and where it does not — relative improvement in accuracy from test-time compute, against the ratio of inference tokens to pre-training tokens:
+
+| Inference / pre-training token ratio | Easy questions | Medium | Hard |
+|---|---|---|---|
+| $\ll 1$ | $+21.6\%$ | $+27.8\%$ | $+11.8\%$ |
+| $\approx 1$ | $+16.7\%$ | $+3.5\%$ | $-11.9\%$ |
+| $\gg 1$ | $+5.4\%$ | $-24.3\%$ | $-37.2\%$ |
+
+**The sign flips.** Spend heavily on inference for hard questions and you lose 37% relative to having pre-trained a bigger model. The intuition the lecture gives is the right one to keep: **test-time compute amplifies what the model already knows.** If the correct answer is nowhere in the model's distribution, no amount of search will find it — search reweights a distribution, it does not extend it.
+
+> **Editor's note.** The lecturer says "up to 33.7%" for the largest loss; the slide's printed value is $-37.2\%$. The slide is the source used here.
+
+### Why reasoning tokens help, formally
+
+There is a theoretical account, and it is clean enough to state exactly:
+
+> **Any problem solvable in $T$ computational steps can be solved by a constant-size transformer generating $O(T)$ reasoning tokens.**
+
+**In words.** Thinking longer is a substitute for being bigger, up to a factor that is spelled out precisely.
+
+**Why this shape.** A single forward pass has **fixed computational depth**, bounded by the number of layers, so it can execute only a constant number of sequential steps regardless of how wide it is. Generating intermediate tokens autoregressively **unrolls additional computation at test time**: each generated token is another pass through the whole stack, with the previous output available. So $O(T)$ tokens give $O(T)$ effective sequential steps. Without them, a problem needing $T$ serial steps requires a much deeper model, or is not solvable at all.
+
+This is the formal counterpart of the third hypothesis from earlier in the chapter — that extra tokens buy computation independent of their meaning. Which makes the LIBERO-90 result, where meaningless thinking tokens *hurt*, more interesting rather than less: the capacity is available in principle and the robot policy did not exploit it.
+
+## How models learn to reason
+
+A short history, because the mechanism changed twice.
+
+**Chain-of-thought prompting** came first, and it is beautiful for being trivial: show the model a few examples in which the reasoning steps are written out explicitly, and it does the same for new problems. The lecture's slide has the original arithmetic examples, where standard prompting answers a two-step problem wrong and the same model with worked examples answers it right.
+
+**The catch is that it does not work on small models.** The scaling figure shows chain-of-thought *hurting* performance at small scale and only breaking free somewhere around the **100-billion-parameter** mark, where it overtakes the previous best supervised methods. So **reasoning emerges, and it requires a base model that is good enough** — you can distil it into smaller models afterwards, but it has to appear somewhere first (@fig:emergence).
+
+![Chain-of-thought prompting hurts small models and helps large ones, crossing over around 100 billion parameters. Reasoning is an emergent capability, not a technique that works at every scale. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_031.jpg){#fig:emergence width=78%}
+
+Prompting has clear limits: it is **prompt-sensitive and brittle**, it **requires human input** to write the examples, and it **does not generalize beyond the examples** provided. So: instead of eliciting reasoning with human prompts, can we train the model to reason intrinsically?
+
+The difference between the two is visible in what they produce. Given the same arithmetic word problem, a conventional model produces a clean, structured, template-following chain. A model trained to reason produces something else: it **second-guesses itself** ("wait, if he writes to 2 friends twice a week, does that mean…"), considers alternative interpretations, double-checks, and even wonders whether it should account for leap years — before arriving at the same answer. It is messy, and the messiness is the point. This is a model that learned to reason **through reinforcement learning on verifiable outcomes**, not one imitating human-written examples, and its process need not resemble a human's.
+
+## GRPO
+
+The algorithm is Chapter 5's, with one component deleted. The slide's two bullets state it: *sample answers, compare with each other, update toward good ones*; and *no reward model, no value function, no human labels*.
+
+The motivation is the practical difficulty of applying PPO to language models. PPO needs a **critic**, and a value function over token sequences is expensive to train and awkward to get right — you need a separate network estimating expected returns for every possible partial sequence. **Group relative policy optimization** removes it: sample a *group* of rollouts for one prompt and compute advantages relative to the group.
+
+$$\hat{A}_i = \frac{r_i - \mu_{\mathbf{r}}}{\sigma_{\mathbf{r}}}$$ {#eq:grpoadv}
+
+$$\mathcal{L} = \frac{1}{N}\sum_{i=1}^{N}\min\!\Big(\rho_i\,\hat{A}_i,\ \operatorname{clip}\big(\rho_i,\, 1\pm\epsilon_{\text{clip}}\big)\,\hat{A}_i\Big)\;-\;\beta\,D_{\mathrm{KL}}\big(\pi_\theta \,\|\, \pi_{\text{ref}}\big)$$ {#eq:grpo}
+
+**In words.** Sample several answers to the same question, score each one, judge each against the average of its own group, and push the policy toward the above-average answers — with the clip of Chapter 5 limiting the step and a penalty keeping the model near where it started.
+
+**The symbols.** $r_i$ is the **binary** reward for rollout $i$ — correctness and format. $\mu_{\mathbf r}$ and $\sigma_{\mathbf r}$ are the mean and standard deviation of the rewards **within the group**. $\hat A_i$ is the group-relative advantage. $N$ is the group size. $\rho_i = \pi_\theta/\pi_{\theta_{\text{old}}}$ is Chapter 5's probability ratio, $\epsilon_{\text{clip}} \approx 0.2$ the clip range, and $\beta$ the weight on a KL penalty against a **frozen reference policy** $\pi_{\text{ref}}$ — the pre-reinforcement-learning model, not the previous iterate.
+
+**Why this shape.** @eq:grpoadv is Chapter 5's batch-mean baseline, standardized. Chapter 5 introduced a baseline because the informative part of a set of returns is their *differences*, and subtracting the mean is what exposes them; here the same reasoning is applied within a group of answers to one question, and dividing by the standard deviation additionally makes the scale independent of how hard the question was. Everything else in @eq:grpo is PPO. **The model learns by comparing its own outputs against each other**, and what is absent is the point: no reward model, no value function, no human labels. With nothing but a binary verifiable answer — for maths, whether it is right — **reasoning emerges, because the only way to reliably get the right answer is to think carefully** (@fig:grpo).
+
+![The GRPO pipeline: sample a group of rollouts for one prompt, score them with a binary verifier, standardize the rewards within the group to get advantages, and apply PPO's clipped update — with no critic anywhere. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_035.jpg){#fig:grpo width=85%}
+
+### Worked example: one GRPO update
+
+The slide's own example makes the arithmetic concrete. The question is *"a train travels 60 miles in 90 minutes; what is its average speed?"* and five rollouts are sampled:
+
+| Rollout | Reasoning | Answer | $r_i$ |
+|---|---|---|---|
+| 1 | $60 \div (90/60) = 60 \div 1.5$ | 40 mph ✓ | 1 |
+| 2 | $90\ \text{min} = 1.5\ \text{h},\ v = 60/1.5$ | 40 mph ✓ | 1 |
+| 3 | $\text{speed} = 60/1.5 = 40$ | 40 mph ✓ | 1 |
+| 4 | $60 \div 90 \approx 0.67 \times 60$ | 45 mph ✗ | 0 |
+| 5 | $\text{speed} = 60/90 = 0.67$ | 0.67 mph ✗ | 0 |
+
+Three correct out of five, so
+
+$$\mu_{\mathbf r} = \frac{3}{5} = 0.6, \qquad \sigma_{\mathbf r} = \sqrt{\tfrac{3}{5}(1-0.6)^2 + \tfrac{2}{5}(0-0.6)^2} = \sqrt{0.24} \approx 0.490,$$
+
+and the advantages follow immediately:
+
+$$\hat A_{\text{correct}} = \frac{1 - 0.6}{0.490} \approx +0.816, \qquad \hat A_{\text{wrong}} = \frac{0 - 0.6}{0.490} \approx -1.225.$$
+
+Two properties are visible in those numbers. The advantages **sum to zero across the group** by construction — $3(+0.816) + 2(-1.225) \approx 0$ — so the update is purely a redistribution of probability between the answers, exactly as Chapter 5's baseline argument requires. And the **wrong answers get the larger magnitude**, because they are the minority: when most of the group is correct, being wrong is more informative than being right. Had four of five been correct, $\mu = 0.8$ and $\sigma = 0.4$, giving $+0.5$ for correct and $-2.0$ for wrong — the signal automatically concentrates on the rarer outcome, with no tuning.
+
+### Why did this not work earlier?
+
+People had been applying reinforcement learning to language models for years. The answer the community has settled on is a single sentence, and it is the same one that appeared in the chain-of-thought scaling figure: **the base model has to be good enough to produce some correct rollouts to reinforce.**
+
+If the base model can never produce a correct answer to a hard problem, every rollout in the group scores zero, every advantage is zero, and there is nothing to learn from. What changed in the last few years is that models crossed the threshold where they **occasionally** solve hard problems on their own — and once that happens, reinforcement learning can amplify the capability systematically.
+
+The evidence for reasoning genuinely being *discovered* rather than imitated is the most striking figure in the lecture. Tracking the frequency of the word "wait" during training: **the model never says it until around step 6,000**, and then, having discovered that stopping to reconsider improves its reward, the frequency of reflective language jumps sharply. Nobody told it to say "wait". Nobody labeled traces as good or bad reasoning. The only signal was binary correctness (@fig:wait).
+
+![The emergence of reflective language during reinforcement learning. The word "wait" is absent for thousands of steps and then appears sharply, discovered because it improves reward. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_037.jpg){#fig:wait width=78%}
+
+The lecturer's assessment of this is worth keeping: it is one of the most compelling demonstrations of something reinforcement learning can do that supervised learning fundamentally cannot — **discover a strategy nobody specified.** It is also the sharpest possible restatement of Chapter 3's imitation ceiling.
+
+## Does it transfer to vision?
+
+Yes, and the extension exposes a failure mode that matters for robots.
+
+**Visual reinforcement fine-tuning** applies GRPO to visual grounding, with one substitution: **the verifier is intersection-over-union, not a maths grader.** The model reasons in a think block ("the vehicle has a door that can be opened; it is on the right side, near the top"), predicts a bounding box, and is rewarded on the overlap between its box and the ground truth:
+
+$$R_{\text{IoU}} = \begin{cases} f(\text{IoU}), & \text{if match} \\ 0, & \text{otherwise}\end{cases} \qquad\qquad R_{\text{cls}} = \begin{cases} 1, & \text{if } P_{\text{cate}} = GT_{\text{cate}} \\ 0, & \text{otherwise}\end{cases}$$ {#eq:visualrft}
+
+**In words.** Reward the model when the box it drew overlaps the right region, and when the category it named is the right one.
+
+**The symbols.** $\text{IoU}$ is intersection over union between predicted and ground-truth boxes, $f$ a function mapping it to a reward, $P_{\text{cate}}$ the predicted category and $GT_{\text{cate}}$ the true one.
+
+**Why this shape.** The general point is more important than either formula: **GRPO is completely agnostic to the verifier.** Anything with a verifiable reward can be used, and the computer-vision literature is full of geometric metrics that qualify. Better reasoning leads to better localization, which gets reinforced.
+
+### The failure mode
+
+Standard GRPO **rewards only the final answer, so the reasoning trace is invisible to the verifier.** In mathematics that is mostly acceptable, because it is hard to reach the right answer through wrong reasoning. **In vision it is not**, because hallucinated reasoning and correct answers are not mutually exclusive: a model can describe a completely fabricated scene in its think block and still predict the right bounding box, by luck or by pattern-matching the image directly. The reasoning is then decorative, and — worse — it is decorative in a way that looks like an explanation.
+
+The fix presented is **ARGOS**, from the lecturer's work at Microsoft: **aggregate multiple reward signals from the intermediate reasoning steps**, not just the final answer. An adaptive verifier selects among several foundation models per sample to score, simultaneously, the final answer's accuracy *and* the **spatiotemporal localization** of the objects the reasoning refers to — in single images and across video. So a claim in the reasoning about where something is, or when an event happened, is itself checked. The model can no longer hallucinate its way to a correct answer, because the intermediate steps are rewarded and verified as well (@fig:argos).
+
+![ARGOS: an adaptive verifier scores the intermediate reasoning — spatial points, temporal segments — alongside the final answer, so a hallucinated chain cannot be rewarded for arriving at the right conclusion. Credit: course slides, Lecture 10.](../slides_png/lecture10/slide_041.jpg){#fig:argos width=82%}
+
+## Back to robotics: two levels
+
+Applied to embodied benchmarks, test-time reasoning **helps substantially on high-level planning** — on the hardest tasks, **three to four times better than supervised chain-of-thought.** The reading the lecture gives is precise: a model that **learned** to reason through reinforcement learning generalizes to hard problems in a way a model that merely **imitated** reasoning traces does not.
+
+But high-level planning is not continuous control, and for continuous control you still cannot afford full reasoning chains at every timestep. So the same work uses the recipe from the first half of this chapter: **internalize the reasoning during training and drop it at inference.**
+
+Which gives the emerging picture, and it is the chapter's conclusion:
+
+> **A two-level architecture.** Reinforcement-learning-trained reasoning for high-level planning and task decomposition, and reasoning internalized in the style of the lite variants for fast reactive control.
+
+## The four takeaways
+
+The lecture ends on four points, and they are worth stating in its own terms.
+
+**Test-time compute is a new axis to scale on, and in many settings it is more efficient than scaling pre-training.** The Go and language results are the evidence; the sign flip on hard questions is the limit.
+
+**For continuous control you do not need to pay the cost of reasoning at inference.** Train with reasoning, internalize it, drop it at deployment. **The representations are what matter, not the tokens at test time.**
+
+**Reinforcement learning can make reasoning emerge** — not because you tell the model to reason, but because reasoning turns out to be the best available strategy for maximizing reward. That is a more powerful regime than supervised imitation of human thought.
+
+**For multimodal agents, verifying the reasoning trace is as important as verifying the answer.** Reward only outcomes and you get hallucinations.
+
+Bringing all four together into one policy that can reason, adapt and improve is, in the lecturer's words, very much an open problem.
+
+## Where this breaks
+
+**The three hypotheses are not fully resolved, and the resolution is domain-dependent.** Representation learning is substantially right for robot policies, since removing reasoning at test time costs little. Expressivity from meaningless tokens is well supported in language and **fails** on LIBERO-90. So the mechanism differs between domains, and the honest position is that we have a working recipe and a partial explanation.
+
+**Reasoning at inference remains unaffordable for reactive control.** The lite variants do not make reasoning fast; they remove it. The two-level architecture is an admission that no single model does both jobs, and the seam between the levels is exactly the kind of hard handoff Chapter 11 objects to in mobile manipulation.
+
+**GRPO needs a verifier, and most robot tasks do not have one.** Mathematics has a grader; grounding has intersection-over-union. "Did the robot tidy the kitchen acceptably" has neither, which is Chapter 2's sparse-reward problem returning in a new costume. ARGOS's response — use foundation models as verifiers — replaces a missing signal with a learned judgment, and inherits whatever that judgment gets wrong.
+
+**Reinforcement learning cannot bootstrap from a weak model.** If the base model never produces a correct rollout, there is nothing to reinforce. For robot policies, which are far smaller and far less capable than frontier language models, that threshold is a real concern and not a historical footnote.
+
+**Test-time compute amplifies rather than extends.** Search cannot find an answer the model's distribution does not contain, which is why the hard-question column goes negative. For a robot in a genuinely novel situation — the case that motivated this whole chapter — that is precisely the regime where the method is weakest.
+
+**Interpretability is not verification.** The editable reasoning chain is a real advance, and a readable chain that happens to be a post-hoc rationalization is exactly what the hallucination failure mode produces. A chain you can read is not the same as a chain you can trust, and ARGOS exists because of the difference.
+
+## What this connects to
+
+**Backwards.** This chapter modifies Chapter 9's architecture rather than replacing it — the model is a vision-language-action model with reasoning tokens inserted before the action tokens. @eq:grpo is Chapter 5's PPO with the critic deleted and @eq:grpoadv is Chapter 5's baseline computed within a group, so the derivation chain from REINFORCE runs unbroken into language-model training. The emergence of "wait" is the sharpest illustration in the book of Chapter 3's central argument, that imitation is bounded by what was demonstrated. And the inference-cost table is Chapter 2's control-frequency floor deciding a design question, as it has in every chapter since.
+
+**Forwards.** Chapter 11 takes the two-level architecture and asks the question this chapter leaves open: **when** should a robot reason? Its answer is a confidence-graded spectrum — reactive control when in distribution, adaptive test-time compute when uncertain, escalation to a human when neither works — which requires knowing when the policy is uncertain, and that turns out to be one of the hardest open problems in the field.
+
+## Further reading
+
+- **A. Chen, S. Belkhale, S. Mirchandani, O. Mees, D. Driess, K. Pertsch and S. Levine, "Training Strategies for Efficient Embodied Reasoning" (CoRL 2025).** The assigned paper and the source of this chapter's central practical result. Read it for the ablation that separates the three hypotheses, and for reasoning pre-training and reasoning dropout, which are the two recipes anyone deploying a reasoning policy will actually use.
+- **Z. Fu, T. Zhao, T. Yu et al., "In-Context Imitation Learning via Next-Token Prediction" (2024).** Assigned, and a different route to adaptation than reasoning: give the model demonstrations in its context at test time and have it generalize from them, with no retraining. Read it next to Chapter 11's rapid-adaptation section, which frames in-context learning as the practical answer to a policy failing mid-deployment.
+- **G. Wang, Y. Xie, Y. Jiang et al., "VOYAGER: An Open-Ended Embodied Agent with Large Language Models" (2023).** Assigned, and the most ambitious version of the high-level half of this chapter's two-level architecture: an agent that writes its own skills as code, keeps a growing library of them, and explores an open world indefinitely. Read it for what becomes possible when the low-level control problem is assumed away, which is precisely the assumption robotics cannot make.
