@@ -41,8 +41,8 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
       θ↔φ clash (θ = deployed model, φ = critic/encoder; Ch.4's DDPG flips) and the
       diffusion step index (k = denoising step, λ = flow time), plus ~20 further
       collisions found across the notes. §7 is the Phase-9 slide-deviation checklist.
-- [~] **Phase 5 — Chapters.** Ch.1 drafted, voice approved 2026-07-25. Chs 2–11 to
-      write from the notes, in that voice, following `notes/notation.md`.
+- [x] **Phase 5 — Chapters.** All 11 written. Full book builds clean: **224 pp**,
+      zero overfull boxes, banned-word grep clean, all cross-references resolved.
 - [ ] **Phase 6 — Front/back matter**
 - [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
 - [ ] **Phase 8 — PDF build**
@@ -62,7 +62,7 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 8 | World Models | ✅ 9,791 w | ✅ 45 | ✅ | ✅ 19 pp |
 | 9 | Generalist Robot Policies | ✅ 9,107 w | ✅ 55 | ✅ | ✅ 23 pp |
 | 10 | Embodied Reasoning & Test-time Scaling | ✅ 7,491 w | ✅ 44 | ✅ | ✅ 21 pp |
-| 11 | Frontier & Open Problems | ✅ 9,700 w | ✅ 43 | ✅ | ☐ |
+| 11 | Frontier & Open Problems | ✅ 9,700 w | ✅ 43 | ✅ | ✅ 24 pp |
 
 Total cleaned transcript: **91,170 words** across 10 h 25 min of recording.
 
@@ -114,6 +114,14 @@ Everything downstream (Phases 3–9) depends on this.
 `\SetKwInOut`-defined `\Input` / `\Output`. The latter aligns its colon in a fixed-width
 box that wraps in this 7in geometry, leaving a stray `:` on its own line. `\KwIn`/`\KwOut`
 print "Input:" / "Output:" inline and render correctly.
+
+**Glyph support.** Libertinus Serif *and* Libertinus Math lack ✓ ✗ ✅ ❌ (U+2713/2717/2705/274C)
+and `$\checkmark$` maps to a missing glyph too. Comparison tables use **+** / **--** instead.
+Emoji in a table will silently render as nothing — grep for them before believing a build.
+
+**Cross-reference labels are global**, not per chapter: `fig:venn` in Ch.1 and Ch.11 aborted
+the build with "Duplicate label". Check with
+`grep -oh '#\(fig\|eq\|tbl\):[a-z-]*' chapters/*.md | sort | uniq -d`.
 
 **Chapter length.** Chapters are landing at **22–26 pages**, below the brief's 25–40
 target. This is deliberate: each chapter already covers everything in its `notes/` file,

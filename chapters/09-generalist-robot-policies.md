@@ -202,11 +202,11 @@ This is the part of the section that is least expected and most useful. Two stra
 | | Sequential reads with a shuffle buffer | True random reads |
 |---|---|---|
 | Used by | Octo, OpenVLA | index-based samplers |
-| I/O pattern | sequential reads ✅ | random seeks, seek-bound ❌ |
-| Throughput | very high ✅ | lower, a bottleneck at scale ❌ |
-| Randomness | approximate ❌ | exact, no buffer bias ✅ |
-| Memory | a large buffer in RAM ❌ | index only, lightweight ✅ |
-| Observation history | free — adjacent on disk ✅ | extra seeks, cost scales with window ❌ |
+| I/O pattern | sequential reads **+** | random seeks, seek-bound **--** |
+| Throughput | very high **+** | lower, a bottleneck at scale **--** |
+| Randomness | approximate **--** | exact, no buffer bias **+** |
+| Memory | a large buffer in RAM **--** | index only, lightweight **+** |
+| Observation history | free — adjacent on disk **+** | extra seeks, cost scales with window **--** |
 
 The left column streams from shards into a shuffle buffer and samples batches from it. The essential property: **the degree of randomness is proportional to the buffer size**, so a buffer that is too small produces correlated batches. The right column keeps a flat index over the dataset and performs random seeks, which gives exact unbiased sampling and makes I/O speed the binding constraint, since the dataset does not fit in memory.
 

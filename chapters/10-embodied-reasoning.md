@@ -153,6 +153,8 @@ The raw network is below superhuman; adding search at test time takes the same n
 
 The consequence printed on the slide: improving the raw policy from 3000 to 5200 Elo without search **would require scaling the model by around 100,000 times.**
 
+![AlphaGo's Elo ratings with and without test-time search. The raw policy network sits below superhuman play; adding tree search at test time takes the same network far past it. Credit: course slides, Lecture 10, adapted there from slides by Noam Brown.](../slides_png/lecture10/slide_026.jpg){#fig:alphago width=80%}
+
 > **Editor's note.** The lecturer flags that these numbers are probably inflated, because AlphaGo was trained by playing against earlier checkpoints of itself. It is also worth noting that applying the 120-Elo rule literally to a 2,200-point gap gives $2^{2200/120} \approx 3\times10^5$ rather than $10^5$, so the slide's figure should be read as an order of magnitude rather than a calculation. The conclusion does not depend on the factor: it is very large either way.
 
 The remark the lecture adds is the strongest form of the argument, and it is empirical rather than theoretical: as far as he is aware, **no model has ever surpassed human performance at Go without test-time search.** Every Go agent uses it.
@@ -225,11 +227,11 @@ The slide's own example makes the arithmetic concrete. The question is *"a train
 
 | Rollout | Reasoning | Answer | $r_i$ |
 |---|---|---|---|
-| 1 | $60 \div (90/60) = 60 \div 1.5$ | 40 mph ✓ | 1 |
-| 2 | $90\ \text{min} = 1.5\ \text{h},\ v = 60/1.5$ | 40 mph ✓ | 1 |
-| 3 | $\text{speed} = 60/1.5 = 40$ | 40 mph ✓ | 1 |
-| 4 | $60 \div 90 \approx 0.67 \times 60$ | 45 mph ✗ | 0 |
-| 5 | $\text{speed} = 60/90 = 0.67$ | 0.67 mph ✗ | 0 |
+| 1 | $60 \div (90/60) = 60 \div 1.5$ | 40 mph, correct | 1 |
+| 2 | $90\ \text{min} = 1.5\ \text{h},\ v = 60/1.5$ | 40 mph, correct | 1 |
+| 3 | $\text{speed} = 60/1.5 = 40$ | 40 mph, correct | 1 |
+| 4 | $60 \div 90 \approx 0.67 \times 60$ | 45 mph, wrong | 0 |
+| 5 | $\text{speed} = 60/90 = 0.67$ | 0.67 mph, wrong | 0 |
 
 Three correct out of five, so
 
