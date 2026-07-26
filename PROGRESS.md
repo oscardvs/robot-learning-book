@@ -9,7 +9,9 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: ALL PHASES COMPLETE, including Phase 7. `build/robot-learning.pdf` — 324 pages.**
+**Current status: ALL PHASES COMPLETE, including Phase 7. `build/robot-learning.pdf` — 324 pages.
+Published as a book at <https://robot-learning-book.vercel.app> and as source at
+<https://github.com/oscardvs/robot-learning-book>.**
 Phase 7 added two chapters from the guest track (Chs 12 and 13) and pushed the book past the
 brief's 300-page target on real course material, not padding.
 
@@ -336,14 +338,50 @@ correctly. Phase 8 is de-risked.
 `notes/reading_list.md` — all **30** assigned papers (3 × weeks 2–11) and the
 guest roster, transcribed from the course page. Note the brief estimated ~33.
 
+## The website (`web/`)
+
+Live at <https://robot-learning-book.vercel.app>, Next.js + Fumadocs on Vercel. Deploy with
+`node_modules/.bin/vercel --prod --yes` from `web/`. `npm run sync` regenerates everything the
+site serves from `chapters/`, `slides_png/`, `notes/` and `transcripts/`; its output is
+committed so Vercel can build from `web/` alone.
+
+**The site was serving a two-chapter build until 2026-07-26.** The deploy that would have
+published the finished book failed and nobody noticed, because a failed deploy leaves the
+previous one aliased and the URL keeps working. The cause was one `|` inside an
+`<InlineMath tex={"D_{KL}(p|q)"} />` in a Markdown table, which terminated the JS string and
+took the MDX parse down. It is escaped as `|` now. **Check `vercel ls` after deploying,
+not just that the URL loads.**
+
+The slide index is keyed by *deck* (`lecture04`, `guest02_xu`), not by lecture number, which
+is what carries the guest talks through figure resolution, image processing and the archive
+pages. Guest figures are labelled with the speaker's surname, since "L12" would name a
+lecture that does not exist. Slide routes use the deck key so they survive renumbering.
+
+Numbers on the site are measured from this repo at build time and split three ways —
+lecture, guest, and total — so neither track quietly absorbs the other. Do not hand-edit
+`src/data/status.json`.
+
+**Chapters may embed live demos** — `<ValueIteration />`, `<CliffWalk />`, `<Denoiser />`,
+`<Attention />`, `<PolicyModes />`, `<Mermaid />`. This is safe for print: pandoc drops raw
+HTML when the target is LaTeX, so the tags never reach the PDF. Verified — the page count and
+word count are identical with and without them. Register any new one in
+`web/src/components/mdx.tsx` or the MDX build fails on an undefined component.
+
 ## Layout
 
 ```
 transcripts/  NN_slug.txt (cleaned) + NN_*.en-orig.vtt (raw)
+              guests/gNN_slug.txt + .vtt
 slides/       lectureN_*.pdf (encrypted) -> lectureN.txt once unlocked
-slides_png/   lectureN/page-NN.jpg rasterised slides
-notes/        lectureNN.md, notation.md, course_page.txt
-chapters/     NN-slug.md
+slides_png/   lectureNN/slide_NNN.jpg, guestNN_slug/slide_NNN.jpg + manifest.json
+notes/        lectureNN.md, guest_lectures.md, notation.md, course_page.txt
+chapters/     NN-slug.md  (00 preface, 01-11 lectures, 12-13 guests, 14-17 back matter)
 build/        robot-learning.pdf, course_page.html
-scripts/      clean_vtt.py
+scripts/      clean_vtt.py, fetch_guests.sh, extract_slides.py, build.sh, make_index.py
+video/        vNN.mp4, guests/gNN.mp4  (gitignored — 1.3 GB)
+web/          the site; see above
 ```
+
+Git remote: <https://github.com/oscardvs/robot-learning-book> (public). `video/` is ignored,
+so a fresh clone re-downloads recordings with `scripts/fetch_videos.sh` and
+`scripts/fetch_guests.sh` if slides ever need re-extracting.
