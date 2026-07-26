@@ -78,7 +78,9 @@ Training is **teacher forcing**: feed the ground-truth prefix rather than the mo
 
 **In words.** At every position, penalize the model for the probability it failed to assign to the token that actually came next.
 
-**Why this shape.** With the causal mask in place and the true prefix supplied, all <InlineMath tex={"T"} /> predictions can be computed and scored in **one forward pass**, because position <InlineMath tex={"t"} />'s prediction depends only on inputs the model already has. An RNN needs <InlineMath tex={"T"} /> sequential passes for the same thing. That is the parallelism advantage that made scale possible, and it is worth noting that it is a consequence of the mask rather than of attention per se (<XRef kind="fig" anchor="fig-transformer" number="7.3" />).
+**The symbols.** <InlineMath tex={"x_t"} /> is the true token at position <InlineMath tex={"t"} /> and <InlineMath tex={"x_{1:t-1}"} /> the true prefix before it — both taken from the training sequence, never from the model's own output, which is what "teacher forcing" names. <InlineMath tex={"T"} /> is the sequence length, so the loss is the average negative log-likelihood per position. <InlineMath tex={"p_\\theta"} /> is the model's predicted distribution over the vocabulary.
+
+**Why this shape.** With the causal mask in place and the true prefix supplied, all <InlineMath tex={"T"} /> predictions can be computed and scored in **one forward pass**, because position <InlineMath tex={"t"} />'s prediction depends only on inputs the model already has. An RNN needs <InlineMath tex={"T"} /> sequential passes for the same thing. That is the parallelism advantage that made scale possible, and it is a consequence of the mask rather than of attention per se (<XRef kind="fig" anchor="fig-transformer" number="7.3" />).
 
 <Figure id="fig-transformer" number="7.3" src="/slides/lecture07/slide_012.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=imSTfMJjp7M&t=651s" timecode="10:51" lecture="7">
   The encoder-decoder transformer: bidirectional self-attention in the encoder, a causal mask in the decoder, and cross-attention between them. Credit: course slides, Lecture 7.

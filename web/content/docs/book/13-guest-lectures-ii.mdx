@@ -1,0 +1,686 @@
+---
+title: 'Guest Lectures II: Backbones, Scale, and the Frontier'
+description: 'Chapter 12 covered the guest talks from weeks 2 through 6, which all circled the question of where more robot data is going to come from.'
+chapter: 13
+kind: chapter
+---
+Chapter 12 covered the guest talks from weeks 2 through 6, which all circled the question of where
+more robot data is going to come from. The five in this chapter, weeks 7 through 11, take the data
+as given and ask what to build with it. The sourcing caveats set out at the start of Chapter 12
+apply here unchanged: auto-generated captions checked line by line against reconstructed slides,
+a speaker webcam occluding the top-right corner of every frame, and no recording at all for week
+12\.
+
+The five arrange themselves into an argument that gets progressively less settled. Ted Xiao gives
+the ten-year history and shows how the field arrived at the current recipe. Scott Reed asks which
+of three possible backbones that recipe should be built on, and declines to pick the incumbent.
+Quan Vuong reports what the incumbent can actually do now, and one result that changes how you
+should think about data quality. Archit Sharma comes from outside robotics with the axis that has
+driven language models for two years and asks whether robotics can have it. And Lucas Beyer, in
+the least robotic talk of the course, explains where the vision half of every vision-language-action
+model came from — and closes with the most useful piece of research advice in either chapter.
+
+## Ted Xiao: three eras, from arm farms to Gemini
+
+Xiao spent most of the last decade at Google Brain and then Google DeepMind, and offers the history
+as three eras. He is explicit that his examples skew toward where he worked and that plenty was
+happening elsewhere, which is the right disclaimer and does not much weaken the arc.
+
+**The era of existence proofs, roughly 2015 to 2021.** The founding observation was an asymmetry.
+DQN and AlphaGo had shown that learning worked for sequential decision-making, but only in games.
+Meanwhile the hardware for useful physical work already existed — Xiao points at the same
+teleoperated Stanford demo of tidying a living room that Chapter 1 uses — so the bottleneck was
+never the mechanism, it was the intelligence. If breakthroughs were happening in the digital domain
+and the bodies were nearly ready, the intersection was worth attacking.
+
+Google Brain's answer was to buy a dozen expensive robots when an academic lab had one, put them in
+a room, and let them collect experience. These are the **arm farms**: banks of KUKAs grasping
+objects out of bins under autonomous exploration policies. The work that came out of them is the
+work Chapter 4 already covers from the other side. **QT-Opt** applied Q-learning at a scale that
+forced every hard question at once — continuous high-dimensional action spaces, pixel observations,
+no tabular anything — across more than **500,000 real grasps**. **RL-CycleGAN** is an early
+real-to-sim evaluation protocol from the GAN era: build a digital twin, style-transfer its images
+into something realistic, and evaluate there. They also had to make execution and inference run
+concurrently, because a quasi-static formulation where the robot pauses to think is not what a
+dynamic world affords.
+
+Then the bet shifted toward imitation. **BC-Zero** collected a large teleoperated dataset on the
+Everyday Robots one-arm mobile manipulator and trained a language-conditioned behavior-cloning
+policy. **MT-Opt** scaled QT-Opt to many tasks. And **learning from play** — which Chapter 3 treats
+— tried a different tack on diversity: rather than collecting task-specific rollouts, let people
+simply play in an environment for a long time, and extract skills from the unstructured,
+un-goal-directed result.
+
+The era ends with a decision to stop incrementing. A new robot arrived at the start of COVID, and
+rather than scale the existing effort they started over: a large contracting team, a much bigger
+fleet, everyone collecting demonstrations in the same environments, and a target not of ten or
+twenty tasks but **hundreds or thousands**, sustained for about eighteen months. To his knowledge
+it remains one of the largest expert-demonstration collection projects ever run.
+
+**The era of foundation models, roughly 2021 to 2024.** While that dataset was being built, the
+language modelling world went through GPT-3, InstructGPT, PaLM, LaMDA and ChatGPT. Xiao decomposes
+what robotics took from it into four moves: treat everything as tokens; reuse pre-trained
+representations, or whole pre-trained models; use foundation models as components inside a larger
+system; and shift from expensive online on-policy collection to **offline** learning on large
+behavior-cloning datasets, where it stops mattering that the demonstration was not produced by your
+own policy.
+
+**RT-1** is those moves assembled: a strong vision encoder with FiLM conditioning, a token learner,
+a transformer backbone, RGB and language in, **discretized action tokens** out, decoder-only.
+**35 million parameters running at 3 Hz**, hundreds of tasks, success between roughly 60% and 80%.
+Not perfect, and Xiao presents it as an existence proof rather than a product.
+
+Then three different ways to use a foundation model, which are worth separating because the field
+often runs them together.
+
+_As a planner._ An LLM proposes plan steps and reports its log-probabilities; a value function
+trained on top of RT-1 reports how feasible each candidate instruction is from the current state;
+multiply the two and you get plans grounded in what the robot can actually do. The language model
+likes "pick up the apple"; the policy knows it must go find one first.
+
+_As a data-augmentation engine._ RT-1's dataset was 87,000 trajectories gathered over eighteen
+months — tiny by present standards — and, more to the point, poor in _instruction_ diversity. A
+VLM relabels episodes with other task descriptions they could plausibly satisfy, enriching the
+language distribution for free. Xiao notes this is now standard practice for training image and
+video models: synthetic captioning that arbitrages what the VLM knows against what your dataset
+lacks.
+
+_As the backbone itself._ **RT-2** treats action prediction as visual question answering — emit
+language tokens that decode into actions — on PaLI-X and PaLM-E, co-fine-tuned roughly **50/50**
+with internet data. What transferred was the part nobody had put in the robot data: new objects,
+common-sense reasoning, even reading text in the scene.
+
+**Open X-Embodiment** closes the era, pooling and cleaning data from more than thirty labs
+collected for unrelated projects on unrelated robots, to test whether motion knowledge transfers
+across morphologies at all.
+
+**The era of scale, 2024 to now.** Gemini displaces PaLM and PaLI as the backbone, and the bimanual
+ALOHA puppeteering rig raises both throughput and quality of data. **Gemini Robotics** combines
+Gemini 2.0's world knowledge with large-scale robot action, showing dexterity, post-training onto
+new embodiments — a Unitree humanoid, a bimanual Franka — and compositional generalization at test
+time. **Gemini Robotics 1.5** adds two things Xiao separates carefully: **thinking**, meaning
+language-based chain-of-thought reasoning before acting, and **motion transfer**, meaning all
+embodiments are trained together at pre-training time in a shared action space, so one network
+drives all of them with no per-embodiment fine-tuning.
+
+Beyond Alphabet he points to π0.6's long-horizon espresso making, and to two structural problems.
+**Evaluation has become a bottleneck in its own right**: thousands to tens of thousands of real
+trials are needed for a statistically meaningful A/B test, which is why simulation evaluation and
+decentralized efforts like **RoboArena** exist. And **data scaling has split into competing,
+opinionated bets** that he lays out without adjudicating: co-designed glove hardware shipped
+globally, in the UMI lineage (Sunday, Generalist); skipping the glove and capturing pure egocentric
+hand data with a GoPro, an iPhone or glasses; and in-the-wild deployment data.
+
+His closing note is the one worth carrying forward. Everything he discussed is manipulation.
+Locomotion, balance and whole-body control advanced in the same decade by an entirely different
+route — sim-to-real reinforcement learning — and produced robots that dance, do kung fu and recover
+from shoves. "That's not happening via imitation learning." Uniting the two paradigms is open, and
+nobody in these ten talks claims to know how.
+
+<EditorNote>
+  Xiao's summary of the decade is worth quoting because it is the most
+  defensible thing anyone in the guest track says about where the field stands: "we've made more
+  progress than many of us would ever have thought would be possible in our lifetimes, but now
+  there's more open questions and uncertainties and open frontiers than ever."
+</EditorNote>
+
+In the Q\&A he is asked whether high-quality teleoperation data will survive. His answer is a
+timeline argument rather than a technical one. Teleop has been the gold standard because data
+quality is so hard to quantify that maximizing it in-house was the only safe bet. That burden is
+now being externalized to distributions unlike the deployment target, and he expects the field to
+trend toward an NVIDIA-style data pyramid — internet, simulation and non-robot video at the base, a
+thin layer of fine-tuning data on top. But: "if it takes 10 years, that means that in the meantime
+it's probably better to prioritize really high quality teleop data." The research question is
+which, and the answer depends on a schedule nobody controls.
+
+## Scott Reed: which backbone, and what a backbone is for
+
+Reed led the Gato paper at DeepMind and now works on the GEAR team at NVIDIA. His definition is
+worth adopting because it is sharper than the usual one: the **backbone** is the architecture that
+encodes sensors and language into a shared representation for action prediction, and what makes the
+choice consequential is not inference-time behavior but **how the policy absorbs knowledge during
+pre-training and carries it to downstream tasks.** Three candidates: train from scratch, start from
+a vision-language model, or start from a video model.
+
+### Vision-language-action models
+
+The incumbent. RT-2, OpenVLA, the π series, NVIDIA's GR00T models, TRI's Large Behavior Model,
+Gemini. The virtues are real: one modality for everything, good cross-embodiment support, direct
+fine-tuning of a VLM into control tokens, and internet-scale grounding.
+
+Reed walks the architectures from simple to elaborate. **OpenVLA** is the clean case — pre-trained
+vision encoders (DINO, CLIP, or both), a pre-trained language model, actions discretized by binning
+and de-tokenized back to continuous values at execution, with much of it frozen initially. The
+**π** models are more involved: discrete _and_ continuous action prediction, a FAST tokenizer, and
+separate pathways so the VLM can be co-trained on language tasks such as subtask prediction
+alongside actions.
+
+The reason for that separation is a failure mode he explains carefully, and it is the most useful
+engineering detail in the talk. If you naively co-train discrete language-token prediction while
+back-propagating flow-matching or diffusion gradients through the VLM, **you destroy the VLM's
+weights** and lose properties like instruction following — catastrophic forgetting, arriving
+through the gradient path rather than the data. Keeping everything discrete avoids it and opens up
+pre-training options. But a separate diffusion or flow **action expert** still earns its place,
+and for a reason that is not about accuracy: decoding discrete action tokens can produce **decoding
+errors**, and an undefined decoded action that falls through to a default position target could
+fling an arm across the room. The action expert never has decoding errors. Safety is the argument.
+
+He singles out the **TRI Large Behavior Model** paper as the one everyone should read, and not for
+its architecture. It tests rigorously whether multi-task VLA-style pre-training actually improves
+downstream performance, data efficiency and top-end performance, using **double-blind evaluation** —
+paired policies, evaluators who do not know which is which, head-to-head on the same robot at the
+same time — with real statistical analysis. The findings confirm what the field believed. The point
+is that somebody finally checked, against the difficulty of real-robot evaluation that Chapter 9
+and Gupta's talk both flag.
+
+The weaknesses he lists are unusually frank for a survey of one's own field. Prediction and
+reasoning happen in the _action_ space, which may be the wrong place to reason about physics. The
+action representation is bolted on after pre-training. Fine-tuning risks catastrophic forgetting.
+And two structural problems: **data islands**, where throwing every embodiment into one mixture and
+calling it cross-embodiment may just produce disjoint regions with little transfer between them,
+given how different the forms and correlational structures are; and the fact that evidence for
+zero-shot out-of-distribution or new-embodiment generalization is, in his stated opinion, "limited
+or non-existent" for contemporary VLAs.
+
+### World action models
+
+<Figure id="fig-wams" number="13.1" src="/slides/guest07_reed/slide_004.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=fqkp_wkov6M&t=798s" timecode="13:18" source="Reed">
+  The world-action-model paradigm as Reed frames it: current VLAs memorize actions rather than reasoning about physics, so predict world state in pixels before acting, and treat pixel space as the universal action space. Credit: reconstructed from the guest-lecture recording, Scott Reed, week 8.
+</Figure>
+
+The challenger, and the acronym is **WAM** (<XRef kind="fig" anchor="fig-wams" number="13.1" />). The examples are **DreamZero** from NVIDIA
+GEAR, which the slide credits with first place on DROID RoboArena _without any robot-data
+pre-training_; **Cosmos Policy**, also GEAR; and ByteDance's **GR-1** and **GR-2**, autoregressive
+interleaving models that got there earlier than most.
+
+The paradigm shift the slide states in three lines: current VLAs memorize actions rather than
+reasoning about physics; so predict world state in pixels before or jointly with acting; and treat
+pixel space as the universal action space. Reed adds the argument he finds most convincing, which
+is about pre-training rather than inference — predicting future pixels lets the model **absorb far
+more from the same data** than predicting actions alone. "We can just squeeze a lot more juice out
+of the data that way."
+
+Architecturally, DreamZero encodes frames to latents with a VAE, concatenates action embeddings,
+conditions on language, and runs a **block-causal DiT** so that key-value caching makes inference
+tractable, with joint flow matching over both the action chunk and the future frame chunk. A
+"Flash" variant takes one or two steps without fully denoising the future vision chunk, focusing
+compute on the action chunk, and performs just as well — which is itself informative about how much
+of the video prediction is needed at test time. Across the family there are three ways to get an
+action out: fully sample a rollout and recover actions with an inverse dynamics model; plan; or use
+video prediction purely as a pre-training objective and never diffuse observations at inference at
+all. Reed draws the analogy to reasoning models explicitly: much of the benefit comes from having
+done it during pre-training, because the representations are better, even when you skip it later.
+
+**Cosmos Policy** additionally diffuses future proprioception and value, which he thinks gives it a
+stronger claim to being a world model proper, and its design tiles proprioception, action and value
+embeddings spatially into the image embedding space so that from the diffusion model's point of
+view everything is simply vision.
+
+Two empirical findings are the ones to keep. **Scale helps**: sample quality and success rate both
+rose substantially from the 2B model to the 14B. And the failure analysis: **most failures stem
+from video-generation errors rather than action prediction** — whatever the video predicted is what
+the policy did. That is an unusually actionable result, because it says improvements to the video
+backbone translate directly into policy performance, and the data needed to make them does not have
+to be robot data. An audience member pushes on exactly the right point — perhaps the action
+conditioning is what is broken, not the video — and Reed concedes the decomposition matters, says
+they did correlate task failure with low-quality video, and expects the correlation to tighten as
+video models improve, while allowing that very fine-grained manipulation may genuinely not be
+recoverable from the video signal.
+
+Weaknesses: expensive to sample; modelling every pixel is probably overkill, since the latent space
+was trained to reconstruct aesthetically convincing video rather than to control anything; a
+domain-specific tokenizer can be far more compressed and still generalize; and context length is
+currently limited.
+
+### From scratch, and why it is interesting again
+
+Historically this meant a bespoke network per task, then one big network on all the data — **Gato**,
+which serialized text, images, question answering, Atari and robotics into one flat token sequence
+for one transformer, and **RT-1**, **RT-X** and **Octo**. Data islands again, and a ceiling set by
+how much high-quality data a consortium or a determined individual can assemble.
+
+What makes it live again is that the data changed. **UMI-style large-scale human pre-training** —
+Generalist, Sunday — reaches a scale Reed cites as around **500,000 hours** of sensorized human
+data. And the camera-only route: **Ego4D** at about **20,000 hours** of in-the-wild recording, plus
+roughly **50 hours** of sensorized data (Vive trackers on the wrist, Manus gloves on the fingers)
+and a small amount of robot data. Both show scaling-law behavior in _human_ data: validation loss
+falls, success rate rises monotonically. So a foundation model need not be chained to a VLM or a
+video model at all, and the architecture may not matter much.
+
+His conclusion is a bet on the combination — world action models for their generalization
+properties, plus scaling human data — and he says so with appropriate hedging about being tongue in
+cheek.
+
+Two Q\&A answers are worth keeping. On whether world models make simulators redundant: not soon.
+Neural simulation may shine for contact-rich manipulation and deformables, but hand-crafted
+simulators are so efficient and world models so expensive to run that for whole-body control on
+humanoids and quadrupeds he doubts simulators are going anywhere. On tactile and force sensing, he
+makes a LeCun-style argument: a video predictor good enough to drive down its loss must latently
+represent forces, because there are correlates of them in the pixels. So we may need _some_
+sensorized data, but perhaps orders of magnitude less than the video, and mainly in order to
+**elicit** features the model already has rather than to teach them.
+
+## Quan Vuong: what a single checkpoint can do
+
+Vuong co-founded Physical Intelligence and previously started and co-led RT-X and Open X-Embodiment
+at Google DeepMind. He kept the talk deliberately informal, and the claim is narrower and more
+checkable than the title suggests: the innovation in **π0.7** is **one model that performs many
+tasks at a high level**, where previously high performance on a task meant post-training a
+mediocre general model onto it. A single checkpoint matters because it is the thing that scales —
+no question at deployment of which checkpoint or which hyperparameters go with which task.
+
+He frames scaling as two axes, data and model, and then immediately complicates it. Train on all
+your robot data and you will usually get something worse than a heavily-tuned specialist. **More
+data does not equal a better model**, and most of the talk is about why not.
+
+The architecture is largely inherited from π0.5 and π0.6: a language model and a pre-trained vision
+encoder, with an action expert grafted on — his phrase is that it teaches the model "to speak the
+robot's language". The inputs are the interesting part. A prompt ("clean the kitchen"), optionally
+a **subtask**, and **metadata describing the speed and quality of the training episode**. New in
+π0.7 is **goal conditioning**, which he credits for much of the improved generalization. A separate
+high-level component — a human, a high-level policy, or a world model — supplies plans but cannot
+itself produce low-level actions.
+
+The task suite is chosen to stress different axes, and all of it runs from a single pre-training
+checkpoint: laundry folding, for an effectively infinite state space; driving a tiny screw into a
+robot arm, for precision; building a box, for two-handed coordination; and taking out the trash,
+for horizon.
+
+Against an **RL specialist** and an **SFT specialist** tuned per task, π0.7 matches or beats both.
+The explanation he gives for beating them is the sentence from this talk most worth remembering:
+
+<Aside>
+  In large-scale robotic evaluation, really every evaluation is a generalization evaluation.
+</Aside>
+
+You fix the scene as carefully as you can and something always changes anyway, and the generalist
+copes better with whatever that is.
+
+**The data-quality result.** The plot has the fraction of training data on the <InlineMath tex={"x"} />-axis, ordered so
+that moving right adds progressively _lower-quality_ data. Without metadata conditioning, going
+from 80% to 100% — adding the worst data — makes performance **worse**. With the speed-and-quality
+metadata, the same addition produces a **large jump**. The lesson generalizes past π0.7: data that
+hurts a model when presented flat can help it when the model is told what it is looking at. This is
+a different claim from "filter your data", and a more useful one.
+
+<Aside>
+  `[UNCLEAR: guest lecture 8, ~10:30–12:00 — the data-quality figure could not be recovered. Most
+  of Vuong's first fifteen minutes plays full-screen video, and the slide reconstruction found no
+  stable frame across this passage, so the percentages above are from the transcript alone and the
+  axis labels and absolute values are not established.]`
+</Aside>
+
+**Cross-environment transfer** is the result he says surprised them. A checkpoint trained on
+shirt-folding data from one bimanual station runs shirt folding on a station of two UR5s, with **no
+shirt-folding data from that station at all** — an unseen combination of task and robot, on a task
+that normally takes hundreds of hours because it is precise and the observation space is enormous.
+Separately, a human coaching the robot in language gets tasks done in unseen environments on unseen
+objects; his example involves air-frying a sweet potato, where neither the food nor the air fryer
+appears in the training data.
+
+On externalization: π0 and π0.5 are open source, and the released checkpoints are **the same ones
+Physical Intelligence researchers use internally** — a question he says surprises people. The
+deployment examples are the most concrete evidence in either chapter that any of this works outside
+a lab. Weave Robotics folding laundry on real customer orders in a laundromat in the Mission in San
+Francisco, on clothing the model has never seen, recovering from tangled trouser legs. And a
+packaging robot loading deformable items into soft pouches through a narrow gap — a task he points
+out is not easily automated with a classical stack, because the pouch is deformable and errors
+happen. The detail he likes is that the video starts in daylight and ends at night: a full-day
+workload, mostly autonomous. The economic frame he offers is **remote intervention rate** — can you
+reach autonomy high enough to break even, and therefore to scale? For some partner tasks, he says,
+they are essentially there.
+
+Three answers from the Q\&A. On **multi-finger hands**: for scale you need hardware that is cheap,
+reliable and easy to maintain, and today a multi-finger hand gives you **two of the three** — one
+costs as much as six or seven two-finger systems, or is cheap and breaks constantly. Across
+thousands of realistic tasks at PI they have rarely needed more than two fingers, so hands are a
+distraction _if_ the question you are asking is about intelligence. On **home robots**: the dream is
+real and he wants to build one, but a home robot is close to physical-AI-complete, consumer
+robotics is economically brutal, human preferences vary enormously, and the binding constraint is
+model capability. They show home tasks anyway because they are an excellent research testbed _and_
+legible — a layperson cannot tell that a precise assembly task is hard, but everyone understands
+laundry. On **model size**: currently single-digit billions, and he expects low, then mid, then high
+double-digit billions, with more emergent capability at each step.
+
+## Archit Sharma: the other axis
+
+Sharma is a research scientist at Google DeepMind, co-created **DPO**, and led **Gemini Deep
+Think**. His talk is the only one in the guest track that is not about robots, and it is included
+because the axis it describes is the one Chapter 10 is about.
+
+The history in one line: until 2024, gains in language models came from scaling **pre-training**
+compute — next-token prediction, more data, larger models, a remarkably scalable objective. Late
+2024 and early 2025 brought **reasoning models**, which spend time thinking, working through
+context and tool calls before answering. The new axis is **test-time compute**, and performance
+rises with it _predictably_, which is what makes it a scaling axis rather than a trick.
+
+The evidence is from the Gemini 2.5 report. **AIME 2025** — a high-school competition with
+final-answer problems that language models were terrible at before 2024 — improves by over **twenty
+percentage points** as thinking time grows. **LiveCodeBench** and **GPQA Diamond** move the same
+way. And large fractions of the Gemini 1.5 → 2.5 Pro improvements on maths, coding and science are
+attributable to inference-time scaling rather than a bigger pre-train.
+
+His definition is worth having precisely: an ordinary network spends a **fixed** amount of forward
+computation per input, whereas a test-time-compute system runs some kind of **search** — in output
+space or elsewhere — and can spend far more than a single forward pass.
+
+**AlphaGo is the canonical instance.** The raw parametric model with one forward pass reaches about
+**3,000 Elo**. Add test-time search — **capped at five seconds** — and the _same model_ reaches
+about **5,000 Elo**. He glosses the scale: 100 Elo points is roughly a 64% win rate, a 2,000-point
+gap means the weaker player essentially never wins, and by 3,500 you are already superhuman. The
+caveat he states himself is that this is hand-crafted for a game with a simulator.
+
+<EditorNote>
+  Chapter 10 discusses AlphaGo's test-time search using the main lecture's own
+  framing — a 120-Elo rule of thumb and a slide claiming a 100,000× factor — and carries an
+  editor's note on the arithmetic. Sharma's numbers are a _different_ presentation of the same
+  system: 3,000 to 5,000 Elo under a five-second search cap. They are reported here as his and are
+  not merged with the main lecture's figures, which were read from a different slide.
+</EditorNote>
+
+**Chain of thought** is the bridge to language models, demonstrated with the canonical
+Roger-and-the-tennis-balls prompt: forced to answer directly, the model fails; encouraged to work
+step by step, it succeeds. **GRPO** and reinforcement learning with verifiable rewards then made
+the behavior emerge rather than be prompted: warm-start a model to reason, run RL on domains where
+the answer can be checked — maths with known answers, code with unit tests — and the average
+response length grows _on its own_ while training accuracy climbs from roughly 15–25% to 75–80%.
+The model teaches itself to spend more compute. Chapter 10 develops GRPO's objective in full; what
+Sharma adds is the observation that the response-length curve is the thing to watch.
+
+The other axes for spending test-time compute, which he lists without ranking: reasoning several
+times in parallel, iterative self-refinement over previous answers, tools such as web search and
+code execution, sandboxes, and self-verification. These produce both general reasoning systems
+(Deep Think, ChatGPT Pro) and specific harnesses (Codex, Gemini Deep Research, Claude Code).
+
+**Deep Think** is where the numbers get striking. On IMO-level proof problems, with inference
+compute on a **log scale** and proof correctness graded by an expert human, accuracy rises from
+about **40% to about 90%**, with the model working for hours. It was the first system to reach
+**gold-medal standard at the International Mathematical Olympiad**, a milestone not expected in
+2025\. On Codeforces the latest version reached an Elo around **3,445**, with only about **seven
+humans in the world** rated higher. And the benefit is not confined to verifiable domains: asked to
+produce an HTML voxel scene of cherry blossoms and pagodas, the jump from 2.5 Flash to 2.5 Pro
+improves it, but _scaling inference compute_ improves it considerably further, with visibly more
+detail in the trees and the pagoda.
+
+The open problems he names are the useful part of the talk for a robotics audience.
+
+**Efficiency.** Inference scaling gives predictable gains; using tokens and tools _well_ is wide
+open.
+
+**Depth.** A reframing he says is not immediately obvious: much of pre-training's success came from
+increasing model depth, and inference-time scaling also increases the **depth of computation**,
+since more tokens means more forward passes. So the real question is what the most effective way to
+add depth is, and tokens are only one answer.
+
+**Long-horizon agents.** As agents work for days or weeks, how do you keep them making progress,
+measure that they are, and keep it safe? He argues the demand is obviously real — a million dollars
+of compute is trivially justified against the Riemann hypothesis or a drug-discovery problem — and
+that companies which once scaled headcount may instead scale inference compute.
+
+**Knowledge discovery.** Models solve well-defined problems superbly and struggle to work out
+_which problems matter_. He cites the proposed **Einstein test**: rediscover general relativity
+from data available only up to the early twentieth century.
+
+**Improving with experience.** People get better at their jobs; agents redo the same expensive
+reasoning every time. Memories and skills are early and still largely manual versions of a fix, and
+he thinks there is a great deal of headroom.
+
+On scaling RLVR to harder domains, his answer is three constraints, and it is the most practical
+thing said about RL infrastructure in the course. The infrastructure itself is "incredibly hard" —
+models must train stably, and **training/inference mismatch can compound over training into serious
+divergence**. Verifiable problems **run out**: you start with easy ones, and against a strong
+pre-trained model easy problems stop carrying signal quickly. And verification itself gets harder
+where it matters most — maths **proofs** are not easy to verify, and depending on how you do it,
+the reward can be hacked.
+
+## Lucas Beyer: where the vision half came from
+
+Beyer describes his own talk as "probably going to be the least robotics lecture in this robot
+learning course", and the justification is straightforward: every VLA in Chapters 9 and 13 is built
+on a VLM, and a great many of them on **PaliGemma** specifically. He worked on ViT, SigLIP and
+PaliGemma at Google Brain in Zürich and is now at Meta. His long-term goal, stated at the start and
+returned to at the end, is a robot that any non-technical person can teach to do anything, without
+programming.
+
+He organizes the modern recipe as four stages — **pre-train, mid-train, fine-tune, RL-tune** — and
+walks the first three.
+
+### Pre-training, and three lessons that cost the field years
+
+He begins by demonstrating general perception on the audience: three-way few-shot classification of
+flowers (easy — you have seen millions), then satellite images (fewer), then a final unfamiliar
+domain most of the room has never encountered, which they still get right. That capability is the
+target, and to make progress on it you have to measure it: **VTAB**, the Visual Task Adaptation
+Benchmark — pre-train however you like, then adapt to a long, diverse list of tasks from a few
+examples each, and average.
+
+The first finding is negative and important. They reimplemented a large subset of self-supervised
+pre-training methods and found **no method is consistently best**, but that **making the model
+larger is always better**. Worse, plotting pre-training performance against downstream performance
+gives a scatter with **almost no correlation across methods** — a trend appears only _within_ a
+method as it scales. He flags this explicitly as something that should transfer to robotics, and it
+is a sharp warning: your pre-training metric is not telling you what you think.
+
+The consequence is practical. To choose a model you must evaluate it, and evaluation needs
+examples — either a validation set or you watching the robot and writing down good and bad, which
+_is_ a validation set. So why not put a few of those labelled examples into the pre-training? They
+did, and transfer improved dramatically. That killed purely self-supervised pre-training for the
+team and moved them to supervised pre-training at scale.
+
+The scaling result that followed — the **BiT** work, which he calls his second-favourite plot — is
+the one that matters. Contemporary papers scaling models on ImageNet-1M crawled from about 50 to
+about 55, which is not worth the cost of a much larger model. Going to roughly 15× more
+pre-training data, and then another 20× beyond that, changes the picture entirely: the largest
+model on the largest data is far better than anything published before. **ObjectNet**, which places
+ImageNet classes into deliberately strange poses and locations to test out-of-distribution
+generalization, shows exactly the same trend, which is the stronger version of the claim.
+
+Why did this take the community years? Three lessons.
+
+**You need all three of larger model, larger data and longer training, each by orders of
+magnitude.** Two of the three gives much less; one gives essentially nothing. Concretely: take the
+standard ResNet-50-on-ImageNet recipe, train it on 10× more data, and results get _worse_ — a
+negative result several blog posts reported at the time, and one his team reproduced. Train 10×
+longer, and then another 10× longer, and it starts to pay.
+
+**Patience.** His favourite plot in his career is a training curve whose first **eight GPU-weeks**
+look completely flat. Any reasonable person kills that job and reuses the hardware. Zoomed out to
+**eight GPU-months** it is still clearly improving. "Good thing we were not reasonable."
+
+**Details that are invisible at small scale.** He shows two weight-decay settings where the run you
+would kill on the evidence of two short preliminary curves is the one that wins at the end.
+
+### Where the data comes from, and what filtering destroys
+
+Classical pre-training data is class-list-first: invent a list of classes, then crawl images for
+each, forever bounded by the imagination of whoever wrote the list. His anecdote is the best in the
+course: **MS COCO's 80 classes** came from the senior professor on the project asking his eight- to
+ten-year-old child what things they could think of — microwave, pizza, frisbee, baseball — so
+essentially every object detector you have used was trained to recognize, in his phrase, "typical 8
+to 10 year old North American things".
+
+**CLIP** inverts it: list _images_ by crawling the web and use whatever text surrounds them, most
+canonically alt-text. You get some garbage, and you also get "Frankfurt airport skyline", which
+nobody would ever have put on a class list. He teaches the mechanism in full because half the room
+did not know it: put around 32,000 image-text pairs in a batch, encode both sides to vectors, and
+for each text classify which image vector it matches and vice versa — a softmax over dot products
+with the diagonal as ground truth. **SigLIP** simplifies this to a per-pair binary decision:
+dot product, sigmoid, target 0 or 1.
+
+Then the argument he clearly cares most about. Having gained the ability to learn every concept on
+the web, the field proceeded to throw it away by **filtering**: keep only words appearing in English
+Wikipedia; use LAION's 2-billion English-only subset rather than the full 5 billion; score pairs
+with the original English-only CLIP model and keep the high scorers; keep images that resemble
+ImageNet. Each step improves the number — measured on ImageNet, which is itself North-American
+biased. In a controlled experiment, the English-filtered model identifies the **Milad Tower in
+Tehran** as the **CN Tower in Toronto**, and places a Brazilian cathedral in Montreal; the
+unfiltered model gets both right. Then he asks the room to close their eyes and think of a toilet,
+and points out that what they pictured is one design among several, and the others do not survive
+North-American filtering. They built a benchmark showing that as models improve on ImageNet and
+COCO they get _worse_ on across-the-globe coverage, and campaigned against the practice.
+
+### What contrastive learning cannot learn, and the lesson of the talk
+
+There is a structural limitation in CLIP-style training, and the way he explains it is the clearest
+in the course. Take a perfectly clean image-caption pair. Within a mini-batch, the model only has to
+do _enough_ to pick the right partner. If no other cat image is in the batch, recognizing "cat"
+suffices and the rest of the caption can be ignored entirely. To be forced to learn _sitting_, the
+batch must contain a cat and a dog that are not sitting. To learn _left of_, it must contain a cat
+and a dog sitting the other way round. From random web data, at batch size 32,000 or even a
+million, that is vanishingly unlikely. **So CLIP does not learn relations.**
+
+People patched this by constructing counterpart examples and enumerating relations. Beyer wanted a
+fix that scales, and the simple one is a **captioning loss**: generate the caption word by word, so
+that producing "left" rather than "right" after "sitting" is forced by the objective. The original
+CLIP paper contained a figure showing captioning was far less efficient; his team reproduced it and
+found it an artifact of that particular setup. With the fix, the relation benchmarks are nailed. His
+practical recommendation: **SigLIP 2 has a captioning loss; use it instead of SigLIP.**
+
+And then the lesson he says to take away if you take only one thing from the whole lecture.
+
+<Aside>
+  Look at the data.
+</Aside>
+
+The relation benchmark asks you to choose which of two sentences matches a picture: _the horse is
+eating the grass_, or _the grass is eating the horse_. You do not need the picture. The benchmark is
+full of these. To prove the point they trained a **blind captioner** that never sees the image, and
+it nails the benchmark too. He notes this class of broken benchmark recurs roughly every five years
+— "almost every generation of PhDs" — and that others later built a properly controlled version, on
+which the captioning pre-training also wins.
+
+### Mid-training, and what a training mixture is for
+
+Mid-training is a recent term, and the definition he endorses is: the steps after the bulk of
+self-supervised pre-training, shaping **core capabilities**, before fine-tuning or RL for exact
+behaviors. **PaliGemma is the canonical example.** An image encoder — CLIP or SigLIP — turns the
+image into vectors, which are simply tokens; those are concatenated with text tokens, typically a
+question or a task; a language model emits the answer. In a VLA, actions come out instead. It counts
+as mid-training because it stitches two pre-trained models together and installs skills that neither
+pre-training supplied.
+
+What matters is the **training mixture**, and the design principle is that a mixture item does not
+have to be useful to a user — it has to force a skill. Captioning. **OCR**, implemented as: feed
+random images containing text and ask for the whole text, or chunks of it. Nobody wants that as a
+product, but it installs _reading_. Object-presence questions. **Inverting question and answer** —
+given the answer, generate the likely question. Detection, segmentation, and region captioning.
+Several of these were added specifically to make PaliGemma good for robotics-style tasks, so it
+learns about objects and locations, which is why so many VLAs are built on it. Mid-training is also
+where you scale the axes you could not afford earlier: input resolution, video context length, 3D
+slices.
+
+Turning tasks into text is what makes this uniform. Detection becomes text by binning each axis into
+roughly **1024** bins — near pixel resolution — and emitting bounding boxes as coordinate tokens.
+The general mechanism is **VQ-VAE**, whose discrete bottleneck dictionary can be added to the
+model's vocabulary, so a segmentation mask becomes a sequence of tokens the VLM can emit inline with
+text. Fine-tuning is then a large mixture of specialized tasks, and it produces **skill transfer**:
+a model that learned segmentation on natural photographs and question answering on satellite images
+can segment satellite images, a combination present in neither stage.
+
+### Is perception solved?
+
+He says, slightly provocatively, that this recipe "somewhat solves perception" — from barely working
+eight years ago to essentially solved. The obvious objection is the "VLMs are blind" literature,
+which shows frontier models failing at tasks like counting the intersections of two kinked lines,
+where humans exceed 90%.
+
+His answer is a distinction worth adopting. _Solved_ means **the recipe** is solved; you still have
+to apply it. Those obscure tasks are simply not in anyone's supervised fine-tuning mixture, and
+there is no reason they would be. So he generated **128 examples** of the line-intersection task and
+fine-tuned PaliGemma to **95–96%**; noting it is really a classification problem, he fine-tuned
+**SigLIP alone to about 97%**. The models are not blind. 128 examples cannot teach the underlying
+skill of finding intersections — they are enough to teach the model **what the user wants**.
+
+The recipe as advice, then: for any _perception_ task, spend an afternoon collecting a couple of
+hundred examples, fine-tune a good pre-trained VLM, tune the learning rate, and it will work.
+
+The caveat is where robot learning lives. The recipe does not solve what comes after perception:
+**reasoning** ("solve my homework"; "explain why this is funny") and **planning** ("robot, make me a
+cappuccino" — it knows perfectly well where the machine and the cup are, and cannot sequence the
+task). And he names the unsatisfying part explicitly: free-form text alone is not enough to specify
+a new task, and you still need a little fine-tuning to communicate one.
+
+Four Q\&A answers are worth recording. **Augmentations** buy roughly one order of magnitude of
+effective data and no more, after expensive tuning — if you can get more data, get more data.
+**Deduplication** is done heavily and silently in all their work: remove anything close to your
+evaluation tasks from pre-training, or your benchmarks are in your training set and you are not
+measuring generalization at all. His figure is roughly **10 million near-duplicates per billion
+pre-training images**, which costs nothing in coverage and buys the right to believe your own
+results. **Do not freeze the image encoder** — PaliGemma does not, and most VLMs that do cannot
+recover from CLIP's limitations, which matters exactly for relations and locations; he would not use
+a frozen-encoder VLM for fine-tuning. And **distillation** is the missing addendum to his own recipe:
+pre-train, transfer, RL-tune to make the model as good as it can be, and then distil it down to the
+latency the robot needs. It is expensive because it needs very long training, and it can be the
+difference between a blocker and something you can actually run.
+
+## Where this breaks
+
+Set these five talks beside each other and the field does not agree with itself, in ways that are
+easy to miss when each result is read alone.
+
+**Nobody agrees on the backbone.** Reed lays out three options and bets against the incumbent,
+saying zero-shot generalization evidence for VLAs is "limited or non-existent". Vuong reports a VLA
+generalizing to an unseen task-and-robot combination, and is himself surprised. Xiao thinks video
+priors are clearly a rising trend and doubts they replace text. These are the same weeks of the
+same course.
+
+**The status of world models is genuinely unsettled.** Reed's failure analysis says most WAM
+failures are video-generation failures, which he reads as encouraging. An audience member offers the
+alternative reading — that the action conditioning is what does not work — and the honest answer is
+that the two have not been decisively separated.
+
+**Test-time scaling may or may not transfer.** Sharma's evidence is overwhelming within language,
+and rests on a property robotics lacks: cheap, automatic verification. His own list of obstacles —
+verifiable problems running out, proofs being hard to verify, reward hacking — is worse in robotics,
+where verifying an outcome means running a robot. Kumar's RaC in Chapter 12 is the one result in
+either chapter that produces a test-time-scaling curve for robots, and it does it by redefining the
+axis as recoveries rather than thoughts.
+
+**And the field's own benchmarks may not be measuring what they claim.** Beyer's blind captioner is
+the sharpest single result in these two chapters, precisely because it is not about capability at
+all. A benchmark the community used to demonstrate a limitation of CLIP could be solved without
+looking at the image. His deduplication figures point the same way: if you have not removed near
+duplicates, your generalization numbers are partly memorization, and almost nobody reports whether
+they did.
+
+## What this connects to
+
+Xiao's three eras are a reading guide to the second half of this book: era one is Chapters 4 and 5,
+era two is Chapters 7 and 9, and era three is Chapters 9, 10 and 11. His closing observation that
+locomotion advanced by an entirely different route is the gap Chapter 11 also leaves open.
+
+Reed's talk is a direct commentary on Chapters 7, 8 and 9 — it takes the backbone question those
+chapters answer implicitly and makes it explicit, and his data-islands argument is the strongest
+available objection to the cross-embodiment optimism of Chapter 9.
+
+Vuong's results are Chapter 9's π-series brought up to date, and his metadata finding belongs beside
+Chapter 3's discussion of data quality, because it says something Chapter 3 does not: that quality
+can be _conditioned on_ rather than filtered for.
+
+Sharma's talk is Chapter 10 from the language side, and the two should be read together — Chapter
+10 develops GRPO's objective, and Sharma supplies the empirical picture of what scaling that
+objective's inference budget actually buys, along with the reasons it is hard.
+
+Beyer's talk is the prehistory of Chapter 7. ViT, CLIP, SigLIP and the tokenization strategies
+Chapter 7 presents as the machinery of sequence modelling are here presented as a decade of
+argument about data, and <XRef kind="fig" anchor="fig-wams" number="13.1" />'s alternative — pixels rather than text as the universal space —
+is the live challenge to all of it.
+
+## Further reading
+
+- **T. Brohan et al., "RT-1: Robotics Transformer for Real-World Control at Scale"** and
+  **"RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control".** The two
+  models Xiao's second era is organized around; both are developed in Chapter 9.
+- **S. Levine et al., "QT-Opt: Scalable Deep Reinforcement Learning for Vision-Based Robotic
+  Manipulation".** The arm-farm result, and the 500,000 grasps behind Chapter 4's treatment.
+- **NVIDIA GEAR, DreamZero and Cosmos Policy**, the world-action models of <XRef kind="fig" anchor="fig-wams" number="13.1" />, and
+  **GR-1 / GR-2** from ByteDance, which reached the autoregressive version of the idea earlier.
+- **TRI, "Large Behavior Models"**, singled out by Reed for its double-blind evaluation protocol —
+  read it for the methodology as much as the model.
+- **A. Radford et al., "Learning Transferable Visual Models From Natural Language Supervision"
+  (CLIP)** and **X. Zhai et al., "Sigmoid Loss for Language Image Pre-Training" (SigLIP)**, with
+  **PaliGemma** as the mid-training example Beyer builds on; all three underlie Chapter 7.
+- **A. Kolesnikov et al., "Big Transfer (BiT): General Visual Representation Learning"**, the
+  scaling result behind Beyer's argument that model, data and duration must all grow together.
+- **DeepSeek's GRPO paper**, developed in Chapter 10 and the source of the emergent-reasoning
+  curve Sharma presents.

@@ -333,6 +333,7 @@ function buildFigure(image, ctx) {
       ...(resolved.videoUrl ? [attr('videoUrl', resolved.videoUrl)] : []),
       ...(resolved.timecode ? [attr('timecode', resolved.timecode)] : []),
       ...(resolved.lecture ? [attr('lecture', String(resolved.lecture))] : []),
+      ...(resolved.source ? [attr('source', resolved.source)] : []),
     ],
     caption,
     true,

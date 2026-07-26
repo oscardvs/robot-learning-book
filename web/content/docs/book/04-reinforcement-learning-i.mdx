@@ -156,6 +156,8 @@ A cheaper variant answers a narrower question: not "what is the best possible be
 
 **In words.** Compute what this particular policy is worth from each state, by averaging over the actions it would take rather than the best action available.
 
+**The symbols.** <InlineMath tex={"V_j"} /> is the value estimate after <InlineMath tex={"j"} /> sweeps, and <InlineMath tex={"j"} /> counts sweeps rather than environment steps. <InlineMath tex={"\\pi(\\cdot\\mid s)"} /> is the policy being measured — fixed throughout the evaluation. The inner <InlineMath tex={"\\mathbb{E}_{s'\\sim P}"} /> is the same expectation over next states as in <XRef kind="eq" anchor="eq-bellmanexp" number="4.2" />; the outer <InlineMath tex={"\\mathbb{E}_{a\\sim\\pi}"} /> is what replaces the maximum.
+
 **Why this shape.** Removing the maximization drops the cost to <InlineMath tex={"O(\u007C\\mathcal{S}\u007C^2)"} />, since you no longer compare all actions in every state. It is called **policy evaluation**, and on its own it improves nothing — it measures. But measurement plus a greedy step gives an algorithm:
 
 \begin\{algorithm}\[H]
@@ -205,7 +207,13 @@ Before that, the intermediate algorithm deserves a name, because it completes th
 
 <BlockMath tex={"Q_{j+1}(s,a) \\leftarrow r(s,a) + \\gamma\\,\\mathbb{E}_{s'\\sim P(\\cdot\\mid s,a)}\\Big[\\max_{a'} Q_j(s',a')\\Big]"} id="eq-qvi" number="4.6" />
 
-until the values settle. It converges by the same contraction argument, costs more than value iteration because the table it fills is indexed by state _and_ action, and still requires the model. Its point is structural rather than practical: it isolates the two things Q-learning does. The move from <XRef kind="eq" anchor="eq-bellmanexp" number="4.2" /> to <XRef kind="eq" anchor="eq-qvi" number="4.6" /> buys **model-free acting**. The move from <XRef kind="eq" anchor="eq-qvi" number="4.6" /> to Q-learning, next, buys **model-free learning**. They are separate victories, and conflating them is the most common confusion about what Q-learning is for.
+until the values settle.
+
+**In words.** Fill in the worth of every state-action pair by assuming the best is done from the next state onward, and repeat until the numbers stop moving.
+
+**The symbols.** <InlineMath tex={"Q_j"} /> is the action-value table after <InlineMath tex={"j"} /> sweeps, indexed by a state and an action rather than by a state alone. <InlineMath tex={"a'"} /> ranges over actions available at the next state <InlineMath tex={"s'"} />, and the maximization now sits _inside_ the expectation, applied to the successor's values rather than to the current state's.
+
+**Why this shape.** It converges by the same contraction argument as value iteration, costs more because the table it fills is indexed by state _and_ action, and still requires the model. Its point is structural rather than practical: it isolates the two things Q-learning does. The move from <XRef kind="eq" anchor="eq-bellmanexp" number="4.2" /> to <XRef kind="eq" anchor="eq-qvi" number="4.6" /> buys **model-free acting**. The move from <XRef kind="eq" anchor="eq-qvi" number="4.6" /> to Q-learning, next, buys **model-free learning**. They are separate victories, and conflating them is the most common confusion about what Q-learning is for.
 
 ## Q-learning: replacing the expectation with experience
 
@@ -249,6 +257,8 @@ The contrast makes it sharper. **SARSA** uses the action actually taken next ins
 <BlockMath tex={"\\underbrace{r(s_t,a_t) + \\gamma \\max_a Q(s_{t+1},a)}_{\\textbf{Q-learning (off-policy): \"the best I could do next\"}} \\qquad\\qquad \\underbrace{r(s_t,a_t) + \\gamma\\, Q(s_{t+1},a_{t+1})}_{\\textbf{SARSA (on-policy): \"what I will actually do next\"}}"} id="eq-qsarsa" number="4.7" />
 
 **In words.** Q-learning evaluates the future assuming you will behave perfectly from here; SARSA evaluates it assuming you will behave the way you are actually behaving, mistakes and exploration included.
+
+**The symbols.** Both expressions are temporal-difference targets for the same update. <InlineMath tex={"a_{t+1}"} /> is the action the behaving policy actually selects at <InlineMath tex={"s_{t+1}"} /> — the extra letter that gives SARSA its name, since the update consumes the tuple <InlineMath tex={"(s_t, a_t, r_t, s_{t+1}, a_{t+1})"} />. Everything else is shared: <InlineMath tex={"r(s_t,a_t)"} /> the observed reward, <InlineMath tex={"\\gamma"} /> the discount, <InlineMath tex={"Q"} /> the current table.
 
 **Why this shape.** The difference produces genuinely different behavior, and the standard illustration is **cliff walking**: a grid where the shortest path to the goal runs along the edge of a cliff, and stepping off is catastrophic. Q-learning learns the optimal path, which is the one along the edge, because the <InlineMath tex={"\\max"} /> assumes it will never make a mistake. SARSA learns a path that keeps a safe distance, because its target includes the exploratory actions that occasionally push it off — so the states near the edge acquire low value, correctly, _for a policy that sometimes slips_. Neither is wrong. Q-learning answers "what is best if I act perfectly?" and SARSA answers "what is best given that I am the one doing it?", and for a robot that will in fact slip, the second question is sometimes the one you meant (<XRef kind="fig" anchor="fig-qsarsa" number="4.5" />).
 
@@ -314,6 +324,8 @@ One more defect, and it is a statistical one rather than an engineering one. The
 
 **In words.** Let one network choose which action looks best, and a different network say how good that action actually is.
 
+**The symbols.** <InlineMath tex={"Q_\\phi"} /> is the **online** network, updated every step, and <InlineMath tex={"Q_{\\bar\\phi}"} /> the **target** copy, held fixed and refreshed periodically. The inner <InlineMath tex={"\\arg\\max"} /> returns an action, not a value, so the online network supplies only the choice; the outer <InlineMath tex={"Q_{\\bar\\phi}"} /> supplies the number. <InlineMath tex={"y"} /> is the regression target the loss of <XRef kind="eq" anchor="eq-dqnloss" number="4.8" /> drives <InlineMath tex={"Q_\\phi(s_t,a_t)"} /> toward.
+
 **Why this shape.** The bias came from using the same noisy estimates to both pick the maximum and report its value. If the online network's noise makes an action look good, the target network — whose noise is independent — will usually not agree, and the reported value is not inflated. The fix costs nothing, since both networks already exist for the stability reason above. It is a good example of a pattern that recurs in this book: a small statistical correction that turns an algorithm from marginal to reliable (<XRef kind="fig" anchor="fig-double" number="4.8" />).
 
 <Figure id="fig-double" number="4.8" src="/slides/lecture04/slide_032.jpg" scale="76%" videoUrl="https://www.youtube.com/watch?v=90raNpc11tQ&t=2278s" timecode="37:58" lecture="4">
@@ -375,6 +387,10 @@ The third route removes the search entirely by training a second network to outp
 
 **The symbols.** <InlineMath tex={"\\mu_\\theta"} /> is the **actor**, a deterministic policy with parameters <InlineMath tex={"\\theta"} />; <InlineMath tex={"Q_\\phi"} /> is the **critic**, exactly the DQN network of <XRef kind="eq" anchor="eq-dqnloss" number="4.8" /> with parameters <InlineMath tex={"\\phi"} />.
 
+<EditorNote>
+  The lecture slides label these the other way round — actor <InlineMath tex={"\\mu_\\phi"} />, critic <InlineMath tex={"Q_\\theta"} /> — and this is the one place in the book where a slide's letters have been swapped rather than merely renamed, so it is worth pausing on. Everywhere else in the course, and in Chapters 5, 6, 9 and 10, <InlineMath tex={"\\theta"} /> parameterizes the thing that produces the output and <InlineMath tex={"\\phi"} /> the thing that scores or encodes it: the policy against the critic, the decoder against the encoder. DDPG on slides 39–40 is the sole exception, so this book flips it here rather than flipping five other chapters. Read the slides with the two letters exchanged and everything else on them is unchanged.
+</EditorNote>
+
 **Why this shape.** Test time becomes a single forward pass, which is what a 50 Hz controller needs. This is **DDPG**, and it is the first **actor-critic** architecture in this book: two networks with different jobs, the critic scoring actions and the actor producing them. The critic trains exactly as before, on the temporal-difference loss. The actor's job is to climb the critic's landscape, and the gradient follows from the chain rule:
 
 <BlockMath tex={"\\nabla_\\theta J(\\theta) \\;\\approx\\; \\mathbb{E}_{s}\\Big[\\, \\nabla_a Q_\\phi(s,a)\\big\u007C_{a=\\mu_\\theta(s)} \\cdot \\nabla_\\theta \\mu_\\theta(s) \\,\\Big]"} id="eq-dpg" number="4.11" />
@@ -393,7 +409,13 @@ Two practical matters, and they are the reason DDPG has a bad reputation. A dete
 
 <BlockMath tex={"a_t = \\mu_\\theta(s_t) + \\epsilon, \\qquad \\epsilon\\sim\\mathcal{N}(0,\\sigma)"} id="eq-ddpgnoise" number="4.12" />
 
-and <InlineMath tex={"\\sigma"} /> becomes a hand-tuned parameter with no good setting: too small and the robot never discovers anything, too large and the critic is trained on garbage and the whole system destabilizes. The second matter is the general one. **DDPG is notoriously brittle** — sensitive to hyperparameters, seeds and reward scaling, and quite capable of failing to converge on a problem it solved yesterday. The honest summary is that it was the first method to make continuous-action deep reinforcement learning work at all, and that the algorithms of Chapter 5 exist partly to make it work reliably.
+**In words.** Take the action the actor recommends and jitter it by a random amount before sending it to the motors.
+
+**The symbols.** <InlineMath tex={"\\mu_\\theta(s_t)"} /> is the actor's deterministic output at state <InlineMath tex={"s_t"} />, and <InlineMath tex={"\\epsilon"} /> is Gaussian exploration noise of scale <InlineMath tex={"\\sigma"} />, drawn fresh at every step and added in action space rather than substituted for the action.
+
+**Why this shape.** Noise added to a continuous action is a small perturbation of a sensible command, whereas <InlineMath tex={"\\epsilon"} />-greedy's alternative — replace the action outright with a uniform sample — is a violent lurch on a real arm. The exploration is therefore local by construction, which is what makes it safe to run on hardware. The price is that <InlineMath tex={"\\sigma"} /> becomes a hand-tuned parameter with no good setting: too small and the robot never discovers anything, too large and the critic is trained on garbage and the whole system destabilizes.
+
+The second matter is the general one. **DDPG is notoriously brittle** — sensitive to hyperparameters, seeds and reward scaling, and quite capable of failing to converge on a problem it solved yesterday. The honest summary is that it was the first method to make continuous-action deep reinforcement learning work at all, and that the algorithms of Chapter 5 exist partly to make it work reliably.
 
 ## The chapter in one table
 

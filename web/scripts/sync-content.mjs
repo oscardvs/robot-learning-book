@@ -18,7 +18,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
-import { COURSE, LECTURES, lectureByNumber, timecode, watchUrl } from './lib/course.mjs';
+import {
+  COURSE,
+  GUESTS,
+  LECTURES,
+  MISSING_GUEST,
+  guestKey,
+  lectureByNumber,
+  lectureKey,
+  timecode,
+  watchUrl,
+} from './lib/course.mjs';
 import { pandocToMdx } from './lib/pandoc-to-mdx.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -70,14 +80,19 @@ const escapeYaml = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
 /* ------------------------------------------------------------------ slide index */
 
-/** Read every `slides_png/lectureNN/manifest.json` into one index. */
-async function readSlideIndex() {
-  const index = new Map();
+/**
+ * Read every `slides_png/<key>/manifest.json` into one index, keyed by deck key —
+ * `lecture04` for the main lectures, `guest02_xu` for the guest talks. Both tracks are
+ * reconstructed the same way and carry the same per-slide timestamps, so they differ
+ * only in what they link back to.
+ */
+async function readDecks() {
+  const decks = new Map();
 
-  for (const lecture of LECTURES) {
-    const dir = path.join(SRC.slides, `lecture${String(lecture.n).padStart(2, '0')}`);
+  const add = async (key, meta) => {
+    const dir = path.join(SRC.slides, key);
     const manifestPath = path.join(dir, 'manifest.json');
-    if (!existsSync(manifestPath)) continue;
+    if (!existsSync(manifestPath)) return;
 
     const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
     const slides = (manifest.slides ?? [])
@@ -88,14 +103,19 @@ async function readSlideIndex() {
         start: s.t_start ?? 0,
         end: s.t_end ?? s.t_start ?? 0,
         timecode: timecode(s.t_start ?? 0),
-        watch: watchUrl(lecture.video, s.t_start ?? 0),
+        watch: watchUrl(meta.video, s.t_start ?? 0),
       }));
 
-    index.set(lecture.n, { ...lecture, dir, slides });
-  }
+    decks.set(key, { ...meta, key, dir, slides });
+  };
 
-  return index;
+  for (const lecture of LECTURES) await add(lectureKey(lecture.n), { kind: 'lecture', ...lecture });
+  for (const guest of GUESTS) await add(guestKey(guest), { kind: 'guest', ...guest });
+
+  return decks;
 }
+
+const decksOfKind = (decks, kind) => [...decks.values()].filter((d) => d.kind === kind);
 
 /* ------------------------------------------------------------- image processing */
 
@@ -167,7 +187,7 @@ async function isStale(source, target) {
  * Figures resolve to processed slide frames and carry a link to the moment in the
  * recording where that slide was on screen.
  */
-async function buildChapters(slideIndex) {
+async function buildChapters(decks) {
   const files = (await readDirSafe(SRC.chapters)).filter((f) => /^\d+-.*\.md$/.test(f));
   const written = [];
 
@@ -179,13 +199,19 @@ async function buildChapters(slideIndex) {
 
     const { title, body } = pandocToMdx(raw, {
       chapter: number,
-      resolveImage: (url) => resolveFigure(url, slideIndex),
+      resolveImage: (url) => resolveFigure(url, decks),
     });
 
     const heading = title ?? lecture?.title ?? `Chapter ${number}`;
     const description = firstSentence(raw);
-    // 00 is the preface and 12+ is back matter; only 1–11 pair with a lecture.
-    const kind = lecture ? 'chapter' : number === 0 ? 'front' : 'back';
+    // 00 is the preface and 14+ is back matter. Chapters 1–11 each pair with one main
+    // lecture; 12–13 are the guest-lecture chapters, which are numbered chapters too but
+    // draw on ten separate talks, so they have no single recording to link.
+    const kind = lecture || slug.startsWith('guest-lectures')
+      ? 'chapter'
+      : number === 0
+        ? 'front'
+        : 'back';
 
     const frontmatter = [
       '---',
@@ -207,22 +233,28 @@ async function buildChapters(slideIndex) {
   return written;
 }
 
-/** Map `../slides_png/lecture01/slide_026.jpg` onto a processed asset + video link. */
-function resolveFigure(url, slideIndex) {
-  const match = url.match(/slides_png\/(lecture(\d+))\/(slide_(\d+)\.jpg)/);
+/**
+ * Map `../slides_png/lecture01/slide_026.jpg` — or `../slides_png/guest02_xu/slide_025.jpg` —
+ * onto a processed asset and a deep link into the recording. A guest figure is labelled with
+ * the speaker's surname rather than a lecture number, because the guest chapters draw on ten
+ * separate talks and "L12" would name a lecture that does not exist.
+ */
+function resolveFigure(url, decks) {
+  const match = url.match(/slides_png\/((?:lecture|guest)[A-Za-z0-9_]+)\/(slide_(\d+)\.jpg)/);
   if (!match) return { src: url };
 
-  const [, lectureKey, lectureDigits, file, slideDigits] = match;
-  const lectureNumber = Number(lectureDigits);
-  const entry = slideIndex.get(lectureNumber);
-  if (!entry) return { src: url };
+  const [, deckKey, file, slideDigits] = match;
+  const deck = decks.get(deckKey);
+  if (!deck) return { src: url };
 
-  const { src } = planImage(entry.dir, lectureKey, file);
-  const slide = entry.slides.find((s) => s.n === Number(slideDigits));
+  const { src } = planImage(deck.dir, deckKey, file);
+  const slide = deck.slides.find((s) => s.n === Number(slideDigits));
 
   return {
     src,
-    lecture: lectureNumber,
+    ...(deck.kind === 'lecture'
+      ? { lecture: deck.n }
+      : { source: deck.speaker.split(' ').pop() }),
     videoUrl: slide?.watch,
     timecode: slide?.timecode,
   };
@@ -264,19 +296,26 @@ async function buildReadingList() {
 
 /* ---------------------------------------------------------------------- status */
 
-/** Everything the site says about its own state is measured, not typed by hand. */
-async function buildStatus(slideIndex, chapters) {
-  const transcripts = await readDirSafe(SRC.transcripts);
+/** Count words in every `*.txt` directly inside a directory. */
+async function transcriptWordsIn(dir) {
+  const files = (await readDirSafe(dir)).filter((f) => f.endsWith('.txt'));
   let words = 0;
-  for (const file of transcripts.filter((f) => f.endsWith('.txt'))) {
-    const text = await fs.readFile(path.join(SRC.transcripts, file), 'utf8');
+  for (const file of files) {
+    const text = await fs.readFile(path.join(dir, file), 'utf8');
     words += text.split(/\s+/).filter(Boolean).length;
   }
+  return { files, words };
+}
+
+/** Everything the site says about its own state is measured, not typed by hand. */
+async function buildStatus(decks, chapters) {
+  const main = await transcriptWordsIn(SRC.transcripts);
+  const guestTranscripts = await transcriptWordsIn(path.join(SRC.transcripts, 'guests'));
 
   const lectures = LECTURES.map((lecture) => {
     const chapter = chapters.find((c) => c.number === lecture.n && c.kind === 'chapter');
-    const slides = slideIndex.get(lecture.n)?.slides ?? [];
-    const transcript = transcripts.some((f) => f.startsWith(String(lecture.n).padStart(2, '0')) && f.endsWith('.txt'));
+    const slides = decks.get(lectureKey(lecture.n))?.slides ?? [];
+    const transcript = main.files.some((f) => f.startsWith(String(lecture.n).padStart(2, '0')));
     return {
       ...lecture,
       slideCount: slides.length,
@@ -286,43 +325,80 @@ async function buildStatus(slideIndex, chapters) {
     };
   });
 
+  const guests = GUESTS.map((guest) => {
+    const slides = decks.get(guestKey(guest))?.slides ?? [];
+    return {
+      ...guest,
+      key: guestKey(guest),
+      slideCount: slides.length,
+      duration: slides.length ? slides[slides.length - 1].end : 0,
+      hasTranscript: guestTranscripts.files.some((f) => f.startsWith(`g${String(guest.n).padStart(2, '0')}`)),
+    };
+  });
+
+  const slideCount = lectures.reduce((sum, l) => sum + l.slideCount, 0);
+  const guestSlideCount = guests.reduce((sum, g) => sum + g.slideCount, 0);
+
+  const guestChapters = chapters.filter((c) => c.slug.startsWith('guest-lectures'));
+
   return {
     course: COURSE,
     generatedAt: new Date().toISOString().slice(0, 10),
-    transcriptWords: words,
-    slideCount: lectures.reduce((sum, l) => sum + l.slideCount, 0),
+    transcriptWords: main.words,
+    slideCount,
     // Only the eleven lecture chapters count towards progress; the preface and the
     // back matter are not lectures and would push this past the total.
     chaptersWritten: lectures.filter((l) => l.chapter).length,
     lectureCount: LECTURES.length,
     frontMatter: chapters.filter((c) => c.kind !== 'chapter').length,
+    // The guest track is a second set of recordings with its own decks, written up as
+    // the two guest chapters. Kept separate from the lecture figures above so neither
+    // number quietly absorbs the other, with the totals stated explicitly.
+    guestTalks: guests.filter((g) => g.hasTranscript).length,
+    guestTalksHeld: GUESTS.length + 1,
+    guestChapters: guestChapters.length,
+    guestSlideCount,
+    guestTranscriptWords: guestTranscripts.words,
+    totalSlideCount: slideCount + guestSlideCount,
+    totalTranscriptWords: main.words + guestTranscripts.words,
+    missingGuest: MISSING_GUEST,
     lectures,
+    guests,
   };
 }
 
 /* ------------------------------------------------------------------ slide pages */
 
-async function buildSlideData(slideIndex) {
-  const lectures = [];
-
-  for (const lecture of LECTURES) {
-    const entry = slideIndex.get(lecture.n);
-    if (!entry) continue;
-    const key = `lecture${String(lecture.n).padStart(2, '0')}`;
-
-    lectures.push({
-      n: lecture.n,
-      slug: lecture.slug,
-      title: lecture.title,
-      video: lecture.video,
-      slides: entry.slides.map((slide) => {
-        const { src, thumb } = planImage(entry.dir, key, slide.file);
-        return { n: slide.n, src, thumb, start: slide.start, timecode: slide.timecode, watch: slide.watch };
-      }),
+async function buildSlideData(decks) {
+  const plate = (deck) =>
+    deck.slides.map((slide) => {
+      const { src, thumb } = planImage(deck.dir, deck.key, slide.file);
+      return { n: slide.n, src, thumb, start: slide.start, timecode: slide.timecode, watch: slide.watch };
     });
-  }
 
-  return { lectures };
+  const lectures = decksOfKind(decks, 'lecture').map((deck) => ({
+    key: deck.key,
+    n: deck.n,
+    slug: deck.slug,
+    title: deck.title,
+    video: deck.video,
+    slides: plate(deck),
+  }));
+
+  const guests = decksOfKind(decks, 'guest').map((deck) => ({
+    key: deck.key,
+    n: deck.n,
+    week: deck.week,
+    slug: deck.slug,
+    speaker: deck.speaker,
+    affiliation: deck.affiliation,
+    title: deck.title,
+    video: deck.video,
+    chapter: deck.chapter,
+    slides: plate(deck),
+  }));
+
+  return { lectures, guests };
 }
 
 /* ------------------------------------------------------------------------- main */
@@ -336,12 +412,15 @@ async function main() {
     throw new Error(`expected the book at ${SRC.chapters}`);
   }
 
-  const slideIndex = await readSlideIndex();
-  log(`found ${slideIndex.size} reconstructed decks`);
+  const decks = await readDecks();
+  log(
+    `found ${decks.size} reconstructed decks ` +
+      `(${decksOfKind(decks, 'lecture').length} lectures, ${decksOfKind(decks, 'guest').length} guest talks)`,
+  );
 
-  const chapters = await buildChapters(slideIndex);
-  const slideData = await buildSlideData(slideIndex);
-  const status = await buildStatus(slideIndex, chapters);
+  const chapters = await buildChapters(decks);
+  const slideData = await buildSlideData(decks);
+  const status = await buildStatus(decks, chapters);
 
   await writeFile(
     path.join(OUT.book, 'meta.json'),
@@ -371,9 +450,10 @@ async function main() {
   await runImageJobs();
 
   log(
-    `done — ${status.chaptersWritten}/${status.lectureCount} chapters ` +
-      `(+${status.frontMatter} front/back matter), ${status.slideCount} slides, ` +
-      `${status.transcriptWords.toLocaleString('en-US')} transcript words`,
+    `done — ${status.chaptersWritten}/${status.lectureCount} lecture chapters ` +
+      `+ ${status.guestChapters} guest chapters (+${status.frontMatter} front/back matter), ` +
+      `${status.totalSlideCount} slides (${status.slideCount} lecture + ${status.guestSlideCount} guest), ` +
+      `${status.totalTranscriptWords.toLocaleString('en-US')} transcript words`,
   );
 }
 

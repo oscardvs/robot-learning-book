@@ -10,6 +10,8 @@ interface FigureProps {
   videoUrl?: string;
   timecode?: string;
   lecture?: string;
+  /** Named source for a frame that is not from a numbered lecture — a guest speaker. */
+  source?: string;
   children?: ReactNode;
 }
 
@@ -18,7 +20,7 @@ interface FigureProps {
  * each one keeps a link back to the second it came from — the caption tells you what
  * to look at, the timecode lets you go watch it being explained.
  */
-export function Figure({ id, number, src, scale, videoUrl, timecode, lecture, children }: FigureProps) {
+export function Figure({ id, number, src, scale, videoUrl, timecode, lecture, source, children }: FigureProps) {
   return (
     // The plate and its caption share one column so the label lines up with the
     // image's left edge rather than floating in the middle of the text measure.
@@ -50,6 +52,7 @@ export function Figure({ id, number, src, scale, videoUrl, timecode, lecture, ch
             >
               <PlayIcon className="size-3" aria-hidden />
               {lecture ? `L${lecture} · ` : ''}
+              {source ? `${source} · ` : ''}
               {timecode}
               <span className="sr-only">— watch this slide in the recording</span>
             </a>

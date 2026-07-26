@@ -7,9 +7,13 @@ const fmt = new Intl.NumberFormat('en-US');
 
 export function TelemetryRail({ className = '' }: { className?: string }) {
   const items = [
-    { label: 'chapters', value: `${status.chaptersWritten} / ${status.lectureCount}` },
-    { label: 'slides recovered', value: fmt.format(status.slideCount) },
-    { label: 'transcript', value: `${fmt.format(Math.round(status.transcriptWords / 1000))}k words` },
+    { label: 'chapters', value: `${status.chaptersWritten + status.guestChapters}` },
+    { label: 'guest talks', value: `${status.guestTalks} / ${status.guestTalksHeld}` },
+    { label: 'slides recovered', value: fmt.format(status.totalSlideCount) },
+    {
+      label: 'transcript',
+      value: `${fmt.format(Math.round(status.totalTranscriptWords / 1000))}k words`,
+    },
     { label: 'synced', value: status.generatedAt },
   ];
 

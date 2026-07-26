@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRightIcon } from 'lucide-react';
 
 import { ValueIteration } from '@/components/demos/value-iteration';
-import { CourseMap } from '@/components/site/course-map';
+import { CourseMap, GuestTrack } from '@/components/site/course-map';
 import { TelemetryRail } from '@/components/site/telemetry';
 import status from '@/data/status.json';
 
@@ -44,7 +44,7 @@ export default function HomePage() {
                 href="/slides"
                 className="u-label inline-flex items-center gap-2 border border-line px-4 py-3 text-ink-dim transition-colors hover:border-ink-faint hover:text-ink"
               >
-                Browse {fmt.format(status.slideCount)} slides
+                Browse {fmt.format(status.totalSlideCount)} slides
               </Link>
             </div>
 
@@ -70,7 +70,7 @@ export default function HomePage() {
           <div>
             <p className="u-label mb-4">What this is</p>
             <h2 className="u-display max-w-[18ch] text-[1.75rem] font-semibold leading-tight text-ink">
-              Eleven lectures, turned into something you can study from.
+              Eleven lectures and ten guest talks, turned into something you can study from.
             </h2>
           </div>
 
@@ -78,9 +78,10 @@ export default function HomePage() {
             <p>
               The course recordings are public and excellent. They are also ten and a half
               hours long, and a video is a bad place to look something up. This site is the
-              same material as a written book: {fmt.format(status.transcriptWords)} words of
-              transcript read against {fmt.format(status.slideCount)} slides, rewritten as
-              prose that explains rather than summarises.
+              same material as a written book:{' '}
+              {fmt.format(status.totalTranscriptWords)} words of transcript read against{' '}
+              {fmt.format(status.totalSlideCount)} slides, rewritten as prose that explains
+              rather than summarises.
             </p>
             <p>
               Where the lecture showed an algorithm running, the page runs it. Where it put
@@ -89,8 +90,10 @@ export default function HomePage() {
               rather than quietly repeating it.
             </p>
             <p className="text-ink-faint">
-              It is being written one chapter at a time, and the numbers above are the real
-              state of it. Chapters that are not finished say so.
+              Every number above is measured from the repository at build time, not typed in.
+              That includes the gaps: {status.guestTalks} of the {status.guestTalksHeld} guest
+              talks could be recovered, and the one that could not is named on the slide
+              archive rather than quietly dropped.
             </p>
           </div>
         </div>
@@ -107,11 +110,16 @@ export default function HomePage() {
           </div>
           <p className="max-w-[42ch] font-body text-[0.875rem] leading-relaxed text-ink-dim">
             Chapters 1–5 are the fundamentals: control, imitation, reinforcement learning.
-            6–11 are what happens when you bring modern generative models to them.
+            6–11 are what happens when you bring modern generative models to them. 12 and 13
+            are the guest track, where the people who built these systems say what it cost.
           </p>
         </div>
 
         <CourseMap />
+
+        <div className="mt-8">
+          <GuestTrack />
+        </div>
       </section>
 
       {/* ----------------------------------------------------------- the legend */}

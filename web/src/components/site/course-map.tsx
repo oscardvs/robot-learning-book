@@ -60,6 +60,54 @@ export function CourseMap() {
   );
 }
 
+/**
+ * The guest track, which does not fit the lecture grid: ten talks across eleven weeks,
+ * written up as two chapters rather than one chapter each.
+ */
+export function GuestTrack() {
+  return (
+    <div className="border border-line bg-surface">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-5 py-4">
+        <h3 className="u-display text-[0.975rem] font-semibold text-ink">
+          The guest track — chapters 12 and 13
+        </h3>
+        <span className="u-readout text-[0.625rem] text-ink-faint">
+          {status.guestTalks} of {status.guestTalksHeld} talks recovered
+        </span>
+      </div>
+
+      <ol className="grid gap-px bg-line md:grid-cols-2">
+        {status.guests.map((guest) => (
+          <li key={guest.key} className="bg-surface">
+            <Link
+              href={`/slides/${guest.key}`}
+              className="flex h-full items-baseline gap-3 p-4 transition-colors hover:bg-raise"
+            >
+              <span className="u-readout text-xs text-policy">W{guest.week}</span>
+              <span className="flex-1">
+                <span className="u-display block text-[0.875rem] font-semibold leading-snug text-ink">
+                  {guest.speaker}
+                </span>
+                <span className="mt-1 block font-body text-[0.8125rem] leading-snug text-ink-dim">
+                  {guest.title}
+                </span>
+              </span>
+              <span className="u-readout text-[0.625rem] text-ink-faint">
+                {guest.slideCount}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+
+      <p className="border-t border-line px-5 py-4 font-body text-[0.8125rem] leading-relaxed text-ink-faint">
+        Week {status.missingGuest.week}, {status.missingGuest.speaker}, is missing:{' '}
+        {status.missingGuest.reason}. The book says so rather than filling the gap.
+      </p>
+    </div>
+  );
+}
+
 function Tag({ on, children }: { on: boolean; children: React.ReactNode }) {
   return (
     <span className={`u-label flex items-center gap-1.5 ${on ? 'text-ink-dim' : 'text-ink-faint/60'}`}>
