@@ -138,6 +138,8 @@ where the second term is the agent slipping, staying put, and facing the same si
   The value-iteration update. Values are computed by repeated one-step maximization, and the reward propagates backwards through the state space one sweep at a time. Credit: course slides, Lecture 4.
 </Figure>
 
+<ValueIteration />
+
 ### Where value iteration stops
 
 Three limitations, and each one determines a section of the rest of this chapter.
@@ -265,6 +267,8 @@ The contrast makes it sharper. **SARSA** uses the action actually taken next ins
 <Figure id="fig-qsarsa" number="4.5" src="/slides/lecture04/slide_023.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=90raNpc11tQ&t=1754s" timecode="29:14" lecture="4">
   Q-learning's off-policy target compared with SARSA's on-policy target. The maximum makes Q-learning indifferent to which policy generated the data. Credit: course slides, Lecture 4.
 </Figure>
+
+<CliffWalk />
 
 Where we stand: **exact methods** (value iteration, policy iteration, Q-value iteration) need a model and a small discrete state space; **model-free value methods** (Q-learning, SARSA) drop the model but are still tabular. Both are unusable on a robot with a camera. That is the next problem.
 

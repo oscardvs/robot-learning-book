@@ -218,6 +218,8 @@ To generate, start from noise and walk back:
 
 **In words.** Subtract the noise the network predicts, rescale, and add back a little fresh noise — then repeat, a thousand times.
 
+<Denoiser />
+
 **The symbols.** <InlineMath tex={"\\epsilon'"} /> is freshly drawn noise at each sampling step, distinct from the <InlineMath tex={"\\epsilon"} /> that the network is predicting; <InlineMath tex={"\\sigma_k"} /> is its scale.
 
 **Why this shape.** The re-injected noise looks perverse — why add noise to a denoising step? — and it is what keeps samples diverse. A fully deterministic reverse process from a given starting point yields one output, and the process concentrates toward the mean of the distribution; the injected noise keeps the trajectory exploring. There is a deeper reading: this is a discretized stochastic differential equation, in which the predicted noise plays the role of a score function <InlineMath tex={"\\nabla \\log p"} /> and the injected noise makes it Langevin dynamics. That view is what connects diffusion to the flow-based methods later in the chapter.

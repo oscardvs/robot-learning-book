@@ -52,6 +52,8 @@ Attention replaces recurrence with direct, equal-cost access between any two pos
   Scaled dot-product attention as a soft dictionary lookup: queries are compared against all keys, and the output is the values blended by match quality. Credit: course slides, Lecture 7.
 </Figure>
 
+<Attention />
+
 One cost, which will matter for robotics: computing <InlineMath tex={"QK^\\top"} /> is **quadratic** in sequence length. Every decision about tokenization downstream is partly a decision about how much of this quadratic cost to pay.
 
 ### Positional encoding

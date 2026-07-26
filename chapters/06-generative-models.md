@@ -194,6 +194,8 @@ $$x_{k-1} = \frac{1}{\sqrt{\alpha_k}}\Big(x_k - \frac{1-\alpha_k}{\sqrt{1-\bar\a
 
 **In words.** Subtract the noise the network predicts, rescale, and add back a little fresh noise — then repeat, a thousand times.
 
+<Denoiser />
+
 **The symbols.** $\epsilon'$ is freshly drawn noise at each sampling step, distinct from the $\epsilon$ that the network is predicting; $\sigma_k$ is its scale.
 
 **Why this shape.** The re-injected noise looks perverse — why add noise to a denoising step? — and it is what keeps samples diverse. A fully deterministic reverse process from a given starting point yields one output, and the process concentrates toward the mean of the distribution; the injected noise keeps the trajectory exploring. There is a deeper reading: this is a discretized stochastic differential equation, in which the predicted noise plays the role of a score function $\nabla \log p$ and the injected noise makes it Langevin dynamics. That view is what connects diffusion to the flow-based methods later in the chapter.

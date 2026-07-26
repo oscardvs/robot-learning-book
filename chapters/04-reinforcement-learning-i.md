@@ -118,6 +118,8 @@ where the second term is the agent slipping, staying put, and facing the same si
 
 ![The value-iteration update. Values are computed by repeated one-step maximization, and the reward propagates backwards through the state space one sweep at a time. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_009.jpg){#fig:vi width=80%}
 
+<ValueIteration />
+
 ### Where value iteration stops
 
 Three limitations, and each one determines a section of the rest of this chapter.
@@ -233,6 +235,8 @@ $$\underbrace{r(s_t,a_t) + \gamma \max_a Q(s_{t+1},a)}_{\textbf{Q-learning (off-
 **Why this shape.** The difference produces genuinely different behavior, and the standard illustration is **cliff walking**: a grid where the shortest path to the goal runs along the edge of a cliff, and stepping off is catastrophic. Q-learning learns the optimal path, which is the one along the edge, because the $\max$ assumes it will never make a mistake. SARSA learns a path that keeps a safe distance, because its target includes the exploratory actions that occasionally push it off — so the states near the edge acquire low value, correctly, *for a policy that sometimes slips*. Neither is wrong. Q-learning answers "what is best if I act perfectly?" and SARSA answers "what is best given that I am the one doing it?", and for a robot that will in fact slip, the second question is sometimes the one you meant (@fig:qsarsa).
 
 ![Q-learning's off-policy target compared with SARSA's on-policy target. The maximum makes Q-learning indifferent to which policy generated the data. Credit: course slides, Lecture 4.](../slides_png/lecture04/slide_023.jpg){#fig:qsarsa width=80%}
+
+<CliffWalk />
 
 Where we stand: **exact methods** (value iteration, policy iteration, Q-value iteration) need a model and a small discrete state space; **model-free value methods** (Q-learning, SARSA) drop the model but are still tabular. Both are unusable on a robot with a camera. That is the next problem.
 

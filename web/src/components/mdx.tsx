@@ -7,6 +7,9 @@ import { Aside, EditorNote, XRef } from './book/annotations';
 import { Mermaid } from './book/mermaid';
 import { ValueIteration } from './demos/value-iteration';
 import { PolicyModes } from './demos/policy-modes';
+import { CliffWalk } from './demos/cliff-walk';
+import { Denoiser } from './demos/denoiser';
+import { Attention } from './demos/attention';
 
 // Everything the book can use. The first group is emitted by the sync script from
 // the chapter source; the second is available to write by hand in any chapter.
@@ -25,6 +28,9 @@ export function getMDXComponents(components?: MDXComponents) {
     Mermaid,
     ValueIteration,
     PolicyModes,
+    CliffWalk,
+    Denoiser,
+    Attention,
 
     ...components,
   } satisfies MDXComponents;

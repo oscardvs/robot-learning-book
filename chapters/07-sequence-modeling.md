@@ -44,6 +44,8 @@ $$\mathrm{score}(q,k) = \frac{q \cdot k}{\sqrt{d}}, \qquad \mathrm{Attention}(Q,
 
 ![Scaled dot-product attention as a soft dictionary lookup: queries are compared against all keys, and the output is the values blended by match quality. Credit: course slides, Lecture 7.](../slides_png/lecture07/slide_007.jpg){#fig:attention width=78%}
 
+<Attention />
+
 One cost, which will matter for robotics: computing $QK^\top$ is **quadratic** in sequence length. Every decision about tokenization downstream is partly a decision about how much of this quadratic cost to pay.
 
 ### Positional encoding

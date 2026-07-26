@@ -55,7 +55,7 @@ export default function HomePage() {
           <div>
             <ValueIteration variant="ambient" />
             <p className="mt-3 max-w-[46ch] font-body text-[0.8125rem] leading-relaxed text-ink-dim">
-              This is value iteration, from Chapter 2. The robot starts knowing nothing but
+              This is value iteration, from Chapter 4. The robot starts knowing nothing but
               where the goal is. Each sweep pushes that knowledge one step further out,
               until every square knows which way to go. Colour is how good a square is; the
               arrows are the plan that falls out of it.

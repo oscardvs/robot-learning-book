@@ -182,6 +182,8 @@ Now recall what @eq:bc does with that. Mean-squared error is minimized by the co
 
 ![Mode averaging. When the demonstrations split between two valid behaviors, a squared-error policy outputs their mean, which need not be valid at all. Credit: course slides, Lecture 3.](../slides_png/lecture03/slide_029.jpg){#fig:snowboard width=76%}
 
+<PolicyModes />
+
 This is why Chapter 1 and Chapter 2 insisted that a policy be a *distribution* over actions. A distribution can say "left or right, either is fine." A point estimate cannot. The rest of this section is the toolkit for representing such a distribution — four options, in increasing order of expressiveness and cost, and all four reappear later in the book.
 
 ### Mixture of Gaussians
