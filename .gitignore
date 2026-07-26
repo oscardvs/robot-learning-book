@@ -8,3 +8,6 @@ video/
 build/*.jpg
 .playwright-mcp/
 __pycache__/
+
+# stray browser screenshots
+*-full.jpeg
