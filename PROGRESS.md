@@ -9,8 +9,9 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: Phases 0–6, 8 and 9 COMPLETE. `build/robot-learning.pdf` — 274 pages.
-Only Phase 7 (guest lectures) remains, and it needs the user's go-ahead.**
+**Current status: ALL PHASES COMPLETE, including Phase 7. `build/robot-learning.pdf` — 324 pages.**
+Phase 7 added two chapters from the guest track (Chs 12 and 13) and pushed the book past the
+brief's 300-page target on real course material, not padding.
 
 ### The slide-password problem and how it was solved
 The 11 slide PDFs are AES-256 (`R=6`) with a *user* password that the user does
@@ -45,10 +46,16 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
       zero overfull boxes, banned-word grep clean, all cross-references resolved.
 - [x] **Phase 6 — Front/back matter.** `chapters/00-preface.md` (what the book is, who
       it is for, and a full disclosure of how the sources were obtained), plus unnumbered
-      `12-notation.md`, `13-glossary.md` (158 terms), `14-bibliography.md` (every work
-      named, by chapter, with an *Unresolved* section) and `15-index.md`, generated from
-      the rendered PDF by `scripts/make_index.py`.
-- [ ] **Phase 7 — Guest lectures** (optional — ask before starting)
+      `14-notation.md`, `15-glossary.md` (158 terms), `16-bibliography.md` (every work
+      named, by chapter, with an *Unresolved* section) and `17-index.md` (198 entries),
+      generated from the rendered PDF by `scripts/make_index.py`. **These four were
+      renumbered from 12–15 when Phase 7 took chapter numbers 12 and 13** — file order is
+      the glob order in `build.sh`, and `make_index.py` hardcodes `chapters/17-index.md`.
+- [x] **Phase 7 — Guest lectures.** 10 of 11 talks recovered and written up as
+      `chapters/12-guest-lectures-i.md` (weeks 2–6) and `13-guest-lectures-ii.md` (weeks 7–11).
+      **Dieter Fox's week-12 talk is unrecoverable** — the playlist entry is a *private* video and
+      the course page lists no recording, so it is absent from the book by design, and recorded as
+      such in the bibliography's *Unresolved* section. See the Phase 7 notes below.
 - [x] **Phase 8 — PDF build.** `build/robot-learning.pdf` — **272 pages**, zero overfull
       boxes, no LaTeX warnings, all cross-references resolved.
 - [x] **Phase 9 — Verification.** Results in the report below.
@@ -68,6 +75,26 @@ the clean PDFs (`qpdf --decrypt`) and keep the frames as figures.
 | 9 | Generalist Robot Policies | ✅ 9,107 w | ✅ 55 | ✅ | ✅ 23 pp |
 | 10 | Embodied Reasoning & Test-time Scaling | ✅ 7,491 w | ✅ 44 | ✅ | ✅ 21 pp |
 | 11 | Frontier & Open Problems | ✅ 9,700 w | ✅ 43 | ✅ | ✅ 24 pp |
+
+### Guest lectures (Phase 7)
+
+| Wk | Speaker | Transcript | Slides | In chapter |
+|---|---|---|---|---|
+| 2 | Abhishek Gupta (UW) | ✅ 6,192 w | ✅ 43 | Ch.12 |
+| 3 | Danfei Xu (Georgia Tech) | ✅ 6,134 w | ✅ 68 | Ch.12 |
+| 4 | Aviral Kumar (CMU/GDM) | ✅ 7,519 w | ✅ 15 | Ch.12 |
+| 5 | Andrew Wagenmaker (Berkeley) | ✅ 6,957 w | ✅ 11 | Ch.12 |
+| 6 | Cheng Chi (Sunday Robotics) | ✅ 6,563 w | ✅ 28 | Ch.12 |
+| 7 | Ted Xiao (Prometheus) | ✅ 7,112 w | ✅ 32 | Ch.13 |
+| 8 | Scott Reed (NVIDIA GEAR) | ✅ 5,768 w | ✅ 12 | Ch.13 |
+| 9 | Quan Vuong (Physical Intelligence) | ✅ 5,667 w | ✅ 31 | Ch.13 |
+| 10 | Archit Sharma (Google DeepMind) | ✅ 5,075 w | ✅ 14 | Ch.13 |
+| 11 | Lucas Beyer (Meta) | ✅ 11,874 w | ✅ 54 | Ch.13 |
+| 12 | **Dieter Fox (UW / NVIDIA)** | ❌ private video | ❌ | **absent — see bibliography** |
+
+Guest total: **68,861 words, 308 slides.** De-dup ratio 2.92–2.99× (main lectures: 2.96–2.98×);
+speaking rate 153–221 wpm, higher than the main lectures' 135–156 but natural for a 30-minute
+remote talk, and far from the ~400 wpm that would signal a de-duplication failure.
 
 Total cleaned transcript: **91,170 words** across 10 h 25 min of recording.
 
@@ -113,9 +140,46 @@ Everything downstream (Phases 3–9) depends on this.
 
 ---
 
-## Phase 9 — verification report
+## Phase 9 — verification report (re-run 2026-07-26, after Phase 7)
 
-Run against `build/robot-learning.pdf`, 274 pages.
+Run against `build/robot-learning.pdf`, **324 pages**.
+
+| Check | Result |
+|---|---|
+| Pages | **324** (was 274; +50 from Chs 12–13) |
+| Overfull / underfull boxes | **0 / 0** |
+| Missing font glyphs | **0** |
+| Unresolved cross-references | **0** |
+| Banned-word grep, source *and* rendered text | **clean** |
+| Labeled equations with the full four-part treatment | **95 / 95** |
+| Chapters with both closing sections | **13 / 13** |
+| `[UNCLEAR]` markers preserved into the PDF | **9** (6 original + 3 from the guest track) |
+| Index entries | **198** (was 160); 68 guest-chapter term hits |
+
+**Fixes made during this pass** (the audit found real defects, not just confirmations):
+
+1. **Two banned-phrase escapes.** The previous grep only tested the contracted "it's worth noting";
+   the spelled-out "it **is** worth noting that" survived in Ch.7 and Ch.10. Both removed, plus a
+   third instance in Ch.5 ("the setup is worth noting for…").
+2. **Seven labeled equations were missing part of the four-part treatment** — five of them in Ch.4,
+   which was the real drift point, *not* Chs 10–11 as suspected. All seven closed; the book is now
+   95/95.
+3. **The notation-deviation footnoting was overstated.** PROGRESS.md claimed eight notation-change
+   footnotes; only three existed. Added the two that actually mislead a reader holding the deck:
+   Ch.4's **DDPG actor/critic flip** (the one place a slide's letters are *swapped* rather than
+   renamed) and Ch.6's **$i,T \to k,K$ re-indexing** across seven equations.
+4. **An undocumented silent re-lettering**: the attention scaling is $\sqrt{d_k}$ on Lecture 7's
+   slide and $\sqrt{d}$ in the book. Added to the appendix deviation table.
+5. **Slide-number error caught before it shipped**: the DDPG flip is on printed slides **39–40**,
+   not the 41–42 that `notes/notation.md` §7 records (those are file indices).
+
+**Equation verification against magnified slide images** — L6 slides 19, 20, 22, 25, 33; L4 39, 40;
+L7 7, 18, 22. All character-identical to the book modulo documented renames. Confirmed exactly: the
+DDPM forward process, the diffusion ELBO and $\mathcal{L}_{\text{simple}}$, DDIM sampling, the three
+flow-matching equations, the DDPG policy gradient and exploration noise, scaled dot-product
+attention, the Chinchilla/GPT-3 arithmetic, and the CLIP loss.
+
+### Original Phase 9 report (274-page build)
 
 | Check | Result |
 |---|---|
@@ -156,6 +220,51 @@ Octo attention-mask caption garble (Ch.9); and eight notation-change footnotes.
 274 pages with chapters of 19–24. The chapters cover everything in the `notes/` files and
 hard rule #1 forbids padding — 10 h 25 min of lecture is less material than a 400-page
 textbook. Front and back matter are already 48 pages of the total.
+
+## Phase 7 notes — the guest lectures
+
+Working notes are in `notes/guest_lectures.md`, including a per-talk **caption-mangling
+checklist**. Read that before editing Chs 12–13.
+
+**Sourcing.** 10 of 11 talks are on the guest playlist; the 11th (`xvHdw0Cm_RY`, Dieter Fox) is a
+private video. **No slides exist anywhere** — checked the course page, all ten video descriptions
+(they link only the course site), and the course GitHub, which holds the four homework assignments
+and zero PDFs. Decks were therefore reconstructed from the recordings.
+
+| Asset | State |
+|---|---|
+| `transcripts/guests/gNN_slug.txt` | 10 cleaned transcripts, **68,861 words** |
+| `slides_png/guestNN_slug/` | **308 reconstructed slides** + manifests |
+| `notes/guest_lectures.md` | per-talk notes + mangling checklist |
+| `scripts/fetch_guests.sh` | captions then 1080p video, resumable |
+| `scripts/clean_vtt_guests.py` | imports `clean_vtt.py`; guest roster table |
+| `scripts/extract_guest_slides.sh` | wraps `extract_slides.py` with the mask |
+
+**The guest recordings are Zoom screen-shares, not clean slide captures.** A live speaker webcam
+sits over the top-right corner and some talks add a participant column down the right edge. Those
+pixels change every frame, so whole-frame change detection finds almost no stable runs.
+`extract_slides.py` gained **`--ignore x0,y0,x1,y1`** (fractional, repeatable) to blank regions
+*before comparison only* — the saved frame is the untouched original — plus `--prefix` for the
+output directory name. Guests use `--ignore 0.85,0.0,1.0,1.0`. Consequence: a slide title running
+to the right edge can be physically occluded, so mark `[UNCLEAR]` rather than guessing.
+
+**Extraction yield varies a lot and low counts are not a bug.** Gupta 43, Xu 68, Kumar 15,
+Wagenmaker 11, Chi 28, Xiao 32, Reed 12, Vuong 31, Sharma 14, Beyer 54. The low ones are talks
+that play full-screen video for long stretches (Vuong's first 15 minutes) or that build slides
+incrementally so the collapser merges many builds into one final state (Kumar's slide 7 absorbs 24
+builds). The kept frame is always the *final* built state, which is what you want for reading.
+
+**Slide-file index ≠ printed slide number, and the offset is not constant.** Verified: Lecture 6
+file 31 prints as 33; Lecture 4 files 41–42 print as **39–40**; Xu guest file 25 prints as 33. The
+offsets go in *both* directions, because build-collapsing removes frames while unnumbered title
+slides add them. `notes/notation.md` §7 uses **file indices**. Only three places in the published
+book cite a slide number — the two notation editor's notes added in Ch.4 and Ch.6, and Ch.12's
+mention of Gupta's deck — and each was checked against the printed number on the image.
+
+**Auto-captions are markedly worse here than on the main lectures.** π0.7 alone appears as
+"PILE-7", "Pilot 7", "PyTorch 7" and "Pyro 7"; world action models become "whens"; EgoMimic becomes
+"Google makes"; Kumar's **RaC** becomes "rack". Every name and number in Chs 12–13 was checked
+against a slide image; the full list is in `notes/guest_lectures.md`.
 
 ## Phase 5 notes — chapter build gotchas
 

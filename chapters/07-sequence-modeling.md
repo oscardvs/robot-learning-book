@@ -68,7 +68,9 @@ $$\mathcal{L} = -\frac{1}{T}\sum_{t=1}^{T} \log p_\theta\big(x_t \mid x_{1:t-1}\
 
 **In words.** At every position, penalize the model for the probability it failed to assign to the token that actually came next.
 
-**Why this shape.** With the causal mask in place and the true prefix supplied, all $T$ predictions can be computed and scored in **one forward pass**, because position $t$'s prediction depends only on inputs the model already has. An RNN needs $T$ sequential passes for the same thing. That is the parallelism advantage that made scale possible, and it is worth noting that it is a consequence of the mask rather than of attention per se (@fig:transformer).
+**The symbols.** $x_t$ is the true token at position $t$ and $x_{1:t-1}$ the true prefix before it — both taken from the training sequence, never from the model's own output, which is what "teacher forcing" names. $T$ is the sequence length, so the loss is the average negative log-likelihood per position. $p_\theta$ is the model's predicted distribution over the vocabulary.
+
+**Why this shape.** With the causal mask in place and the true prefix supplied, all $T$ predictions can be computed and scored in **one forward pass**, because position $t$'s prediction depends only on inputs the model already has. An RNN needs $T$ sequential passes for the same thing. That is the parallelism advantage that made scale possible, and it is a consequence of the mask rather than of attention per se (@fig:transformer).
 
 ![The encoder-decoder transformer: bidirectional self-attention in the encoder, a causal mask in the decoder, and cross-attention between them. Credit: course slides, Lecture 7.](../slides_png/lecture07/slide_012.jpg){#fig:transformer width=80%}
 

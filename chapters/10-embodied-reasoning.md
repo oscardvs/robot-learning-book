@@ -155,7 +155,7 @@ The consequence printed on the slide: improving the raw policy from 3000 to 5200
 
 ![AlphaGo's Elo ratings with and without test-time search. The raw policy network sits below superhuman play; adding tree search at test time takes the same network far past it. Credit: course slides, Lecture 10, adapted there from slides by Noam Brown.](../slides_png/lecture10/slide_026.jpg){#fig:alphago width=80%}
 
-> **Editor's note.** The lecturer flags that these numbers are probably inflated, because AlphaGo was trained by playing against earlier checkpoints of itself. It is also worth noting that applying the 120-Elo rule literally to a 2,200-point gap gives $2^{2200/120} \approx 3\times10^5$ rather than $10^5$, so the slide's figure should be read as an order of magnitude rather than a calculation. The conclusion does not depend on the factor: it is very large either way.
+> **Editor's note.** The lecturer flags that these numbers are probably inflated, because AlphaGo was trained by playing against earlier checkpoints of itself. Applying the 120-Elo rule literally to a 2,200-point gap also gives $2^{2200/120} \approx 3\times10^5$ rather than $10^5$, so the slide's figure should be read as an order of magnitude rather than a calculation. The conclusion does not depend on the factor: it is very large either way.
 
 The remark the lecture adds is the strongest form of the argument, and it is empirical rather than theoretical: as far as he is aware, **no model has ever surpassed human performance at Go without test-time search.** Every Go agent uses it.
 

@@ -128,6 +128,8 @@ $$x_{k+1} = \underbrace{\sqrt{1-\beta_{k+1}}\; x_k}_{\text{signal, shrunk}} \;+\
 
 **Why this shape.** The two coefficients are chosen so that variance is preserved: if $x_k$ has unit variance then so does $x_{k+1}$, since $(1-\beta) + \beta = 1$. Without that, the signal would either explode or vanish at a rate determined by the schedule rather than by design. The forward process has no learnable parameters at all — it is a fixed corruption — which is what makes the reverse problem well-posed.
 
+> **Editor's note.** Slides 19–25 index the diffusion process with $i$ and write the total number of steps as $T$ — so the deck shows $\beta_i$, $\alpha_i$, $\bar\alpha_i$ and $\epsilon_\theta(x_i,i)$ where this chapter shows $\beta_k$, $\alpha_k$, $\bar\alpha_k$ and $\epsilon_\theta(x_k,k)$. Nothing but the letter changes. The rename is forced twice over: $t$ and $i$ are already environment time and a generic enumeration index throughout the book, and $T$ is the episode horizon, which would otherwise collide with the step count in exactly the expression where it matters most — Diffusion Policy's $\mathbf{a}^k_{t:t+H}$, an action chunk carrying an environment index and a denoising index at once.
+
 The **backward process** is what we want, and $p(x_{k-1} \mid x_k)$ is intractable to write down. The move that makes diffusion practical is to change the prediction target: instead of predicting the previous, less-noisy sample, **predict the noise that was added.** That turns an intractable inversion into an ordinary regression with a Gaussian target, and one denoising step becomes $x_{k-1} \approx x_k - \epsilon_\theta(x_k, k)$.
 
 Formally the objective is @eq:vaeelbo extended to $K$ steps, with the "encoder" being the fixed forward process:

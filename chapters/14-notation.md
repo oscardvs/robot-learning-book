@@ -169,6 +169,7 @@ Readers following along with the recordings should expect the following substitu
 | 6 | $\mathbf{a}^k_{t:t+H}$, $o_t$ | $A^k_t$, $O_t$ | $A$ is the advantage |
 | 6 | $\lambda$, $v_\theta(x_\lambda,\lambda)$ | $t$, $v_\theta(x_t,t)$ | $t$ is environment time |
 | 7 | $\tau_c$ | $\tau$ | $\tau$ is a trajectory |
+| 7 | $\sqrt{d}$ in the attention scaling | $\sqrt{d_k}$ | one head dimension is carried throughout |
 | 7 | chunk length $H$ | $k$ | $k$ is the denoising step |
 | 10 | group size $N$ | $G$ | $G$ is the return |
 

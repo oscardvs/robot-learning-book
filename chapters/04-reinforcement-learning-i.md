@@ -136,6 +136,8 @@ $$V_{j+1}(s) \leftarrow \mathbb{E}_{a\sim\pi(\cdot\mid s)}\big[\, r(s,a) + \gamm
 
 **In words.** Compute what this particular policy is worth from each state, by averaging over the actions it would take rather than the best action available.
 
+**The symbols.** $V_j$ is the value estimate after $j$ sweeps, and $j$ counts sweeps rather than environment steps. $\pi(\cdot\mid s)$ is the policy being measured — fixed throughout the evaluation. The inner $\mathbb{E}_{s'\sim P}$ is the same expectation over next states as in @eq:bellmanexp; the outer $\mathbb{E}_{a\sim\pi}$ is what replaces the maximum.
+
 **Why this shape.** Removing the maximization drops the cost to $O(|\mathcal{S}|^2)$, since you no longer compare all actions in every state. It is called **policy evaluation**, and on its own it improves nothing — it measures. But measurement plus a greedy step gives an algorithm:
 
 \begin{algorithm}[H]
@@ -175,7 +177,13 @@ Before that, the intermediate algorithm deserves a name, because it completes th
 
 $$Q_{j+1}(s,a) \leftarrow r(s,a) + \gamma\,\mathbb{E}_{s'\sim P(\cdot\mid s,a)}\Big[\max_{a'} Q_j(s',a')\Big]$$ {#eq:qvi}
 
-until the values settle. It converges by the same contraction argument, costs more than value iteration because the table it fills is indexed by state *and* action, and still requires the model. Its point is structural rather than practical: it isolates the two things Q-learning does. The move from @eq:bellmanexp to @eq:qvi buys **model-free acting**. The move from @eq:qvi to Q-learning, next, buys **model-free learning**. They are separate victories, and conflating them is the most common confusion about what Q-learning is for.
+until the values settle.
+
+**In words.** Fill in the worth of every state-action pair by assuming the best is done from the next state onward, and repeat until the numbers stop moving.
+
+**The symbols.** $Q_j$ is the action-value table after $j$ sweeps, indexed by a state and an action rather than by a state alone. $a'$ ranges over actions available at the next state $s'$, and the maximization now sits *inside* the expectation, applied to the successor's values rather than to the current state's.
+
+**Why this shape.** It converges by the same contraction argument as value iteration, costs more because the table it fills is indexed by state *and* action, and still requires the model. Its point is structural rather than practical: it isolates the two things Q-learning does. The move from @eq:bellmanexp to @eq:qvi buys **model-free acting**. The move from @eq:qvi to Q-learning, next, buys **model-free learning**. They are separate victories, and conflating them is the most common confusion about what Q-learning is for.
 
 ## Q-learning: replacing the expectation with experience
 
@@ -219,6 +227,8 @@ The contrast makes it sharper. **SARSA** uses the action actually taken next ins
 $$\underbrace{r(s_t,a_t) + \gamma \max_a Q(s_{t+1},a)}_{\textbf{Q-learning (off-policy): "the best I could do next"}} \qquad\qquad \underbrace{r(s_t,a_t) + \gamma\, Q(s_{t+1},a_{t+1})}_{\textbf{SARSA (on-policy): "what I will actually do next"}}$$ {#eq:qsarsa}
 
 **In words.** Q-learning evaluates the future assuming you will behave perfectly from here; SARSA evaluates it assuming you will behave the way you are actually behaving, mistakes and exploration included.
+
+**The symbols.** Both expressions are temporal-difference targets for the same update. $a_{t+1}$ is the action the behaving policy actually selects at $s_{t+1}$ — the extra letter that gives SARSA its name, since the update consumes the tuple $(s_t, a_t, r_t, s_{t+1}, a_{t+1})$. Everything else is shared: $r(s_t,a_t)$ the observed reward, $\gamma$ the discount, $Q$ the current table.
 
 **Why this shape.** The difference produces genuinely different behavior, and the standard illustration is **cliff walking**: a grid where the shortest path to the goal runs along the edge of a cliff, and stepping off is catastrophic. Q-learning learns the optimal path, which is the one along the edge, because the $\max$ assumes it will never make a mistake. SARSA learns a path that keeps a safe distance, because its target includes the exploratory actions that occasionally push it off — so the states near the edge acquire low value, correctly, *for a policy that sometimes slips*. Neither is wrong. Q-learning answers "what is best if I act perfectly?" and SARSA answers "what is best given that I am the one doing it?", and for a robot that will in fact slip, the second question is sometimes the one you meant (@fig:qsarsa).
 
@@ -273,6 +283,8 @@ One more defect, and it is a statistical one rather than an engineering one. The
 $$y = r(s_t,a_t) + \gamma\, Q_{\bar\phi}\Big(s_{t+1},\ \underbrace{\arg\max_a Q_{\phi}(s_{t+1},a)}_{\text{online network selects}}\Big)$$ {#eq:doubledqn}
 
 **In words.** Let one network choose which action looks best, and a different network say how good that action actually is.
+
+**The symbols.** $Q_\phi$ is the **online** network, updated every step, and $Q_{\bar\phi}$ the **target** copy, held fixed and refreshed periodically. The inner $\arg\max$ returns an action, not a value, so the online network supplies only the choice; the outer $Q_{\bar\phi}$ supplies the number. $y$ is the regression target the loss of @eq:dqnloss drives $Q_\phi(s_t,a_t)$ toward.
 
 **Why this shape.** The bias came from using the same noisy estimates to both pick the maximum and report its value. If the online network's noise makes an action look good, the target network — whose noise is independent — will usually not agree, and the reported value is not inflated. The fix costs nothing, since both networks already exist for the stability reason above. It is a good example of a pattern that recurs in this book: a small statistical correction that turns an algorithm from marginal to reliable (@fig:double).
 
@@ -331,6 +343,8 @@ $$\mu_\theta(s) \;\approx\; \arg\max_a Q_\phi(s,a)$$ {#eq:ddpgactor}
 
 **The symbols.** $\mu_\theta$ is the **actor**, a deterministic policy with parameters $\theta$; $Q_\phi$ is the **critic**, exactly the DQN network of @eq:dqnloss with parameters $\phi$.
 
+> **Editor's note.** The lecture slides label these the other way round — actor $\mu_\phi$, critic $Q_\theta$ — and this is the one place in the book where a slide's letters have been swapped rather than merely renamed, so it is worth pausing on. Everywhere else in the course, and in Chapters 5, 6, 9 and 10, $\theta$ parameterizes the thing that produces the output and $\phi$ the thing that scores or encodes it: the policy against the critic, the decoder against the encoder. DDPG on slides 39–40 is the sole exception, so this book flips it here rather than flipping five other chapters. Read the slides with the two letters exchanged and everything else on them is unchanged.
+
 **Why this shape.** Test time becomes a single forward pass, which is what a 50 Hz controller needs. This is **DDPG**, and it is the first **actor-critic** architecture in this book: two networks with different jobs, the critic scoring actions and the actor producing them. The critic trains exactly as before, on the temporal-difference loss. The actor's job is to climb the critic's landscape, and the gradient follows from the chain rule:
 
 $$\nabla_\theta J(\theta) \;\approx\; \mathbb{E}_{s}\Big[\, \nabla_a Q_\phi(s,a)\big|_{a=\mu_\theta(s)} \cdot \nabla_\theta \mu_\theta(s) \,\Big]$$ {#eq:dpg}
@@ -347,7 +361,13 @@ Two practical matters, and they are the reason DDPG has a bad reputation. A dete
 
 $$a_t = \mu_\theta(s_t) + \epsilon, \qquad \epsilon\sim\mathcal{N}(0,\sigma)$$ {#eq:ddpgnoise}
 
-and $\sigma$ becomes a hand-tuned parameter with no good setting: too small and the robot never discovers anything, too large and the critic is trained on garbage and the whole system destabilizes. The second matter is the general one. **DDPG is notoriously brittle** — sensitive to hyperparameters, seeds and reward scaling, and quite capable of failing to converge on a problem it solved yesterday. The honest summary is that it was the first method to make continuous-action deep reinforcement learning work at all, and that the algorithms of Chapter 5 exist partly to make it work reliably.
+**In words.** Take the action the actor recommends and jitter it by a random amount before sending it to the motors.
+
+**The symbols.** $\mu_\theta(s_t)$ is the actor's deterministic output at state $s_t$, and $\epsilon$ is Gaussian exploration noise of scale $\sigma$, drawn fresh at every step and added in action space rather than substituted for the action.
+
+**Why this shape.** Noise added to a continuous action is a small perturbation of a sensible command, whereas $\epsilon$-greedy's alternative — replace the action outright with a uniform sample — is a violent lurch on a real arm. The exploration is therefore local by construction, which is what makes it safe to run on hardware. The price is that $\sigma$ becomes a hand-tuned parameter with no good setting: too small and the robot never discovers anything, too large and the critic is trained on garbage and the whole system destabilizes.
+
+The second matter is the general one. **DDPG is notoriously brittle** — sensitive to hyperparameters, seeds and reward scaling, and quite capable of failing to converge on a problem it solved yesterday. The honest summary is that it was the first method to make continuous-action deep reinforcement learning work at all, and that the algorithms of Chapter 5 exist partly to make it work reliably.
 
 ## The chapter in one table
 

@@ -167,9 +167,41 @@ Two notes on the form. Citations in the text are inline rather than keyed, so th
 - R. Brooks. **Intelligence without Representation.** 1991. **[assigned]**
 - Course material sources acknowledged on the final slide: the Deep Learning Lab at the University of Freiburg; UC Berkeley Deep Reinforcement Learning; Stanford Deep Reinforcement Learning; Cornell Robot Learning.
 
-## Guest lectures {.unnumbered}
+## Guest lectures — Chapters 12 and 13 {.unnumbered}
 
-Not covered in this edition. The speakers, in the order the course listed them: Abhishek Gupta, Danfei Xu, Aviral Kumar, Cheng Chi, Ted Xiao, Scott Reed, Quan Vuong, Archit Sharma, Lucas Beyer, Dieter Fox, and Andrew Wagenmaker. Several are referenced in the main chapters where the lectures point to them — Cheng Chi for the handheld data-collection interface and Diffusion Policy, Scott Reed for the from-scratch backbone position and Gato, Quan Vuong for the remote Octo evaluations, Ted Xiao for SIMPLER, and Lucas Beyer for the vision transformer.
+The talks themselves, in the order the course gave them. Each is cited by speaker, title and
+recording, because no slides were ever published and the recording is the primary source.
+
+- **Abhishek Gupta** (University of Washington). *Simulation for Robotic Manipulation, without the Pain.* Week 2.
+- **Danfei Xu** (Georgia Tech & NVIDIA). *Human Data as a Foundation for Robot Learning.* Week 3.
+- **Aviral Kumar** (CMU & Google DeepMind). *How to Replicate the LLM Recipe in Robot Learning.* Week 4.
+- **Andrew Wagenmaker** (UC Berkeley). *Robots That Learn From Experience.* Week 5.
+- **Cheng Chi** (Sunday Robotics). *Robotics Beyond Algorithms.* Week 6.
+- **Ted Xiao** (Project Prometheus). *Three Eras of Robot Learning.* Week 7.
+- **Scott Reed** (NVIDIA GEAR). *What is the right Backbone for Embodied Agents?* Week 8.
+- **Quan Vuong** (Physical Intelligence). *π0.7, A Generalist Model with Emergent Capabilities.* Week 9.
+- **Archit Sharma** (Google DeepMind). *Scaling Test-Time Compute at the Frontier.* Week 10.
+- **Lucas Beyer** (Meta Superintelligence Labs). *Vision in the Age of LLMs.* Week 11.
+
+Works named on the guest slides and cited in Chapters 12 and 13:
+
+- R. Jain et al. **PolaRiS: Scalable Real-to-Sim Evaluations for Generalist Robot Policies.** 2025. The real-to-sim evaluation result in Chapter 12; Pearson $R = 0.90$, MMRV $= 0.03$.
+- Hu et al. **RaC: Robot Learning for Long-Horizon Tasks by Scaling Recovery and Correction.** arXiv, 2025. Kumar's mid-training result; 5 hours against Aloha Unleashed's 89.
+- Punamiya et al. **Domain Adaptation for Generalizable Imitation from Egocentric Human Data.** NeurIPS, 2025. EgoBridge, and the joint optimal-transport objective of @eq:jot.
+- **EgoMimic**, **EMMA** and **EgoVerse**, the egocentric-capture line of Xu's talk; EgoVerse pools roughly 1,300 hours of human data across institutions.
+- **DSRL**, Wagenmaker's diffusion-steering method: reinforcement learning in the noise space of a frozen behavior-cloning policy.
+- **PA-RL**, Kumar's policy-agnostic reinforcement learning; the first autonomous real-robot fine-tuning of OpenVLA, in 40 minutes.
+- **DreamZero** and **Cosmos Policy** (NVIDIA GEAR), and **GR-1** / **GR-2** (ByteDance) — the world action models of Chapter 13.
+- **Toyota Research Institute, Large Behavior Models**, singled out by Reed for its double-blind evaluation protocol.
+- **HG-DAgger**, the human-intervention baseline against which RaC's recovery step is defined.
+- **Ego4D**, and the sensorized-human data scaling argument: roughly 20,000 hours in the wild plus about 50 hours with Vive trackers and Manus gloves.
+- **BiT (Big Transfer)**, **CLIP**, **SigLIP**, **SigLIP 2** and **PaliGemma** — the pre-training and mid-training lineage of Beyer's talk, all of which also underlie Chapter 7.
+- **VTAB**, the Visual Task Adaptation Benchmark, and **ObjectNet**, the out-of-distribution evaluation set behind Beyer's scaling argument.
+
+**Week 12 — Dieter Fox** (University of Washington; NVIDIA). The eleventh entry in the guest
+playlist is a private video and the course page lists no recording. There is no transcript, no
+deck and no secondary record, so the talk is absent from this book rather than reconstructed. See
+the *Unresolved* section below.
 
 ## Unresolved {.unnumbered}
 
@@ -178,3 +210,5 @@ One work referenced in the lectures could not be identified from the available s
 - A study from the **Toyota Research Institute** on whether multi-task pre-training helps post-training, described in Chapter 9: diffusion transformer policies pre-trained on roughly 1,700 hours of data including Open X-Embodiment, fine-tuned to single bimanual tasks, evaluated with blind A/B testing, reporting a three- to five-fold improvement in post-training sample efficiency and finding that data normalization mattered more than architectural changes. The slide covering it could not be recovered from the recording, and the transcript names it only as "this work from TRI".
 
 Two further works named only approximately in the transcript, with no recoverable slide, are described in Chapter 11 without citation: a system fusing vision-language embeddings into 3D spatial maps for zero-shot open-vocabulary navigation, and a system learning mapless navigation from internet video.
+
+Three items from the guest track are likewise unresolved. **Dieter Fox's week-12 talk** could not be obtained at all — the recording is private and nothing else survives, so no part of it appears in Chapter 13. The **closed form of Kumar's "$P$ to the $K$" recovery model** is on a slide he declined to present, in a corner of the frame the speaker's video tile overlaps, and could not be read. And the **data-quality figure from Vuong's talk** — the result that quality metadata inverts the effect of adding low-grade data — is reported in Chapter 13 from the transcript alone, because full-screen video plays across that passage and the slide reconstruction found no stable frame.
