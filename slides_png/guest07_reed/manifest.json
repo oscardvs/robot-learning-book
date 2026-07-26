@@ -1,0 +1,198 @@
+{
+  "lecture": 7,
+  "params": {
+    "video": "video/guests/g07.mp4",
+    "index": 7,
+    "out_root": "slides_png",
+    "fps": 1.0,
+    "dwell": 2.5,
+    "change": 18.0,
+    "preserve": 0.85,
+    "dark": 110.0,
+    "emit_dups": false,
+    "ignore": [
+      "0.85,0.0,1.0,1.0"
+    ],
+    "prefix": "guest07_reed"
+  },
+  "slides": [
+    {
+      "kind": "slide",
+      "n": 1,
+      "t_start": 0.0,
+      "t_end": 82.0,
+      "file": "slide_001.jpg",
+      "dup_of": null,
+      "build_ts": [
+        0.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 2,
+      "t_start": 241.0,
+      "t_end": 324.0,
+      "file": "slide_002.jpg",
+      "dup_of": null,
+      "build_ts": [
+        83.0,
+        87.0,
+        110.0,
+        141.0,
+        220.0,
+        241.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 3,
+      "t_start": 372.0,
+      "t_end": 507.0,
+      "file": "slide_003.jpg",
+      "dup_of": null,
+      "build_ts": [
+        325.0,
+        342.0,
+        372.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 4,
+      "t_start": 798.0,
+      "t_end": 846.0,
+      "file": "slide_004.jpg",
+      "dup_of": null,
+      "build_ts": [
+        508.0,
+        522.0,
+        610.0,
+        672.0,
+        773.0,
+        798.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 5,
+      "t_start": 981.0,
+      "t_end": 1016.0,
+      "file": "slide_005.jpg",
+      "dup_of": null,
+      "build_ts": [
+        847.0,
+        863.0,
+        865.0,
+        981.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 6,
+      "t_start": 1017.0,
+      "t_end": 1058.0,
+      "file": "slide_006.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1017.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 7,
+      "t_start": 1127.0,
+      "t_end": 1129.0,
+      "file": "slide_007.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1059.0,
+        1127.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 8,
+      "t_start": 1389.0,
+      "t_end": 1397.0,
+      "file": "slide_008.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1155.0,
+        1159.0,
+        1167.0,
+        1240.0,
+        1248.0,
+        1386.0,
+        1389.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 9,
+      "t_start": 1412.0,
+      "t_end": 1417.0,
+      "file": "slide_009.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1398.0,
+        1412.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 10,
+      "t_start": 1418.0,
+      "t_end": 1429.0,
+      "file": "slide_010.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1418.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 11,
+      "t_start": 1503.0,
+      "t_end": 1530.0,
+      "file": "slide_011.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1430.0,
+        1472.0,
+        1499.0,
+        1503.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 12,
+      "t_start": 1598.0,
+      "t_end": 1608.0,
+      "file": "slide_012.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1531.0,
+        1549.0,
+        1553.0,
+        1571.0,
+        1594.0,
+        1598.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 12,
+      "t": 2061.0,
+      "file": null,
+      "build_ts": [
+        1610.0,
+        1795.0,
+        1802.0,
+        1804.0,
+        1806.0,
+        1809.0,
+        2061.0
+      ]
+    }
+  ]
+}

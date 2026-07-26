@@ -21,8 +21,18 @@ Output:
   slides_png/lecture{NN}/manifest.json        machine-readable
   slides_png/lecture{NN}/manifest.md          human-readable slide->timestamp map
 
+The guest recordings differ from the main lectures in one way that breaks step 2:
+they are Zoom screen-shares with a *live speaker webcam* composited into the
+corner. Those pixels change every frame, so no run is ever stable and the
+extractor returns almost nothing. `--ignore` blanks one or more rectangles
+before any comparison is made, which restores stable-run detection. The saved
+full-resolution frame is always the untouched original, so nothing is lost from
+the image itself — the mask only governs *when* a frame is judged stable.
+
 Usage: extract_slides.py <video> <lecture_index> <out_root> [--fps F]
        [--dwell S] [--change T] [--preserve P] [--dark D]
+       [--ignore x0,y0,x1,y1]...   fractional 0-1 rects, repeatable
+       [--prefix NAME]             output dir name instead of lecture{NN}
 """
 
 import argparse
@@ -50,6 +60,33 @@ def sample_frames(video, fps, workdir):
     stack = np.stack([np.asarray(Image.open(f), dtype=np.float32) for f in files])
     times = np.array([(int(f.stem[2:]) - 1) / fps for f in files])
     return times, stack
+
+
+def parse_rect(spec):
+    """'x0,y0,x1,y1' as fractions of width/height -> tuple of four floats."""
+    try:
+        x0, y0, x1, y1 = (float(v) for v in spec.split(","))
+    except ValueError:
+        raise SystemExit(f"--ignore expects x0,y0,x1,y1 fractions, got {spec!r}")
+    if not (0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1):
+        raise SystemExit(f"--ignore rect out of range or inverted: {spec!r}")
+    return x0, y0, x1, y1
+
+
+def blank_regions(stack, rects, fill=255.0):
+    """Overwrite ignored rectangles with a constant so they never register as
+    change and never count as content. Operates on the downscaled stack only."""
+    if not rects:
+        return stack
+    # frames are (N, H, W) when PIL hands back mode 'L' and (N, H, W, C) when the
+    # JPEG round-trips as RGB; only the two spatial axes matter here
+    h, w = stack.shape[1], stack.shape[2]
+    out = stack.copy()
+    for x0, y0, x1, y1 in rects:
+        c0, c1 = int(round(x0 * w)), int(round(x1 * w))
+        r0, r1 = int(round(y0 * h)), int(round(y1 * h))
+        out[:, r0:r1, c0:c1] = fill
+    return out
 
 
 def stable_runs(stack, times, change, min_dwell, fps):
@@ -145,13 +182,20 @@ def main():
     ap.add_argument("--preserve", type=float, default=0.85, help="build preserve ratio")
     ap.add_argument("--dark", type=float, default=110.0, help="dark-pixel gray cutoff")
     ap.add_argument("--emit-dups", action="store_true", help="also save revisit frames")
+    ap.add_argument("--ignore", action="append", default=[], metavar="x0,y0,x1,y1",
+                    help="fractional rect excluded from change detection; repeatable")
+    ap.add_argument("--prefix", default=None,
+                    help="output directory name (default: lecture{NN})")
     args = ap.parse_args()
 
-    out_dir = Path(args.out_root) / f"lecture{args.index:02d}"
+    rects = [parse_rect(s) for s in args.ignore]
+    name = args.prefix if args.prefix else f"lecture{args.index:02d}"
+    out_dir = Path(args.out_root) / name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp:
         times, stack = sample_frames(args.video, args.fps, Path(tmp))
+        stack = blank_regions(stack, rects)
         runs = stable_runs(stack, times, args.change, args.dwell, args.fps)
         kept = collapse(runs, args.preserve, args.dark, args.change)
 
@@ -174,7 +218,7 @@ def main():
     (out_dir / "manifest.json").write_text(json.dumps(
         {"lecture": args.index, "params": vars(args), "slides": slides}, indent=2))
 
-    lines = [f"# Lecture {args.index} — reconstructed slide manifest",
+    lines = [f"# {name} — reconstructed slide manifest",
              f"# {slide_no} unique slides from {len(kept)} stable states "
              f"(fps={args.fps}, dwell={args.dwell}s)", ""]
     for s in slides:

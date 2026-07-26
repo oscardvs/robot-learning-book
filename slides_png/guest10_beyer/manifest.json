@@ -1,0 +1,953 @@
+{
+  "lecture": 10,
+  "params": {
+    "video": "video/guests/g10.mp4",
+    "index": 10,
+    "out_root": "slides_png",
+    "fps": 1.0,
+    "dwell": 2.5,
+    "change": 18.0,
+    "preserve": 0.85,
+    "dark": 110.0,
+    "emit_dups": false,
+    "ignore": [
+      "0.85,0.0,1.0,1.0"
+    ],
+    "prefix": "guest10_beyer"
+  },
+  "slides": [
+    {
+      "kind": "slide",
+      "n": 1,
+      "t_start": 0.0,
+      "t_end": 31.0,
+      "file": "slide_001.jpg",
+      "dup_of": null,
+      "build_ts": [
+        0.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 2,
+      "t_start": 176.0,
+      "t_end": 177.0,
+      "file": "slide_002.jpg",
+      "dup_of": null,
+      "build_ts": [
+        79.0,
+        82.0,
+        91.0,
+        117.0,
+        134.0,
+        140.0,
+        143.0,
+        149.0,
+        151.0,
+        154.0,
+        157.0,
+        159.0,
+        164.0,
+        166.0,
+        169.0,
+        172.0,
+        176.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 3,
+      "t_start": 204.0,
+      "t_end": 205.0,
+      "file": "slide_003.jpg",
+      "dup_of": null,
+      "build_ts": [
+        196.0,
+        202.0,
+        204.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 4,
+      "t_start": 207.0,
+      "t_end": 224.0,
+      "file": "slide_004.jpg",
+      "dup_of": null,
+      "build_ts": [
+        207.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 5,
+      "t_start": 225.0,
+      "t_end": 253.0,
+      "file": "slide_005.jpg",
+      "dup_of": null,
+      "build_ts": [
+        225.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 6,
+      "t_start": 287.0,
+      "t_end": 311.0,
+      "file": "slide_006.jpg",
+      "dup_of": null,
+      "build_ts": [
+        254.0,
+        287.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 7,
+      "t_start": 312.0,
+      "t_end": 322.0,
+      "file": "slide_007.jpg",
+      "dup_of": null,
+      "build_ts": [
+        312.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 8,
+      "t_start": 323.0,
+      "t_end": 346.0,
+      "file": "slide_008.jpg",
+      "dup_of": null,
+      "build_ts": [
+        323.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 9,
+      "t_start": 347.0,
+      "t_end": 374.0,
+      "file": "slide_009.jpg",
+      "dup_of": null,
+      "build_ts": [
+        347.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 10,
+      "t_start": 375.0,
+      "t_end": 423.0,
+      "file": "slide_010.jpg",
+      "dup_of": null,
+      "build_ts": [
+        375.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 11,
+      "t_start": 424.0,
+      "t_end": 426.0,
+      "file": "slide_011.jpg",
+      "dup_of": null,
+      "build_ts": [
+        424.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 12,
+      "t_start": 489.0,
+      "t_end": 507.0,
+      "file": "slide_012.jpg",
+      "dup_of": null,
+      "build_ts": [
+        427.0,
+        446.0,
+        455.0,
+        469.0,
+        489.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 13,
+      "t_start": 508.0,
+      "t_end": 512.0,
+      "file": "slide_013.jpg",
+      "dup_of": null,
+      "build_ts": [
+        508.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 14,
+      "t_start": 520.0,
+      "t_end": 532.0,
+      "file": "slide_014.jpg",
+      "dup_of": null,
+      "build_ts": [
+        513.0,
+        520.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 15,
+      "t_start": 536.0,
+      "t_end": 549.0,
+      "file": "slide_015.jpg",
+      "dup_of": null,
+      "build_ts": [
+        533.0,
+        536.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 16,
+      "t_start": 550.0,
+      "t_end": 600.0,
+      "file": "slide_016.jpg",
+      "dup_of": null,
+      "build_ts": [
+        550.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 12,
+      "t": 603.0,
+      "file": null,
+      "build_ts": [
+        603.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 16,
+      "t": 607.0,
+      "file": null,
+      "build_ts": [
+        607.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 17,
+      "t_start": 642.0,
+      "t_end": 711.0,
+      "file": "slide_017.jpg",
+      "dup_of": null,
+      "build_ts": [
+        642.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 18,
+      "t_start": 712.0,
+      "t_end": 713.0,
+      "file": "slide_018.jpg",
+      "dup_of": null,
+      "build_ts": [
+        712.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 19,
+      "t": 714.0,
+      "file": null,
+      "build_ts": [
+        714.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 20,
+      "t": 779.0,
+      "file": null,
+      "build_ts": [
+        762.0,
+        779.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 19,
+      "t_start": 946.0,
+      "t_end": 982.0,
+      "file": "slide_019.jpg",
+      "dup_of": null,
+      "build_ts": [
+        816.0,
+        852.0,
+        917.0,
+        946.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 20,
+      "t_start": 1010.0,
+      "t_end": 1039.0,
+      "file": "slide_020.jpg",
+      "dup_of": null,
+      "build_ts": [
+        983.0,
+        987.0,
+        1010.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 21,
+      "t_start": 1040.0,
+      "t_end": 1104.0,
+      "file": "slide_021.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1040.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 25,
+      "t": 1179.0,
+      "file": null,
+      "build_ts": [
+        1106.0,
+        1130.0,
+        1179.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 22,
+      "t_start": 1218.0,
+      "t_end": 1221.0,
+      "file": "slide_022.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1218.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 26,
+      "t": 1222.0,
+      "file": null,
+      "build_ts": [
+        1222.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 27,
+      "t": 1370.0,
+      "file": null,
+      "build_ts": [
+        1232.0,
+        1260.0,
+        1339.0,
+        1370.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 23,
+      "t_start": 1490.0,
+      "t_end": 1512.0,
+      "file": "slide_023.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1395.0,
+        1448.0,
+        1490.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 24,
+      "t_start": 1514.0,
+      "t_end": 1515.0,
+      "file": "slide_024.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1514.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 29,
+      "t": 1517.0,
+      "file": null,
+      "build_ts": [
+        1517.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 25,
+      "t_start": 1528.0,
+      "t_end": 1529.0,
+      "file": "slide_025.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1528.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 26,
+      "t_start": 1589.0,
+      "t_end": 1603.0,
+      "file": "slide_026.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1531.0,
+        1549.0,
+        1569.0,
+        1575.0,
+        1589.0
+      ]
+    },
+    {
+      "kind": "revisit",
+      "dup_of": 29,
+      "t": 1606.0,
+      "file": null,
+      "build_ts": [
+        1606.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 27,
+      "t_start": 1726.0,
+      "t_end": 1736.0,
+      "file": "slide_027.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1616.0,
+        1658.0,
+        1722.0,
+        1726.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 28,
+      "t_start": 1738.0,
+      "t_end": 1767.0,
+      "file": "slide_028.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1738.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 29,
+      "t_start": 1768.0,
+      "t_end": 1771.0,
+      "file": "slide_029.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1768.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 30,
+      "t_start": 1781.0,
+      "t_end": 1784.0,
+      "file": "slide_030.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1772.0,
+        1781.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 31,
+      "t_start": 1850.0,
+      "t_end": 1870.0,
+      "file": "slide_031.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1785.0,
+        1837.0,
+        1850.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 32,
+      "t_start": 1871.0,
+      "t_end": 1877.0,
+      "file": "slide_032.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1871.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 33,
+      "t_start": 1930.0,
+      "t_end": 1950.0,
+      "file": "slide_033.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1878.0,
+        1911.0,
+        1930.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 34,
+      "t_start": 2054.0,
+      "t_end": 2059.0,
+      "file": "slide_034.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1951.0,
+        1954.0,
+        1961.0,
+        2007.0,
+        2021.0,
+        2049.0,
+        2052.0,
+        2054.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 35,
+      "t_start": 2061.0,
+      "t_end": 2068.0,
+      "file": "slide_035.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2061.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 36,
+      "t_start": 2069.0,
+      "t_end": 2085.0,
+      "file": "slide_036.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2069.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 37,
+      "t_start": 2086.0,
+      "t_end": 2142.0,
+      "file": "slide_037.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2086.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 38,
+      "t_start": 2143.0,
+      "t_end": 2208.0,
+      "file": "slide_038.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2143.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 39,
+      "t_start": 2290.0,
+      "t_end": 2344.0,
+      "file": "slide_039.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2209.0,
+        2290.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 40,
+      "t_start": 2355.0,
+      "t_end": 2379.0,
+      "file": "slide_040.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2345.0,
+        2355.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 41,
+      "t_start": 2380.0,
+      "t_end": 2383.0,
+      "file": "slide_041.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2380.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 42,
+      "t_start": 2400.0,
+      "t_end": 2409.0,
+      "file": "slide_042.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2384.0,
+        2400.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 43,
+      "t_start": 2410.0,
+      "t_end": 2416.0,
+      "file": "slide_043.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2410.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 44,
+      "t_start": 2442.0,
+      "t_end": 2452.0,
+      "file": "slide_044.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2417.0,
+        2442.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 45,
+      "t_start": 2453.0,
+      "t_end": 2454.0,
+      "file": "slide_045.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2453.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 46,
+      "t_start": 2462.0,
+      "t_end": 2504.0,
+      "file": "slide_046.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2458.0,
+        2462.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 47,
+      "t_start": 2508.0,
+      "t_end": 2511.0,
+      "file": "slide_047.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2505.0,
+        2508.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 48,
+      "t_start": 2512.0,
+      "t_end": 2527.0,
+      "file": "slide_048.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2512.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 49,
+      "t_start": 2570.0,
+      "t_end": 2582.0,
+      "file": "slide_049.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2528.0,
+        2554.0,
+        2570.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 50,
+      "t_start": 2584.0,
+      "t_end": 2586.0,
+      "file": "slide_050.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2584.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 51,
+      "t_start": 2637.0,
+      "t_end": 2656.0,
+      "file": "slide_051.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2587.0,
+        2593.0,
+        2607.0,
+        2637.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 52,
+      "t_start": 2680.0,
+      "t_end": 2726.0,
+      "file": "slide_052.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2658.0,
+        2664.0,
+        2669.0,
+        2674.0,
+        2680.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 53,
+      "t_start": 2798.0,
+      "t_end": 3055.0,
+      "file": "slide_053.jpg",
+      "dup_of": null,
+      "build_ts": [
+        2727.0,
+        2749.0,
+        2761.0,
+        2781.0,
+        2798.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 54,
+      "t_start": 4136.0,
+      "t_end": 4137.0,
+      "file": "slide_054.jpg",
+      "dup_of": null,
+      "build_ts": [
+        3056.0,
+        3062.0,
+        3067.0,
+        3069.0,
+        3071.0,
+        3075.0,
+        3079.0,
+        3081.0,
+        3083.0,
+        3085.0,
+        3087.0,
+        3095.0,
+        3097.0,
+        3102.0,
+        3113.0,
+        3115.0,
+        3121.0,
+        3126.0,
+        3128.0,
+        3136.0,
+        3138.0,
+        3149.0,
+        3152.0,
+        3160.0,
+        3163.0,
+        3166.0,
+        3184.0,
+        3188.0,
+        3190.0,
+        3196.0,
+        3207.0,
+        3212.0,
+        3217.0,
+        3220.0,
+        3227.0,
+        3238.0,
+        3244.0,
+        3252.0,
+        3266.0,
+        3272.0,
+        3279.0,
+        3284.0,
+        3289.0,
+        3292.0,
+        3295.0,
+        3298.0,
+        3305.0,
+        3315.0,
+        3318.0,
+        3321.0,
+        3333.0,
+        3341.0,
+        3345.0,
+        3351.0,
+        3354.0,
+        3356.0,
+        3359.0,
+        3362.0,
+        3367.0,
+        3371.0,
+        3373.0,
+        3375.0,
+        3379.0,
+        3384.0,
+        3388.0,
+        3392.0,
+        3395.0,
+        3404.0,
+        3408.0,
+        3410.0,
+        3418.0,
+        3421.0,
+        3427.0,
+        3435.0,
+        3439.0,
+        3441.0,
+        3446.0,
+        3449.0,
+        3455.0,
+        3460.0,
+        3467.0,
+        3469.0,
+        3475.0,
+        3478.0,
+        3480.0,
+        3502.0,
+        3505.0,
+        3514.0,
+        3519.0,
+        3524.0,
+        3527.0,
+        3541.0,
+        3550.0,
+        3557.0,
+        3560.0,
+        3565.0,
+        3567.0,
+        3570.0,
+        3580.0,
+        3594.0,
+        3601.0,
+        3607.0,
+        3612.0,
+        3618.0,
+        3623.0,
+        3625.0,
+        3633.0,
+        3636.0,
+        3638.0,
+        3646.0,
+        3648.0,
+        3659.0,
+        3667.0,
+        3669.0,
+        3672.0,
+        3678.0,
+        3685.0,
+        3722.0,
+        3724.0,
+        3727.0,
+        3730.0,
+        3732.0,
+        3748.0,
+        3755.0,
+        3760.0,
+        3762.0,
+        3764.0,
+        3779.0,
+        3781.0,
+        3785.0,
+        3794.0,
+        3799.0,
+        3806.0,
+        3808.0,
+        3827.0,
+        3833.0,
+        3835.0,
+        3840.0,
+        3843.0,
+        3857.0,
+        3864.0,
+        3868.0,
+        3871.0,
+        3875.0,
+        3878.0,
+        3886.0,
+        3892.0,
+        3894.0,
+        3897.0,
+        3899.0,
+        3901.0,
+        3903.0,
+        3914.0,
+        3917.0,
+        3921.0,
+        3926.0,
+        3929.0,
+        3938.0,
+        3944.0,
+        3948.0,
+        3965.0,
+        3976.0,
+        3980.0,
+        3993.0,
+        3996.0,
+        4012.0,
+        4023.0,
+        4035.0,
+        4037.0,
+        4042.0,
+        4052.0,
+        4057.0,
+        4060.0,
+        4062.0,
+        4071.0,
+        4082.0,
+        4089.0,
+        4096.0,
+        4102.0,
+        4111.0,
+        4114.0,
+        4122.0,
+        4136.0
+      ]
+    }
+  ]
+}

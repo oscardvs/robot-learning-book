@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build chapters/15-index.md from the rendered PDF.
+"""Build chapters/17-index.md from the rendered PDF.
 
 The index is the last section of the book, so adding it does not move any page
 it refers to -- run this against a build that does not yet contain it, then
@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PDF = ROOT / "build" / "robot-learning.pdf"
-OUT = ROOT / "chapters" / "15-index.md"
+OUT = ROOT / "chapters" / "17-index.md"
 
 # term -> regex alternatives (case-insensitive, word-boundary where sensible)
 TERMS = {
@@ -179,6 +179,46 @@ TERMS = {
     "whole-body control": [r"whole.body control"],
     "world model": [r"world model"],
     "workspace": [r"workspace"],
+    # --- guest lectures (Chapters 12-13) ---
+    "arm farm": [r"arm farm"],
+    "BC-Zero": [r"BC-Zero"],
+    "bill of materials": [r"bill of materials", r"\bBOM\b"],
+    "BiT (Big Transfer)": [r"\bBiT\b", r"Big Transfer"],
+    "Codeforces": [r"Codeforces"],
+    "Cosmos Policy": [r"Cosmos Policy"],
+    "data islands": [r"data island"],
+    "deduplication": [r"eduplicat"],
+    "Deep Think": [r"Deep Think"],
+    "distillation": [r"distillat", r"distil"],
+    "DreamZero": [r"DreamZero"],
+    "DSRL": [r"\bDSRL\b"],
+    "Ego4D": [r"Ego4D"],
+    "EgoBridge": [r"EgoBridge"],
+    "EgoMimic": [r"EgoMimic"],
+    "EgoVerse": [r"EgoVerse"],
+    "FATP": [r"\bFATP\b"],
+    "GR00T": [r"GR00T"],
+    "HG-DAgger": [r"HG-DAgger"],
+    "Large Behavior Model": [r"Large Behavior Model", r"\bLBM\b"],
+    "mid-training": [r"mid.training"],
+    "MT-Opt": [r"MT-Opt"],
+    "noise space (exploration in)": [r"noise space"],
+    "ObjectNet": [r"ObjectNet"],
+    "optimal transport": [r"optimal transport"],
+    "PA-RL": [r"PA-RL", r"policy-agnostic"],
+    "PaliGemma": [r"PaliGemma"],
+    "PolaRiS": [r"PolaRiS"],
+    "Project Aria": [r"Project Aria", r"Aria glasses"],
+    "QT-Opt": [r"QT-Opt"],
+    "RaC": [r"\bRaC\b"],
+    "real-to-sim": [r"real.to.sim"],
+    "recovery and correction": [r"recovery and correction", r"recovery.then.correction"],
+    "RoboArena": [r"RoboArena"],
+    "SigLIP": [r"SigLIP"],
+    "supply chain": [r"supply chain", r"supply tree"],
+    "UMI": [r"\bUMI\b", r"Universal Manipulation Interface"],
+    "VTAB": [r"VTAB", r"Visual Task Adaptation"],
+    "world action model": [r"world action model", r"\bWAM"],
 }
 
 

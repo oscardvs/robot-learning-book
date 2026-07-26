@@ -7,3 +7,4 @@ build/*.html
 video/
 build/*.jpg
 .playwright-mcp/
+__pycache__/

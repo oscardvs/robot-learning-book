@@ -1,0 +1,213 @@
+{
+  "lecture": 4,
+  "params": {
+    "video": "video/guests/g04.mp4",
+    "index": 4,
+    "out_root": "slides_png",
+    "fps": 1.0,
+    "dwell": 2.5,
+    "change": 18.0,
+    "preserve": 0.85,
+    "dark": 110.0,
+    "emit_dups": false,
+    "ignore": [
+      "0.85,0.0,1.0,1.0"
+    ],
+    "prefix": "guest04_wagenmaker"
+  },
+  "slides": [
+    {
+      "kind": "slide",
+      "n": 1,
+      "t_start": 342.0,
+      "t_end": 345.0,
+      "file": "slide_001.jpg",
+      "dup_of": null,
+      "build_ts": [
+        0.0,
+        114.0,
+        154.0,
+        158.0,
+        161.0,
+        316.0,
+        329.0,
+        335.0,
+        342.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 2,
+      "t_start": 439.0,
+      "t_end": 444.0,
+      "file": "slide_002.jpg",
+      "dup_of": null,
+      "build_ts": [
+        347.0,
+        380.0,
+        385.0,
+        402.0,
+        419.0,
+        425.0,
+        428.0,
+        436.0,
+        439.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 3,
+      "t_start": 600.0,
+      "t_end": 608.0,
+      "file": "slide_003.jpg",
+      "dup_of": null,
+      "build_ts": [
+        445.0,
+        455.0,
+        457.0,
+        462.0,
+        467.0,
+        470.0,
+        494.0,
+        538.0,
+        542.0,
+        556.0,
+        586.0,
+        600.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 4,
+      "t_start": 737.0,
+      "t_end": 740.0,
+      "file": "slide_004.jpg",
+      "dup_of": null,
+      "build_ts": [
+        682.0,
+        689.0,
+        691.0,
+        698.0,
+        710.0,
+        727.0,
+        737.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 5,
+      "t_start": 773.0,
+      "t_end": 774.0,
+      "file": "slide_005.jpg",
+      "dup_of": null,
+      "build_ts": [
+        773.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 6,
+      "t_start": 924.0,
+      "t_end": 943.0,
+      "file": "slide_006.jpg",
+      "dup_of": null,
+      "build_ts": [
+        798.0,
+        809.0,
+        812.0,
+        847.0,
+        855.0,
+        857.0,
+        860.0,
+        867.0,
+        872.0,
+        876.0,
+        899.0,
+        901.0,
+        903.0,
+        905.0,
+        909.0,
+        912.0,
+        916.0,
+        919.0,
+        924.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 7,
+      "t_start": 1030.0,
+      "t_end": 1035.0,
+      "file": "slide_007.jpg",
+      "dup_of": null,
+      "build_ts": [
+        946.0,
+        958.0,
+        964.0,
+        973.0,
+        976.0,
+        987.0,
+        996.0,
+        1010.0,
+        1026.0,
+        1030.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 8,
+      "t_start": 1054.0,
+      "t_end": 1055.0,
+      "file": "slide_008.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1044.0,
+        1054.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 9,
+      "t_start": 1324.0,
+      "t_end": 1366.0,
+      "file": "slide_009.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1324.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 10,
+      "t_start": 1499.0,
+      "t_end": 1513.0,
+      "file": "slide_010.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1368.0,
+        1378.0,
+        1428.0,
+        1431.0,
+        1463.0,
+        1472.0,
+        1479.0,
+        1482.0,
+        1499.0
+      ]
+    },
+    {
+      "kind": "slide",
+      "n": 11,
+      "t_start": 1805.0,
+      "t_end": 1806.0,
+      "file": "slide_011.jpg",
+      "dup_of": null,
+      "build_ts": [
+        1518.0,
+        1531.0,
+        1724.0,
+        1805.0
+      ]
+    }
+  ]
+}
