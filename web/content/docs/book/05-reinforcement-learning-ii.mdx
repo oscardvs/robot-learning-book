@@ -164,11 +164,7 @@ the action-value function of Chapter 4. And the ideal baseline — the "average"
 This is where the two halves of reinforcement learning join. <XRef kind="eq" anchor="eq-advantage" number="5.6" /> needs <InlineMath tex={"V^\\pi"} />, which is exactly the object Chapter 4 spent its length learning. A policy-gradient method that estimates a value function to compute its advantage is an **actor-critic** method, and every algorithm from here on is one.
 
 <Figure id="fig-advantage" number="5.4" src="/slides/lecture05/slide_016.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=AdTGz8YnnlE&t=1381s" timecode="23:01" lecture="5">
-  The advantage function as the natural baseline: the reward-to-go estimates 
-
-  <InlineMath tex={""} />
-
-  , the value function is the state's average, and their difference is what should weight the gradient. Credit: course slides, Lecture 5.
+  The advantage function as the natural baseline: the reward-to-go estimates <InlineMath tex={"Q^\\pi"} />, the value function is the state's average, and their difference is what should weight the gradient. Credit: course slides, Lecture 5.
 </Figure>
 
 ## Repair four: reusing data

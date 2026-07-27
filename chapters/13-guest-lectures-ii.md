@@ -22,6 +22,8 @@ Xiao spent most of the last decade at Google Brain and then Google DeepMind, and
 as three eras. He is explicit that his examples skew toward where he worked and that plenty was
 happening elsewhere, which is the right disclaimer and does not much weaken the arc.
 
+![The decade on one axis, each era drawn as a lens that gathers the previous one's work and spreads it into the next. The question under each period is the one the field was actually asking: end-to-end learning in the real world, then scaling to many tasks, then leveraging foundation models. The pivot in the middle is captioned "wild LLM appeared", and everything to the right of it passes through RT-1. Note that the slide's own ranges overlap — 2016–2021, 2018–2023, 2022–2025 — because the eras did. Credit: reconstructed from the guest-lecture recording, Ted Xiao, week 7.](../slides_png/guest06_xiao/slide_016.jpg){#fig:xiao-eras width=94%}
+
 **The era of existence proofs, roughly 2015 to 2021.** The founding observation was an asymmetry.
 DQN and AlphaGo had shown that learning worked for sequential decision-making, but only in games.
 Meanwhile the hardware for useful physical work already existed — Xiao points at the same
@@ -66,6 +68,8 @@ a transformer backbone, RGB and language in, **discretized action tokens** out, 
 **35 million parameters running at 3 Hz**, hundreds of tasks, success between roughly 60% and 80%.
 Not perfect, and Xiao presents it as an existence proof rather than a product.
 
+![RT-1, end to end. An instruction and a stack of images enter a FiLM-conditioned EfficientNet; a TokenLearner compresses the result to a short token sequence for the transformer; the output is a discretized action — mode, arm and base, decoding to gripper rotation, position, closure and a terminate flag. Credit: reconstructed from the guest-lecture recording, Ted Xiao, week 7.](../slides_png/guest06_xiao/slide_019.jpg){#fig:rt1-arch width=92%}
+
 Then three different ways to use a foundation model, which are worth separating because the field
 often runs them together.
 
@@ -85,6 +89,14 @@ lacks.
 language tokens that decode into actions — on PaLI-X and PaLM-E, co-fine-tuned roughly **50/50**
 with internet data. What transferred was the part nobody had put in the robot data: new objects,
 common-sense reasoning, even reading text in the scene.
+
+![RT-2 as visual question answering. The three examples on the right are the whole idea: the same model that answers "what is happening in the image?" in English and "que puis-je faire avec ces objets?" in French also answers "what should the robot do to \<task\>?" — and that third answer is a translation and rotation delta, emitted as text. The backbones are PaLI-X at 5B and 55B and PaLM-E at 12B. Credit: reconstructed from the guest-lecture recording, Ted Xiao, week 7.](../slides_png/guest06_xiao/slide_022.jpg){#fig:rt2-vqa width=92%}
+
+> **Editor's note.** The slide's inventory of RT-2's robot data reads "RT-1 data, 13 robots,
+> 17 months, 130k demos" (@fig:rt2-vqa). The figure quoted in the data-augmentation paragraph above
+> — 87,000 trajectories over eighteen months — is the one Xiao gives in speech when discussing
+> RT-1's own instruction diversity. The two are reported as they were given rather than reconciled,
+> since the talk does not say whether they count the same episodes.
 
 **Open X-Embodiment** closes the era, pooling and cleaning data from more than thirty labs
 collected for unrelated projects on unrelated robots, to test whether motion knowledge transfers
@@ -141,6 +153,8 @@ a vision-language model, or start from a video model.
 The incumbent. RT-2, OpenVLA, the π series, NVIDIA's GR00T models, TRI's Large Behavior Model,
 Gemini. The virtues are real: one modality for everything, good cross-embodiment support, direct
 fine-tuning of a VLM into control tokens, and internet-scale grounding.
+
+![The VLA landscape as Reed lays it out, dated and attributed: RT-2 in 2023, then OpenVLA, the Large Behavior Model, the π series, the GR00T series and Gemini Robotics. The three principles underneath are the ones the rest of the section argues with — unified modality, a pre-training advantage from internet-scale data, and generalization that beats from-scratch imitation in multi-task settings. Credit: reconstructed from the guest-lecture recording, Scott Reed, week 8.](../slides_png/guest07_reed/slide_002.jpg){#fig:vla-landscape width=92%}
 
 Reed walks the architectures from simple to elaborate. **OpenVLA** is the clean case — pre-trained
 vision encoders (DINO, CLIP, or both), a pre-trained language model, actions discretized by binning
@@ -231,13 +245,16 @@ which serialized text, images, question answering, Atari and robotics into one f
 for one transformer, and **RT-1**, **RT-X** and **Octo**. Data islands again, and a ceiling set by
 how much high-quality data a consortium or a determined individual can assemble.
 
-What makes it live again is that the data changed. **UMI-style large-scale human pre-training** —
-Generalist, Sunday — reaches a scale Reed cites as around **500,000 hours** of sensorized human
-data. And the camera-only route: **Ego4D** at about **20,000 hours** of in-the-wild recording, plus
-roughly **50 hours** of sensorized data (Vive trackers on the wrist, Manus gloves on the fingers)
-and a small amount of robot data. Both show scaling-law behavior in *human* data: validation loss
-falls, success rate rises monotonically. So a foundation model need not be chained to a VLM or a
-video model at all, and the architecture may not matter much.
+What makes it live again is that the data changed. His slide puts two 2026 systems side by side.
+**Gen-1**, from Generalist, is large-scale **UMI-style human pre-training**, at a scale Reed cites
+in the talk as around **500,000 hours** of sensorized human data. **EgoScale** takes the
+camera-only route: **20,000 hours** of in-the-wild recording with hand-pose detection, plus
+**50 hours** of sensorized human data (Vive trackers on the wrist, Manus gloves on the fingers) and
+**four hours** of robot teleoperation. Both show scaling-law behavior in *human* data: validation
+loss falls, success rate rises monotonically. So a foundation model need not be chained to a VLM or
+a video model at all, and the architecture may not matter much.
+
+![The two large-scale human-data routes to a from-scratch policy. Left, UMI-style capture: the demonstrator wears the grippers, so the data is already in the robot's action space. Right, camera-only capture with hand-pose detection over bare hands, where the action has to be inferred. The hour counts on the slide are the argument — the cheap modality is three orders of magnitude larger than the teleoperation. Credit: reconstructed from the guest-lecture recording, Scott Reed, week 8.](../slides_png/guest07_reed/slide_011.jpg){#fig:reed-humandata width=88%}
 
 His conclusion is a bet on the combination — world action models for their generalization
 properties, plus scaling human data — and he says so with appropriate hedging about being tongue in
@@ -279,6 +296,9 @@ robot arm, for precision; building a box, for two-handed coordination; and takin
 for horizon.
 
 Against an **RL specialist** and an **SFT specialist** tuned per task, π0.7 matches or beats both.
+
+![One checkpoint against ten specialists. The top row compares π0.7 with the RL-tuned π0.6-star on four tasks — two laundry variants, espresso, box building — in normalized throughput and success rate; the bottom row compares it with the SFT specialist on six more, in task progress. The generalist is level or ahead almost everywhere, and the error bars are shown rather than hidden. Credit: reconstructed from the guest-lecture recording, Quan Vuong, week 9.](../slides_png/guest08_vuong/slide_001.jpg){#fig:vuong-specialists width=94%}
+
 The explanation he gives for beating them is the sentence from this talk most worth remembering:
 
 > In large-scale robotic evaluation, really every evaluation is a generalization evaluation.
@@ -305,6 +325,8 @@ that normally takes hundreds of hours because it is precise and the observation 
 Separately, a human coaching the robot in language gets tasks done in unseen environments on unseen
 objects; his example involves air-frying a sweet potato, where neither the food nor the air fryer
 appears in the training data.
+
+![Coaching. The instruction is "load the sweet potato in the air fryer", in a kitchen the model has not seen, with an appliance absent from its training data. What makes the example carry weight is that the correction is delivered in language at run time rather than as more demonstrations. Credit: reconstructed from the guest-lecture recording, Quan Vuong, week 9.](../slides_png/guest08_vuong/slide_003.jpg){#fig:vuong-coaching width=88%}
 
 On externalization: π0 and π0.5 are open source, and the released checkpoints are **the same ones
 Physical Intelligence researchers use internally** — a question he says surprises people. The
@@ -352,17 +374,23 @@ His definition is worth having precisely: an ordinary network spends a **fixed**
 computation per input, whereas a test-time-compute system runs some kind of **search** — in output
 space or elsewhere — and can spend far more than a single forward pass.
 
-**AlphaGo is the canonical instance.** The raw parametric model with one forward pass reaches about
-**3,000 Elo**. Add test-time search — **capped at five seconds** — and the *same model* reaches
-about **5,000 Elo**. He glosses the scale: 100 Elo points is roughly a 64% win rate, a 2,000-point
-gap means the weaker player essentially never wins, and by 3,500 you are already superhuman. The
-caveat he states himself is that this is hand-crafted for a game with a simulator.
+**Self-play Go is the canonical instance.** The raw parametric model with one forward pass reaches
+about **3,000 Elo**. Add test-time search — **capped at five seconds** — and the *same model*
+reaches about **5,000 Elo**. He glosses the scale on the slide itself: 100 Elo points is roughly a
+64% win rate and 400 points about 91%, a 2,000-point gap means the weaker player essentially never
+wins, and by 3,500 you are already superhuman. The caveat he states himself is that this is
+hand-crafted for a game with a simulator.
 
-> **Editor's note.** Chapter 10 discusses AlphaGo's test-time search using the main lecture's own
-> framing — a 120-Elo rule of thumb and a slide claiming a 100,000× factor — and carries an
-> editor's note on the arithmetic. Sharma's numbers are a *different* presentation of the same
-> system: 3,000 to 5,000 Elo under a five-second search cap. They are reported here as his and are
-> not merged with the main lecture's figures, which were read from a different slide.
+![One model, with and without search. The pale bar on the left is the raw network at about 3,000 Elo; the same model with a five-second search cap is the tallest bar at about 5,000. The remaining bars are the ladder the AlphaGo Zero paper reported — Master, Lee, Fan, then the pre-neural engines Crazy Stone, Pachi and GnuGo. Credit: reconstructed from the guest-lecture recording, Archit Sharma, week 10.](../slides_png/guest09_sharma/slide_005.jpg){#fig:sharma-elo width=88%}
+
+> **Editor's note.** Two naming points on this slide. It is titled **AlphaZero**, but the bar chart
+> it carries is the **AlphaGo Zero** comparison, and the surrounding bars are named for AlphaGo
+> versions; the section above therefore describes the system by what it does rather than adopting
+> either label. Separately, Chapter 10 discusses this same test-time search using the main
+> lecture's framing — a 120-Elo rule of thumb and a slide claiming a 100,000× factor — and carries
+> an editor's note on that arithmetic. Sharma's numbers are a *different* presentation: 3,000 to
+> 5,000 Elo under a five-second search cap. They are reported here as his and are not merged with
+> the main lecture's figures, which were read from a different slide.
 
 **Chain of thought** is the bridge to language models, demonstrated with the canonical
 Roger-and-the-tennis-balls prompt: forced to answer directly, the model fails; encouraged to work
@@ -380,7 +408,11 @@ code execution, sandboxes, and self-verification. These produce both general rea
 
 **Deep Think** is where the numbers get striking. On IMO-level proof problems, with inference
 compute on a **log scale** and proof correctness graded by an expert human, accuracy rises from
-about **40% to about 90%**, with the model working for hours. It was the first system to reach
+about **40% to about 90%**, with the model working for hours.
+
+![Test-time compute against proof correctness on IMO-ProofBench Advanced, the x-axis running from $2^0$ to $2^{11}$ on a log scale. The upper curve is the January 2026 version of Deep Think, climbing from about 40 to about 90; the lower one is the July 2025 IMO-gold version, which starts lower and saturates around 68. Doubling the compute keeps buying accuracy for eight doublings. Credit: reconstructed from the guest-lecture recording, Archit Sharma, week 10.](../slides_png/guest09_sharma/slide_009.jpg){#fig:deepthink width=88%}
+
+It was the first system to reach
 **gold-medal standard at the International Mathematical Olympiad**, a milestone not expected in
 2025. On Codeforces the latest version reached an Elo around **3,445**, with only about **seven
 humans in the world** rated higher. And the benefit is not confined to verifiable domains: asked to
@@ -431,6 +463,8 @@ programming.
 He organizes the modern recipe as four stages — **pre-train, mid-train, fine-tune, RL-tune** — and
 walks the first three.
 
+![The four stages, in the form Beyer returns to as a progress bar throughout the talk: broad ingestion of data with compute, then mid-training to install core capabilities, then fine-tuning on a specific task with little data, then RL-tuning to make the behaviour precisely what is wanted. Every VLA in Chapter 9 is a robot-shaped instance of this diagram. Credit: reconstructed from the guest-lecture recording, Lucas Beyer, week 11.](../slides_png/guest10_beyer/slide_015.jpg){#fig:beyer-recipe width=92%}
+
 ### Pre-training, and three lessons that cost the field years
 
 He begins by demonstrating general perception on the audience: three-way few-shot classification of
@@ -460,6 +494,8 @@ pre-training data, and then another 20× beyond that, changes the picture entire
 model on the largest data is far better than anything published before. **ObjectNet**, which places
 ImageNet classes into deliberately strange poses and locations to test out-of-distribution
 generalization, shows exactly the same trend, which is the stronger version of the claim.
+
+![Two axes, moved together. Left, ImageNet top-5 accuracy against architecture from R50x1 to R152x4; right, the same architectures on ObjectNet. The lower curve is pre-training on ILSVRC-2012 alone, which climbs slowly whatever you do to the model. The upper curves are ImageNet-21k and then JFT-300M: bigger pre-training lifts the whole line, and bigger models keep paying off once it has. Neither axis works without the other. Credit: reconstructed from the guest-lecture recording, Lucas Beyer, week 11.](../slides_png/guest10_beyer/slide_020.jpg){#fig:bit-scaling width=94%}
 
 Why did this take the community years? Three lessons.
 
@@ -514,6 +550,8 @@ suffices and the rest of the caption can be ignored entirely. To be forced to le
 batch must contain a cat and a dog that are not sitting. To learn *left of*, it must contain a cat
 and a dog sitting the other way round. From random web data, at batch size 32,000 or even a
 million, that is vanishingly unlikely. **So CLIP does not learn relations.**
+
+![The failure in one picture. A ViT encoder and a text encoder are pulled together by a contrastive loss, and the caption is "a cat sitting left of a dog". Matching the image needs only "cat" and "dog"; the struck-through words are the ones the objective never forces the model to represent, because no batch contains the counterexample that would make them matter. Credit: reconstructed from the guest-lecture recording, Lucas Beyer, week 11.](../slides_png/guest10_beyer/slide_031.jpg){#fig:clip-relations width=88%}
 
 People patched this by constructing counterpart examples and enumerating relations. Beyer wanted a
 fix that scales, and the simple one is a **captioning loss**: generate the caption word by word, so

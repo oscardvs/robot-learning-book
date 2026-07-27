@@ -143,6 +143,8 @@ problem is trivial; then one step away; then two. Each problem is short-horizon 
 reset distribution does the work that shaping would have done. Their reset states include
 partial assemblies and partial grasps, generated programmatically.
 
+![Standard exploration against reset-driven exploration. On the left the arm must search over the full horizon $H$ to find any reward at all; on the right, resets scattered through the state space mean the reward is always a short dither away. The reset distribution is doing the work reward shaping usually does. Credit: reconstructed from the guest-lecture recording, Abhishek Gupta, week 2.](../slides_png/guest01_gupta/slide_025.jpg){#fig:gupta-resets width=88%}
+
 What comes out is contact-rich behavior learned from **sparse rewards only, with no demonstrations
 and no reward design**: non-prehensile nudging, wiggling, flipping, furniture assembly, using the
 edge of the table as a fixture. Gupta stresses two things about it. The behavior is emergent — none
@@ -164,7 +166,11 @@ response is to spend human time making it less wrong. Gupta's alternative rests 
 simulation is **right about global structure** — pick up the leg, insert it, rotate — and wrong
 about local contact and forces. So keep what it is good at and fix the rest from reality. They
 cast this as world modelling: pre-train a world model in simulation, freeze the long-horizon part,
-and adapt only the short-horizon prediction using real data, autonomously. Transferred policies
+and adapt only the short-horizon prediction using real data, autonomously.
+
+![Adapting a simulation-pre-trained world model. The encoder and the latent dynamics that carry global structure are frozen after simulation; only the short-horizon physics is adapted from real data. Credit: reconstructed from the guest-lecture recording, Abhishek Gupta, week 2.](../slides_png/guest01_gupta/slide_033.jpg){#fig:gupta-worldmodel width=80%}
+
+Transferred policies
 initially get the details wrong and fail to seat the leg; roughly **fifteen minutes** of autonomous
 real-world data turns that into complete furniture assembly, with the same recipe working on other
 manipulation tasks and on quadrupeds, where it corrects the physics errors while inheriting the
@@ -189,6 +195,8 @@ His framing device is the **triangle of robot learning** — data source, learni
 physical system. The claim is that you cannot change one corner in isolation, and that progress
 comes from co-designing all three. He returns to it as a scorecard after each result, which makes
 the talk unusually easy to follow, and it also sets up his diagnosis.
+
+![The triangle of robot learning: data source, algorithms and models, and hardware systems. Xu redraws it after each result, filling in the corner that result moved. Credit: reconstructed from the guest-lecture recording, Danfei Xu, week 3.](../slides_png/guest02_xu/slide_002.jpg){#fig:xu-triangle width=76%}
 
 Teleoperation, he argues, welds the three corners together. Data exists only when a human acts
 *through a particular robot*; the algorithm learns from that robot's data; the resulting policy
@@ -239,9 +247,13 @@ only in human data. The idealized picture is a domain-invariant latent space in 
 robot data for the same task land together, so that a new task seen only in human data still
 decodes to sensible actions.
 
-In practice it does not happen. Their student Ryan found the human and robot data form two clearly
-separated clusters in the learned latent space. **EgoBridge** is the response: supervise the
-alignment directly with an optimal-transport objective.
+In practice it does not happen. Their student Ryan Punamiya found the human and robot data form two
+clearly separated clusters in the learned latent space.
+
+![Why zero-shot transfer is hard. A t-SNE projection of EgoMimic's policy latent space, human data in one colour and robot data in the other: the two occupy different regions, and the slide's own annotation is "these have low overlap". A latent space that does not mix cannot carry a task from one domain to the other. Credit: reconstructed from the guest-lecture recording, Danfei Xu, week 3.](../slides_png/guest02_xu/slide_023.jpg){#fig:xu-tsne width=88%}
+
+**EgoBridge** is the response: supervise the alignment directly with an optimal-transport
+objective.
 
 $$\mathcal{L}_{\text{OT-joint}}(\phi) = \sum_{i,j} \big(T^*_\epsilon\big)_{ij} \cdot \mathcal{C}\Big(\big(f_\phi(o^H_i), a^H_i\big),\ \big(f_\phi(o^R_j), a^R_j\big)\Big)$$ {#eq:jot}
 
@@ -319,6 +331,8 @@ model is explicitly *not* an optimal policy — it models the distribution of wh
 Mid-training then instils behaviors that pre-training does not supply and the internet does not
 contain: long chains of thought, teaching the model to search across candidate solutions before
 committing. Post-training is reinforcement learning from the model's own autonomous rollouts.
+
+![The language recipe as Kumar says it actually runs: a pre-training corpus, then a mid-training stage whose purpose is exploration, then RL post-training. His annotation on the last stage is the one to hold on to — it is done with autonomous rollouts, and the rollouts are long and diverse, which is what reinforces exploration and adaptation. Credit: reconstructed from the guest-lecture recording, Aviral Kumar, week 4.](../slides_png/guest03_kumar/slide_002.jpg){#fig:kumar-recipe width=88%}
 
 Line the robot recipe up against it and three things are wrong.
 
@@ -423,6 +437,13 @@ state-of-the-art VLA had been improved that way on real hardware — with matchi
 diffusion policies. He is careful to date it: the work is a year old, the robot was poor by current
 standards, and he guesses the same result would take ten minutes today.
 
+![Fine-tuning a 7B-parameter OpenVLA without demonstrations, on "move the vegetable to the sink". Zero-shot OpenVLA succeeds 40% of the time; adding PA-RL on offline data alone reaches 50%; 40 minutes of autonomous online fine-tuning reaches 70%. Credit: reconstructed from the guest-lecture recording, Aviral Kumar, week 4.](../slides_png/guest03_kumar/slide_009.jpg){#fig:kumar-openvla width=88%}
+
+> **Editor's note.** The book follows the paper and the talk in expanding PA-RL as *policy-agnostic*
+> reinforcement learning. The citation line on Kumar's own slides (@fig:kumar-openvla) reads
+> "Sobol Mark et al., *Parameterization-Agnostic RL*". Both expansions abbreviate to PA-RL and refer
+> to the same work; the difference is recorded here rather than silently resolved.
+
 ## Andrew Wagenmaker: explore in noise space, not action space
 
 Wagenmaker's opening image is learning to iron a shirt. You might watch a video first, but you did
@@ -453,6 +474,8 @@ BC policy, learn a **noise policy** that chooses which noise to feed it and a **
 values noise vectors at states. Training is ordinary: fit the value function, train the noise
 policy to maximize it, and at each step sample a noise, push it through the BC policy, execute the
 resulting action, and record what happened.
+
+![Exploring in noise space. A noise vector $w$ drawn from the learned noise policy $\pi^w(s)$ enters the frozen behavior-cloning policy $\pi_{\text{bc}}$ together with the state, and comes out as one of the handful of actions a demonstrator might have taken — the three arrows on the right. Reinforcement learning trains only the box, never $\pi_{\text{bc}}$. The slide's summary line: uniform exploration over noise space induces "human" exploration over action space. Credit: reconstructed from the guest-lecture recording, Andrew Wagenmaker, week 5.](../slides_png/guest04_wagenmaker/slide_006.jpg){#fig:dsrl width=88%}
 
 Two consequences follow, and the second is the one that makes the method practical beyond its own
 results. Exploration is structured and plausible **from the very first episode**, because every
@@ -487,6 +510,8 @@ The obvious patch is to add exploration noise on top of the BC policy, and it ru
 performance, because you are deviating from behavior you already know to be right — you are
 over-exploring in the part of the task the demonstrations cover. Explore less and you keep the
 performance but add no expressivity where you need it.
+
+![The trade-off, and the theorem that pins it down. Over-exploring buys expressivity at the cost of performance; under-exploring keeps performance and adds nothing. The boxed result states the disjunction: behavior cloning plus exploration either expresses the actions needed for improvement, or matches the pre-trained performance of the BC policy — not both. Credit: reconstructed from the guest-lecture recording, Andrew Wagenmaker, week 5.](../slides_png/guest04_wagenmaker/slide_010.jpg){#fig:bc-tradeoff width=88%}
 
 The resolution is to stop treating pre-training as pure imitation and treat it as inference:
 **quantify the uncertainty about what the demonstrator would do, and scale exploration in
@@ -545,6 +570,8 @@ a complex product takes many months. Hence supply-chain management as a full-tim
 your suppliers' suppliers what is coming so the whole tree ramps in sync. His summary analogy is
 `uv` resolving an entire dependency tree rather than `pip` fetching the first layer.
 
+![The supply tree for a single camera module, expanded one level at a time: a camera is a lens, a PCB, a cable and a screw; the lens is CAD, glass elements and a housing; the PCB is a Gerber file, a sensor, an ISP and connectors. Every leaf is somebody else's procurement problem, and the depth is why the timelines compound. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.](../slides_png/guest05_chi/slide_014.jpg){#fig:supply-tree width=84%}
+
 Why it matters is a decision, not a logistics detail: **the supply chain determines the
 buy-versus-build boundary**, and the common mistake he sees in researchers moving into hardware is
 trying to build everything themselves when much of it can be bought.
@@ -587,6 +614,8 @@ operations and scaled from twenty to two hundred, formalizing recruitment, quali
 shipping while still knowing every collector personally; Chi observes that this is roughly the
 ceiling for one person's relationships. Perry, who started as a data labeler on Tesla Autopilot and
 grew to lead Tesla's labeling operation, now runs thousands of collectors.
+
+![Three generations of the same job, and the background each one came from: a PhD student turned CEO recruiting the first twenty collectors, a campaign manager who took it from twenty to two hundred, and a Tesla labeling lead running thousands. The slide is a hiring argument — each step change in scale needed a different kind of person, and none of them was an engineer. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.](../slides_png/guest05_chi/slide_020.jpg){#fig:chi-generations width=88%}
 
 Chi expected this to be a software problem and says plainly that it is not:
 

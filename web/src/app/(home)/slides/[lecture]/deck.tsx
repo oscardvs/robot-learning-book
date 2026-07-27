@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, XIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+import { ImageViewer, type ViewerItem } from '@/components/book/lightbox';
 
 export interface Slide {
   n: number;
@@ -12,32 +13,22 @@ export interface Slide {
 }
 
 /**
- * The deck, as a contact sheet. Opening a slide gives you the full frame and the
- * link back to the recording; arrow keys walk the deck.
+ * The deck, as a contact sheet. Opening a slide gives you the full frame in the same
+ * viewer the chapters use — magnifiable, because these are lecture captures and the
+ * interesting detail is usually the small print.
  */
 export function Deck({ slides }: { slides: Slide[] }) {
   const [open, setOpen] = useState<number | null>(null);
 
-  const move = useCallback(
-    (delta: number) =>
-      setOpen((current) =>
-        current === null ? null : Math.min(slides.length - 1, Math.max(0, current + delta)),
-      ),
-    [slides.length],
+  const items = useMemo<ViewerItem[]>(
+    () =>
+      slides.map((slide) => ({
+        src: slide.src,
+        label: `Slide ${String(slide.n).padStart(3, '0')}`,
+        watch: { href: slide.watch, text: `watch at ${slide.timecode}` },
+      })),
+    [slides],
   );
-
-  useEffect(() => {
-    if (open === null) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(null);
-      if (event.key === 'ArrowRight') move(1);
-      if (event.key === 'ArrowLeft') move(-1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, move]);
-
-  const active = open === null ? null : slides[open];
 
   return (
     <>
@@ -47,7 +38,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
             <button
               type="button"
               onClick={() => setOpen(i)}
-              className="group block w-full text-left transition-colors hover:bg-raise"
+              className="group block w-full cursor-zoom-in text-left transition-colors hover:bg-raise"
             >
               <div className="p-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -72,88 +63,14 @@ export function Deck({ slides }: { slides: Slide[] }) {
         ))}
       </ol>
 
-      {active ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Slide ${active.n}`}
-          className="fixed inset-0 z-50 flex flex-col bg-ground/95 backdrop-blur-sm"
-          onClick={() => setOpen(null)}
-        >
-          <div className="flex items-center gap-4 border-b border-line px-4 py-3">
-            <span className="u-readout text-sm text-ink">
-              {String(active.n).padStart(3, '0')} / {slides.length}
-            </span>
-            <a
-              href={active.watch}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="u-label inline-flex items-center gap-1.5 border border-policy/50 px-2.5 py-2 text-policy transition-colors hover:bg-policy-soft"
-            >
-              <PlayIcon className="size-3" />
-              watch at {active.timecode}
-            </a>
-            <button
-              type="button"
-              onClick={() => setOpen(null)}
-              className="u-label ml-auto inline-flex items-center gap-1.5 border border-line px-2.5 py-2 text-ink-dim hover:text-ink"
-            >
-              <XIcon className="size-3" />
-              close
-            </button>
-          </div>
-
-          <div className="flex flex-1 items-center gap-2 overflow-hidden p-3 sm:p-6">
-            <Arrow
-              direction="left"
-              disabled={open === 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                move(-1);
-              }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={active.src}
-              alt={`Slide ${active.n}`}
-              onClick={(e) => e.stopPropagation()}
-              className="mx-auto max-h-full min-h-0 w-auto max-w-full border border-line object-contain"
-            />
-            <Arrow
-              direction="right"
-              disabled={open === slides.length - 1}
-              onClick={(e) => {
-                e.stopPropagation();
-                move(1);
-              }}
-            />
-          </div>
-        </div>
-      ) : null}
+      {open === null ? null : (
+        <ImageViewer
+          items={items}
+          index={open}
+          onIndex={(next) => setOpen(Math.min(items.length - 1, Math.max(0, next)))}
+          onClose={() => setOpen(null)}
+        />
+      )}
     </>
-  );
-}
-
-function Arrow({
-  direction,
-  disabled,
-  onClick,
-}: {
-  direction: 'left' | 'right';
-  disabled: boolean;
-  onClick: (e: React.MouseEvent) => void;
-}) {
-  const Icon = direction === 'left' ? ChevronLeftIcon : ChevronRightIcon;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={direction === 'left' ? 'Previous slide' : 'Next slide'}
-      className="shrink-0 border border-line p-2 text-ink-dim transition-colors hover:text-ink disabled:opacity-25"
-    >
-      <Icon className="size-5" />
-    </button>
   );
 }

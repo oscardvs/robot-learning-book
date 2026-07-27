@@ -180,11 +180,7 @@ Aligning vision with language then has three established answers, and the differ
 **Why this shape.** At initialization the new blocks contribute exactly nothing, so the model _is_ the original language model — no degradation, no destructive interference — and training opens the valve gradually. This is a general trick for adding a modality to a pre-trained network without breaking it, and Chapter 9's knowledge-insulation stop-gradient is the same instinct applied at a different point (<XRef kind="fig" anchor="fig-flamingo" number="7.6" />).
 
 <Figure id="fig-flamingo" number="7.6" src="/slides/lecture07/slide_028.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=imSTfMJjp7M&t=2019s" timecode="33:39" lecture="7">
-  Flamingo's gated cross-attention. A 
-
-  <InlineMath tex={""} />
-
-   gate initialized at zero means the augmented model starts out identical to the pre-trained language model and opens the visual pathway only as training warrants. Credit: course slides, Lecture 7.
+  Flamingo's gated cross-attention. A <InlineMath tex={"\\tanh"} /> gate initialized at zero means the augmented model starts out identical to the pre-trained language model and opens the visual pathway only as training warrants. Credit: course slides, Lecture 7.
 </Figure>
 
 **Native multimodality.** Train on all modalities jointly from scratch, interleaved in any order — the most flexible and the most expensive, and Chapter 11 returns to it as the obvious-looking answer to robot sensing that founders on data scarcity.
@@ -260,11 +256,7 @@ during which the robot ignores the world. Two seconds is long enough for the obj
 **Why this shape.** Averaging over plans smooths the output, and the exponential decay is what keeps it reactive: the newest chunk — which has seen the most recent observation — dominates, while older chunks contribute a diminishing amount of continuity. The single parameter <InlineMath tex={"m"} /> interpolates between "ignore history", at large <InlineMath tex={"m"} />, and "ignore the present", at small <InlineMath tex={"m"} />. ACT is at its best on high-precision tasks like inserting a battery, where exactly this combination of steadiness and responsiveness is required (<XRef kind="fig" anchor="fig-chunk" number="7.9" />).
 
 <Figure id="fig-chunk" number="7.9" src="/slides/lecture07/slide_034.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=imSTfMJjp7M&t=2570s" timecode="42:50" lecture="7">
-  Action chunking with temporal ensembling: predict 
-
-  <InlineMath tex={""} />
-
-   actions at once for smoothness, re-query every step, and combine the overlapping predictions with exponentially decaying weights to stay reactive. Credit: course slides, Lecture 7.
+  Action chunking with temporal ensembling: predict <InlineMath tex={"H"} /> actions at once for smoothness, re-query every step, and combine the overlapping predictions with exponentially decaying weights to stay reactive. Credit: course slides, Lecture 7.
 </Figure>
 
 ### Why naive tokenization breaks at high frequency, and FAST

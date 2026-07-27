@@ -9,7 +9,7 @@ course mentor **Marc Pollefeys**.
 - Guest playlist: <https://www.youtube.com/playlist?list=PLPU18BnWYUZIpmc2GuFlSXVGJxXZVeZ2B>
 - Course GitHub: `mees-robot-learning-course/ethz-course-2026`
 
-**Current status: ALL PHASES COMPLETE, including Phase 7. `build/robot-learning.pdf` — 324 pages.
+**Current status: ALL PHASES COMPLETE, including Phase 7. `build/robot-learning.pdf` — 334 pages.
 Published as a book at <https://robot-learning-book.vercel.app> and as source at
 <https://github.com/oscardvs/robot-learning-book>.**
 Phase 7 added two chapters from the guest track (Chs 12 and 13) and pushed the book past the
@@ -223,6 +223,42 @@ Octo attention-mask caption garble (Ch.9); and eight notation-change footnotes.
 hard rule #1 forbids padding — 10 h 25 min of lecture is less material than a 400-page
 textbook. Front and back matter are already 48 pages of the total.
 
+## Figure pass on the guest chapters (2026-07-27)
+
+The guest chapters were badly under-illustrated relative to the rest of the book: Ch.13 carried
+**one** figure for 7,767 words where Chs 7–10 run one per ~500. Twenty-two figures were added from
+the already-extracted decks — Ch.12 **5 → 14**, Ch.13 **1 → 13**, book total **104 → 126** — which
+puts both at ~630–680 words per figure, in line with everything else. Build is **334 pp**, 0
+overfull boxes, 0 missing glyphs, 0 unresolved cross-references, banned-word grep clean.
+
+**Reading the slides to caption them found four defects in the Phase 7 prose**, all of them
+caption-mangling survivors:
+
+1. **Ch.13 attributed 20,000 hours of in-the-wild video to Ego4D.** Reed's slide names
+   **EgoScale (2026)** — 20K h with hand-pose detection, 50 h sensorized (Vive + Manus), and
+   **4 h** of robot teleop. The companion system is **Gen-1** (Generalist). Corrected.
+2. **Sharma's Elo slide is titled *AlphaZero*** while the bar chart it carries is the **AlphaGo
+   Zero** ladder (Raw network / AlphaGo Zero / Master / Lee / Fan / Crazy Stone / Pachi / GnuGo).
+   The prose said "AlphaGo". It now describes the system by what it does, with an editor's note
+   recording the slide's own inconsistency.
+3. **RT-1 dataset size conflicts between speech and slide** — 87,000 trajectories over eighteen
+   months (spoken) against "13 robots, 17 months, 130k demos" (RT-2 slide). Both reported, with an
+   editor's note; the talk never says whether they count the same episodes.
+4. **PA-RL's expansion.** The book and the paper say *policy-agnostic*; Kumar's own citation line
+   reads *Parameterization-Agnostic RL*. Recorded in an editor's note rather than silently picked.
+
+Slides also **closed five `VERIFY` items** from `notes/guest_lectures.md`: Xu's "Disney embedding
+map" is a **t-SNE of the EgoMimic policy latent space** (lead **Ryan Punamiya**; the EgoBridge paper
+is *Domain Adaptation for Generalizable Imitation from Egocentric Human Data*, NeurIPS'25); Chi's
+advisor is confirmed on his own intro slide as **Shuran Song**, and the two courses are Kevin
+Lynch's *Modern Robotics* and **Russ Tedrake's** *Underactuated Robotics*; RT-1's encoder is
+**FiLM EfficientNet**; Kumar's method is spelled **RaC**; Sharma's research agent is **Aletheia**.
+
+**Guest slide counts overstate usable material.** Vuong's deck is 31 extracted frames of which
+only **4 are slides** — frames 8–31 are the speaker's webcam filling the shared screen during Q&A.
+Survey a deck with a contact sheet (`montage -tile 4x -geometry 400x225`) before budgeting figures
+from a raw count.
+
 ## Phase 7 notes — the guest lectures
 
 Working notes are in `notes/guest_lectures.md`, including a per-talk **caption-mangling
@@ -366,6 +402,39 @@ lecture, guest, and total — so neither track quietly absorbs the other. Do not
 HTML when the target is LaTeX, so the tags never reach the PDF. Verified — the page count and
 word count are identical with and without them. Register any new one in
 `web/src/components/mdx.tsx` or the MDX build fails on an undefined component.
+
+### Figure zoom (2026-07-27)
+
+Every figure plate and every slide in the archive opens in a shared viewer —
+`src/components/book/lightbox.tsx` — with wheel/pinch zoom to 6×, drag to pan, arrow keys to
+step through the chapter's figures in document order, and the deep link back to the recording
+carried into the overlay. The frames are 1440 px printed at roughly half that, so the detail
+was always there and simply unreadable in the column.
+
+`Figure` stays a **server** component: it renders its plate as a `<button data-zoom …>` and
+`FigureZoom`, mounted once on the docs page, catches the click and reads the list off the DOM.
+That keeps the reading order correct without registration and keeps the chapter markup free of
+per-figure client components. Zoom past 3× switches to `image-rendering: pixelated` — these are
+screen captures of text, and hard pixels beat the browser's smoothing at that magnification.
+1440 px is deliberate and sufficient: re-encoding the originals at 1920 was checked against a
+magnified crop and buys nothing legible for ~35 MB.
+
+### Two caption traps in `scripts/lib/pandoc-to-mdx.mjs`
+
+Both silently damaged captions rather than failing loudly, which is why they survived Phase 9.
+
+1. **Maths in a caption resolved to nothing.** The whole-source maths lift replaces `$V^*$` with
+   a placeholder indexed against one store. `parseInline` then lifted *again* on the image's alt
+   text, building an empty second store, so every placeholder in a caption resolved to `''` —
+   **14 captions across 6 chapters shipped with their symbols missing.** The second lift is dead
+   code (the alt text has no `$` left by then); it now uses the outer store. Captions are also
+   wrapped in a paragraph before becoming element children, or the serialiser treats each inline
+   node as flow content and splits one caption into three `<p>`s.
+2. **A bare `<` in a caption kills the MDX build.** remark parses `<task>` as inline *html*,
+   which serialises raw and MDX then reads as an unclosed JSX tag. `parseInline` now demotes
+   `html` nodes back to `text`. Note the source must still write `\<task\>`: pandoc *drops* raw
+   HTML for LaTeX, so the unescaped form vanishes from the PDF while building fine on the site.
+   Check both targets when a caption quotes a slide verbatim.
 
 ## Layout
 

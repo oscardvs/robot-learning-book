@@ -37,19 +37,7 @@ Not every <InlineMath tex={"3\\times3"} /> block is a legal rotation. The legal 
 **Why this shape.** Both conditions earn their place. The first, <InlineMath tex={"\\mathbf{R}^\\top\\mathbf{R} = \\mathbf{I}"} />, says the transpose is the inverse, which is the algebraic statement that the columns are mutually perpendicular unit vectors — so applying <InlineMath tex={"\\mathbf{R}"} /> cannot stretch or shear the body. Drop it and the "rigid" assumption is gone. The second, <InlineMath tex={"\\det(\\mathbf{R}) = 1"} />, excludes reflections. Orthogonal matrices come in two kinds, determinant <InlineMath tex={"+1"} /> and determinant <InlineMath tex={"-1"} />; the latter mirror the body, turning a left hand into a right hand. No physical rotation does that, so the group of rotations is the determinant-<InlineMath tex={"+1"} /> half. This is why the group is called _special_ orthogonal rather than just orthogonal (<XRef kind="fig" anchor="fig-transforms" number="2.1" />).
 
 <Figure id="fig-transforms" number="2.1" src="/slides/lecture02/slide_004.jpg" scale="82%" videoUrl="https://www.youtube.com/watch?v=5-Bb84eTTqQ&t=238s" timecode="3:58" lecture="2">
-  Rigid-body motion in the plane and in space: the homogeneous transformation matrices for 
-
-  <InlineMath tex={""} />
-
-   and 
-
-  <InlineMath tex={""} />
-
-  , and the definition of the rotation group 
-
-  <InlineMath tex={""} />
-
-  . This slide is the notation anchor for the whole chapter. Credit: course slides, Lecture 2.
+  Rigid-body motion in the plane and in space: the homogeneous transformation matrices for <InlineMath tex={"SE(2)"} /> and <InlineMath tex={"SE(3)"} />, and the definition of the rotation group <InlineMath tex={"SO(n)"} />. This slide is the notation anchor for the whole chapter. Credit: course slides, Lecture 2.
 </Figure>
 
 ### Chaining frames
@@ -101,15 +89,7 @@ Also two, again matching the motor count. Now close the chain — connect the fa
 Four motors, one degree of freedom. This is the case where counting joints misleads and the formula does not: closing a loop consumed three of the four freedoms, and the mechanism now has exactly one way to move (<XRef kind="fig" anchor="fig-dof" number="2.2" />).
 
 <Figure id="fig-dof" number="2.2" src="/slides/lecture02/slide_010.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=5-Bb84eTTqQ&t=683s" timecode="11:23" lecture="2">
-  Joint types with their freedoms 
-
-  <InlineMath tex={""} />
-
-   and their constraints 
-
-  <InlineMath tex={""} />
-
-   in the plane and in space, together with the Chebychev–Grübler–Kutzbach formula. Credit: course slides, Lecture 2.
+  Joint types with their freedoms <InlineMath tex={"f"} /> and their constraints <InlineMath tex={"c"} /> in the plane and in space, together with the Chebychev–Grübler–Kutzbach formula. Credit: course slides, Lecture 2.
 </Figure>
 
 ## Three spaces: configuration, workspace, task
@@ -121,11 +101,7 @@ The **configuration space**, or C-space, written <InlineMath tex={"\\mathcal{C}"
 That last point is not decorative, and it is the first place in this book where a piece of classical geometry constrains a neural network. A policy that outputs joint angles is outputting points on a torus, and on a torus distance is not what a naive network assumes. A joint at 356° and a joint at 1° are five degrees apart, not 355°. Train a network with a plain squared-error loss on raw angle values and it will believe the second number, take the long way round, and swing the joint most of a full rotation to reach a target that was nearly under its nose. Representing angles in a way that respects the wrap — sines and cosines, or a distance that knows about the modulus — is one of those details that separates code that works from code that almost works (<XRef kind="fig" anchor="fig-cspace" number="2.3" />).
 
 <Figure id="fig-cspace" number="2.3" src="/slides/lecture02/slide_011.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=5-Bb84eTTqQ&t=757s" timecode="12:37" lecture="2">
-  Configuration-space topologies for various mechanisms, reproduced in the lecture from Lynch and Park's Modern Robotics. A revolute joint contributes a circle 
-
-  <InlineMath tex={""} />
-
-  , so a two-joint arm's configuration space is a torus rather than a rectangle. Credit: course slides, Lecture 2.
+  Configuration-space topologies for various mechanisms, reproduced in the lecture from Lynch and Park's Modern Robotics. A revolute joint contributes a circle <InlineMath tex={"S^1"} />, so a two-joint arm's configuration space is a torus rather than a rectangle. Credit: course slides, Lecture 2.
 </Figure>
 
 The **workspace** is different: it is the set of points in the physical world the end-effector can reach. Robot datasheets publish it as a reach envelope — the ABB IRB-120's is the example in the lecture. The workspace lives in the world; the configuration space lives in the robot's joints.

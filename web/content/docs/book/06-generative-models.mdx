@@ -113,11 +113,7 @@ The full objective needs two more terms, because the codebook has to be learned 
 **Why this shape.** The stop-gradients allocate responsibility. In the codebook term, <InlineMath tex={"z_e"} /> is frozen, so the gradient moves only <InlineMath tex={"e_{k^*}"} /> — the code drifts toward the data assigned to it, which is one step of <InlineMath tex={"k"} />-means. In the commitment term, <InlineMath tex={"e_{k^*}"} /> is frozen, so the gradient moves only the encoder — the encoder is discouraged from drifting away from the codebook it must quantize to. Without the commitment term the encoder's outputs can grow without bound while the codebook chases them and never catches up. Two terms with the same-looking norm do opposite jobs, and the stop-gradient is what distinguishes them (<XRef kind="fig" anchor="fig-vq" number="6.4" />).
 
 <Figure id="fig-vq" number="6.4" src="/slides/lecture06/slide_016.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=qd6Ldsuu46I&t=1139s" timecode="18:59" lecture="6">
-  VQ-VAE: nearest-neighbor quantization to a learned codebook, the straight-through estimator that carries gradients past the non-differentiable 
-
-  <InlineMath tex={""} />
-
-  , and the three-term loss. Credit: course slides, Lecture 6.
+  VQ-VAE: nearest-neighbor quantization to a learned codebook, the straight-through estimator that carries gradients past the non-differentiable <InlineMath tex={"\\arg\\min"} />, and the three-term loss. Credit: course slides, Lecture 6.
 </Figure>
 
 **Generation is now a two-stage affair,** and this is the structural consequence that matters most. The VQ-VAE itself is not a generative model: it has no prior you can sample from. So after training, encode the dataset into sequences of code indices and fit a **categorical autoregressive prior** over those sequences,

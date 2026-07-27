@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { PlayIcon } from 'lucide-react';
 import { getMDXComponents } from '@/components/mdx';
+import { FigureZoom } from '@/components/book/figure-zoom';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import status from '@/data/status.json';
@@ -67,6 +68,8 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       <DocsBody>
         <MDX components={getMDXComponents({ a: createRelativeLink(source, page) })} />
       </DocsBody>
+
+      <FigureZoom />
     </DocsPage>
   );
 }

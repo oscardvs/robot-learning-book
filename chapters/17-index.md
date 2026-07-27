@@ -6,41 +6,41 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## A {.unnumbered}
 
-**action chunking**, 39, 123, 124, 142, 144, 175, 181, 258
+**action chunking**, 39, 123, 124, 142, 144, 175, 181, 265
 
-**action expert**, 181, 182, 257, 260
+**action expert**, 181, 182, 263, 267
 
 **action tokenization**, 53, 141, 143, 146, 176
 
 **actor-critic**, 80, 84, 88, 89, 91, 98, 101, 104, 105, 107, 109, 128, 155, 156, 164
 
-**advantage function**, 89, 97--99, 102--104, 107, 109, 135, 201--204, 233, 245
+**advantage function**, 89, 97--99, 102--104, 107, 109, 135, 201--204, 233, 249, 263
 
-**ALOHA**, 30, 143, 255
+**ALOHA**, 30, 143, 260
 
-**AlphaGo**, 198, 254, 263
+**AlphaGo**, 198, 258, 270, 271
 
-**arm farm**, 253--255
+**arm farm**, 257--259, 261
 
 **attention**, 2, 51, 124, 132--141, 146, 157, 171, 172, 176, 178, 179, 182, 186, 229
 
 **autoencoder**, 55, 57, 59, 62, 107, 109, 111--113, 117, 118, 152, 164
 
-**autoregressive models**, 52--55, 60--62, 116, 126, 131, 134, 142, 145, 146, 158, 177, 178, 191, 193, 200, 258, 271
+**autoregressive models**, 52--55, 60--62, 116, 126, 131, 134, 142, 145, 146, 158, 177, 178, 191, 193, 200, 264, 281
 
 ## B {.unnumbered}
 
-**baseline (policy gradient)**, 95--99, 105, 107, 109, 202, 203, 208, 251
+**baseline (policy gradient)**, 95--99, 105, 107, 109, 202, 203, 208, 256
 
-**BC-Zero**, 254
+**BC-Zero**, 259
 
-**behavior cloning**, 41--43, 45--48, 61, 62, 95, 172, 237, 242, 245, 250
+**behavior cloning**, 41--43, 45--48, 61, 62, 95, 172, 239, 244, 245, 248, 249, 255
 
 **Bellman equation**, 3, 33, 67, 69, 82, 87
 
-**bill of materials**, 246, 250
+**bill of materials**, 250, 255
 
-**BiT (Big Transfer)**, 195, 222, 236, 265, 271
+**BiT (Big Transfer)**, 195, 222, 236, 275, 281
 
 **bitter lesson**, 131, 133, 137, 146, 221, 226, 230
 
@@ -52,35 +52,35 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **CALVIN benchmark**, 59, 228
 
-**catastrophic forgetting**, 182, 222, 257
+**catastrophic forgetting**, 182, 222, 263, 264
 
 **causal confusion**, 51, 60--62
 
 **causal mask**, 134, 135
 
-**chain-of-thought**, 4, 189--193, 195, 196, 200, 201, 203, 206, 241, 255, 263
+**chain-of-thought**, 4, 189--193, 195, 196, 200, 201, 203, 206, 243, 244, 261, 271
 
 **classifier-free guidance**, 122, 123, 127
 
-**CLIP**, 104, 138, 139, 257, 266--271
+**CLIP**, 104, 138, 139, 262, 276--281
 
 **codebook**, 115--118, 126, 128
 
-**Codeforces**, 263
+**Codeforces**, 272
 
-**compounding error**, 39, 43--46, 61, 152--154, 158, 163, 165, 212, 216, 221, 241, 247, 250, 264
+**compounding error**, 39, 43--46, 61, 152--154, 158, 163, 165, 212, 216, 221, 243, 250, 251, 255, 273
 
 **configuration space**, 22--24
 
-**contrastive learning**, 138, 139, 218, 267
+**contrastive learning**, 138, 139, 218, 277
 
-**Cosmos**, 117, 157, 159, 258, 259, 271
+**Cosmos**, 117, 157, 159, 264, 265, 281
 
-**Cosmos Policy**, 258, 259, 271
+**Cosmos Policy**, 264, 265, 281
 
 **cross-attention**, 124, 134, 135, 140, 141
 
-**cross-embodiment learning**, 30, 39, 62, 160, 163, 168--170, 175, 185, 192, 215, 222, 223, 257
+**cross-embodiment learning**, 30, 39, 62, 160, 163, 168--170, 175, 185, 192, 215, 222, 223, 262, 264
 
 **cross-entropy method**, 83, 151, 155
 
@@ -90,11 +90,11 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## D {.unnumbered}
 
-**DAgger**, 47--49, 60, 61, 89, 242, 251
+**DAgger**, 47--49, 60, 61, 89, 244, 245, 256
 
 **data flywheel**, 62, 89, 186, 187, 221, 225, 230
 
-**data islands**, 257, 259
+**data islands**, 264, 266
 
 **DayDreamer**, 88, 156, 162, 164
 
@@ -104,65 +104,63 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **DDPM**, 122, 123, 126, 127
 
-**deduplication**, 269, 270
+**deduplication**, 279, 280
 
-**Deep Think**, 262, 263
+**Deep Think**, 270, 272
 
-**DeepSeek-R1**, 271
+**DeepSeek-R1**, 281
 
 **degrees of freedom**, 20, 21, 23, 30, 39, 51, 73
 
-**diffusion models**, 3, 30, 53, 54, 56, 59--62, 118--129, 146, 158, 159, 167, 171, 172, 176, 186, 226, 242--246, 250, 251, 257, 259
+**diffusion models**, 3, 30, 53, 54, 56, 59--62, 118--129, 146, 158, 159, 167, 171, 172, 176, 186, 226, 245, 247--250, 255, 263, 265
 
-**Diffusion Policy**, 119, 123, 124, 127, 129, 245, 246, 250, 251
+**Diffusion Policy**, 119, 123, 124, 127, 129, 249, 250, 255
 
 **discount factor**, 36, 38, 66--71, 73, 75, 77, 79, 92, 106
 
-**discretization**, 52--55, 60--63, 82, 83, 88, 89, 91, 117, 121, 122, 141, 142, 177, 178, 255, 257
+**discretization**, 52--55, 60--63, 82, 83, 88, 89, 91, 117, 121, 122, 141, 142, 177, 178, 259, 260, 262
 
-**distillation**, 190, 200, 225, 243, 249, 269
+**distillation**, 190, 200, 225, 245, 254, 279
 
-**distribution shift**, 43, 46, 60, 61, 184, 211, 212, 243
+**distribution shift**, 43, 46, 60, 61, 184, 211, 212, 246
 
 **Double DQN**, 80, 81, 86--88
 
-**DQN**, 77--82, 84, 86--88, 105, 156, 254
+**DQN**, 77--82, 84, 86--88, 105, 156, 258
 
 **Dreamer**, 155--157, 162, 164, 165
 
-**DreamZero**, 158, 162--165, 258, 271
+**DreamZero**, 158, 162--165, 264, 265, 281
 
-**DSRL**, 244, 245, 250
+**DSRL**, 247, 249, 255
 
 ## E {.unnumbered}
 
 **early fusion**, 139, 141, 147, 186
 
-**Ego4D**, 259
+**EgoBridge**, 239, 241, 255
 
-**EgoBridge**, 237--240, 250, 251
+**EgoMimic**, 232, 238, 239
 
-**EgoMimic**, 232, 237
-
-**EgoVerse**, 240
+**EgoVerse**, 241
 
 **ELBO**, 58, 60, 112, 126, 155
 
-**embodiment gap**, 215, 237
+**embodiment gap**, 215, 238
 
 **entropy regularization**, 83, 84, 89, 101, 104--108, 139, 142, 151, 155, 164, 177, 199
 
 **experience replay**, 76, 78--80, 84, 89, 106, 109
 
-**exploration**, 35, 40, 75--77, 85--87, 101, 106, 108, 123, 235, 243--245, 250, 254
+**exploration**, 35, 40, 75--77, 85--87, 101, 106, 108, 123, 235, 236, 242, 246--249, 254, 258
 
 ## F {.unnumbered}
 
-**FAST tokenizer**, 4, 144--147, 182, 183, 186, 257
+**FAST tokenizer**, 4, 144--147, 182, 183, 186, 262
 
-**FATP**, 247
+**FATP**, 252
 
-**FiLM**, 124, 175, 255
+**FiLM**, 124, 175, 259
 
 **Flamingo**, 140, 141, 182
 
@@ -172,33 +170,33 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **forward kinematics**, 24
 
-**Franka**, 20, 21, 23, 28, 173, 175, 176, 228, 255
+**Franka**, 20, 21, 23, 28, 173, 175, 176, 228, 261
 
-**FuSe**, 29, 172, 221, 232, 259
+**FuSe**, 29, 172, 221, 232, 265
 
 ## G {.unnumbered}
 
-**Gato**, 171, 187, 256, 259
+**Gato**, 171, 187, 262, 265
 
 **generalist robot policy**, 15, 16, 62, 124, 167, 168, 170--174, 176, 178, 180, 182, 184--186, 188, 192, 215, 218, 225
 
 **goal-conditioning**, 56, 57, 62, 172, 186
 
-**GR00T**, 257
+**GR00T**, 262, 263
 
 **gripper conventions**, 39, 173
 
-**GRPO**, 102, 109, 197, 201--205, 207, 263, 270, 271
+**GRPO**, 102, 109, 197, 201--205, 207, 271, 281
 
 ## H {.unnumbered}
 
-**HG-DAgger**, 242, 251
+**HG-DAgger**, 244, 245, 256
 
 ## I {.unnumbered}
 
 **imitation ceiling**, 110, 129, 187, 205, 220, 229
 
-**imitation learning**, 10, 14, 15, 37, 41, 42, 44--46, 48, 50--52, 54, 56, 58--60, 62, 64, 65, 186, 209, 220, 231, 236, 250, 256
+**imitation learning**, 10, 14, 15, 37, 41, 42, 44--46, 48, 50--52, 54, 56, 58--60, 62, 64, 65, 186, 209, 220, 231, 237, 254, 261
 
 **importance sampling**, 99, 100, 107
 
@@ -206,7 +204,7 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **introspection**, 48, 163, 220, 228, 229
 
-**inverse dynamics model**, 158, 259
+**inverse dynamics model**, 158, 265
 
 **inverse kinematics**, 24--26
 
@@ -224,7 +222,7 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## L {.unnumbered}
 
-**Large Behavior Model**, 257, 271
+**Large Behavior Model**, 262, 263, 281
 
 **late fusion**, 140, 141
 
@@ -244,57 +242,57 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **Markov property**, 32, 38, 39, 66, 67, 88
 
-**mid-training**, 240, 268
+**mid-training**, 242, 243, 274, 278
 
 **mixture of Gaussians**, 52, 60, 152
 
-**mobile manipulation**, 38, 222, 229, 239
+**mobile manipulation**, 38, 222, 229, 240
 
 **mode averaging**, 52
 
-**MT-Opt**, 254
+**MT-Opt**, 259
 
 **multimodal behavior**, 60, 171
 
 ## N {.unnumbered}
 
-**noise space (exploration in)**, 243, 244
+**noise space (exploration in)**, 246, 247
 
 **notation, deviations from slides**, 3, 25, 33, 80, 101, 123
 
 ## O {.unnumbered}
 
-**ObjectNet**, 265
+**ObjectNet**, 275
 
-**Octo**, 4, 124, 147, 171--174, 178--180, 185, 187, 191, 213, 259
+**Octo**, 4, 124, 147, 171--174, 178--180, 185, 187, 191, 213, 266
 
 **off-policy learning**, 76--78, 84, 86, 89, 105, 106, 108, 109
 
 **offline reinforcement learning**, 109, 229
 
-**Open X-Embodiment**, 4, 12, 15, 169, 171, 173, 176, 192, 255, 260
+**Open X-Embodiment**, 4, 12, 15, 169, 171, 173, 176, 192, 260, 267
 
-**OpenVLA**, 141, 145, 177, 179, 191--193, 243, 257
+**OpenVLA**, 141, 145, 177, 179, 191--193, 245, 246, 262, 263
 
-**optimal transport**, 238
+**optimal transport**, 240
 
 **overestimation bias**, 80, 81, 88
 
 ## P {.unnumbered}
 
-**PA-RL**, 243, 250
+**PA-RL**, 245, 246, 255
 
-**PaliGemma**, 265, 268, 269, 271
+**PaliGemma**, 273, 278, 279, 281
 
 **PALO**, 2
 
-**pi-zero (flow-matching VLA)**, 232, 245, 256, 260, 261
+**pi-zero (flow-matching VLA)**, 232, 249, 261, 267--269
 
-**PID control**, 28--30, 33, 38, 39, 183, 246
+**PID control**, 28--30, 33, 38, 39, 183, 249
 
 **play data**, 57, 110
 
-**PolaRiS**, 184, 250
+**PolaRiS**, 184, 255
 
 **policy gradient**, 40, 85, 89, 91--94, 96--98, 100, 102, 104--106, 108--110
 
@@ -310,15 +308,15 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **privileged information**, 50, 60, 62, 105, 233
 
-**Project Aria**, 237
+**Project Aria**, 238
 
 ## Q {.unnumbered}
 
 **Q-function**, 73, 74, 77, 78, 80--82
 
-**Q-learning**, 63, 75--79, 84, 86--88, 254
+**Q-learning**, 63, 75--79, 84, 86--88, 258
 
-**QT-Opt**, 84, 86, 87, 156, 164, 254, 271
+**QT-Opt**, 84, 86, 87, 156, 164, 258, 259, 281
 
 **quantile normalization**, 141, 143, 176
 
@@ -326,27 +324,27 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## R {.unnumbered}
 
-**RaC**, 232, 241, 242, 251, 270
+**RaC**, 232, 243--245, 255, 256, 280
 
 **rapid adaptation**, 222, 223, 225, 228
 
 **readout token**, 147, 171
 
-**real-to-sim**, 184, 185, 234, 250, 254
+**real-to-sim**, 184, 185, 234, 255, 258
 
 **reasoning dropout**, 195, 196, 208
 
 **reasoning pre-training**, 195, 196, 208
 
-**recovery and correction**, 241, 251
+**recovery and correction**, 243, 255
 
 **rectified flow**, 125, 128
 
 **recurrent state-space model**, 153, 155--157, 163
 
-**redundancy**, 23--25, 51, 145, 260
+**redundancy**, 23--25, 51, 145, 266
 
-**REINFORCE**, 94, 95, 97, 104, 107, 109, 113, 208, 243
+**REINFORCE**, 94, 95, 97, 104, 107, 109, 113, 208, 245
 
 **reparameterization trick**, 106, 109, 113, 114, 125, 128
 
@@ -356,9 +354,9 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **reward-to-go**, 95, 97, 99, 107
 
-**RoboArena**, 256, 258
+**RoboArena**, 261, 264
 
-**RT-2**, 141, 142, 173, 177, 191, 255, 257, 271
+**RT-2**, 141, 142, 173, 177, 191, 260--263, 281
 
 ## S {.unnumbered}
 
@@ -370,7 +368,7 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **shuffle buffer**, 179, 180, 186
 
-**SigLIP**, 265--268, 270, 271
+**SigLIP**, 273, 276--279, 281
 
 **SIMPLER**, 4, 183--186
 
@@ -384,7 +382,7 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **straight-through estimator**, 115, 117
 
-**supply chain**, 231, 247
+**supply chain**, 231, 250, 251
 
 **system identification**, 183, 184, 236
 
@@ -400,13 +398,13 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 **temporal-difference target**, 75, 77, 84, 89, 105
 
-**test-time compute scaling**, 196--199, 207, 208, 219, 262, 263
+**test-time compute scaling**, 196--199, 207, 208, 219, 270--272
 
 **thinking tokens**, 195, 200, 219
 
-**trajectory**, 26--28, 35--39, 42, 43, 47, 51, 57, 59, 60, 62, 65, 66, 71, 91--93, 95, 96, 99, 100, 109, 121, 125, 129, 137, 145--147, 150, 153, 168, 169, 171, 172, 174, 176, 180, 190, 191, 196, 220, 221, 237, 238, 255
+**trajectory**, 26--28, 35--39, 42, 43, 47, 51, 57, 59, 60, 62, 65, 66, 71, 91--93, 95, 96, 99, 100, 109, 121, 125, 129, 137, 145--147, 150, 153, 168, 169, 171, 172, 174, 176, 180, 190, 191, 196, 220, 221, 238, 240, 259, 260
 
-**transformer**, 2, 13, 15, 30, 50, 53, 117, 124, 131, 132, 134--136, 138, 140--142, 144, 146--148, 156, 158, 165, 171, 172, 174--176, 186, 187, 194, 200, 216, 242, 243, 255, 259, 271
+**transformer**, 2, 13, 15, 30, 50, 53, 117, 124, 131, 132, 134--136, 138, 140--142, 144, 146--148, 156, 158, 165, 171, 172, 174--176, 186, 187, 194, 200, 216, 244, 245, 259, 260, 265, 281
 
 **TRPO**, 100--102, 107, 108
 
@@ -414,35 +412,35 @@ Page numbers refer to the preface and the eleven chapters. The notation appendix
 
 ## U {.unnumbered}
 
-**UMI**, 2, 233, 245--247, 251, 256, 259
+**UMI**, 2, 233, 249--251, 255, 256, 261, 266
 
 ## V {.unnumbered}
 
-**value function**, 39, 40, 65--74, 76, 78, 80, 82, 84, 86, 88--90, 97--99, 104--106, 201, 202, 244, 255
+**value function**, 39, 40, 65--74, 76, 78, 80, 82, 84, 86, 88--90, 97--99, 104--106, 201, 202, 247, 259
 
 **value iteration**, 68, 69, 71, 73--75, 77
 
 **verifier**, 164, 197, 199, 204--207
 
-**vision transformer**, 138, 156, 171, 265, 270
+**vision transformer**, 138, 156, 171, 273, 277, 281
 
-**vision-language-action model**, 53, 126, 159, 164, 173, 177, 178, 183, 185, 187, 191, 193, 195, 208, 216, 222, 240, 242, 243, 253, 257, 265, 268, 269
+**vision-language-action model**, 53, 126, 159, 164, 173, 177, 178, 183, 185, 187, 191, 193, 195, 208, 216, 222, 241--245, 257, 263, 273, 274, 278, 280
 
 **visual matching**, 183, 184
 
-**vocabulary override**, 13, 135, 136, 142, 143, 145, 177, 224, 268
+**vocabulary override**, 13, 135, 136, 142, 143, 145, 177, 224, 278
 
-**VQ-VAE**, 115--118, 126, 128, 145, 268
+**VQ-VAE**, 115--118, 126, 128, 145, 278
 
-**VTAB**, 265
+**VTAB**, 274
 
 ## W {.unnumbered}
 
-**whole-body control**, 223, 256, 260
+**whole-body control**, 223, 261, 266
 
-**workspace**, 22, 23, 175, 235, 237, 238
+**workspace**, 22, 23, 175, 235, 238, 240
 
-**world action model**, 232, 258, 260, 269
+**world action model**, 232, 264, 266, 280
 
-**world model**, 15, 39, 62, 83, 85, 89, 106, 109, 128, 129, 146, 149--154, 156--160, 162--166, 177, 197, 230, 236, 259, 260, 269
+**world model**, 15, 39, 62, 83, 85, 89, 106, 109, 128, 129, 146, 149--154, 156--160, 162--166, 177, 197, 230, 236, 237, 265--267, 280
 

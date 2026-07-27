@@ -71,11 +71,7 @@ The bracketed remainder has exactly the form of the thing we started with, one s
 **Why this shape.** The second equality is the payoff of the whole construction, and it is worth pausing on how strange it is. Behaving optimally over an infinite horizon requires, apparently, planning infinitely far ahead. <XRef kind="eq" anchor="eq-optimal" number="4.3" /> says that if you possess <InlineMath tex={"V^*"} />, optimal behavior is a **greedy one-step look-ahead**: compare actions by immediate reward plus the value of where they land, take the best, forget the rest. The entire infinite-horizon plan has been compressed into the function <InlineMath tex={"V^*"} />, and acting on it is local. Every algorithm in this chapter is a way of getting hold of <InlineMath tex={"V^*"} />, or something like it (<XRef kind="fig" anchor="fig-optimal" number="4.2" />).
 
 <Figure id="fig-optimal" number="4.2" src="/slides/lecture04/slide_008.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=90raNpc11tQ&t=727s" timecode="12:07" lecture="4">
-  Optimal value and optimal policy: with 
-
-  <InlineMath tex={""} />
-
-   in hand, acting optimally reduces to a one-step greedy comparison. Credit: course slides, Lecture 4.
+  Optimal value and optimal policy: with <InlineMath tex={"V^*"} /> in hand, acting optimally reduces to a one-step greedy comparison. Credit: course slides, Lecture 4.
 </Figure>
 
 ## Value iteration
@@ -192,15 +188,7 @@ The fix is to store the expectation instead of computing it. Define a value that
 **Why this shape.** Compare the two ways of acting. With <InlineMath tex={"V^*"} />: <InlineMath tex={"\\pi^*(s) = \\arg\\max_a \\mathbb{E}_{s'}[r + \\gamma V^*(s')]"} />, which needs <InlineMath tex={"P"} />. With <InlineMath tex={"Q^*"} />: <InlineMath tex={"\\pi^*(s) = \\arg\\max_a Q^*(s,a)"} />, which needs nothing but a lookup and a comparison. **The transition expectation has been baked into the stored quantity during training, so no model is needed at test time.** That is precisely the trade a robot wants to make: pay once, offline, rather than every 20 milliseconds. The price is that <InlineMath tex={"Q"} /> is a higher-dimensional object than <InlineMath tex={"V"} /> — it is indexed by states _and_ actions — so there is more of it to learn and it is somewhat harder to estimate. For model-free robotics that price is worth paying, and every algorithm in the rest of this chapter pays it (<XRef kind="fig" anchor="fig-qvalue" number="4.4" />).
 
 <Figure id="fig-qvalue" number="4.4" src="/slides/lecture04/slide_017.jpg" scale="78%" videoUrl="https://www.youtube.com/watch?v=90raNpc11tQ&t=1293s" timecode="21:33" lecture="4">
-  From 
-
-  <InlineMath tex={""} />
-
-   to 
-
-  <InlineMath tex={""} />
-
-  : conditioning the value on the action absorbs the transition expectation into the learned quantity, so acting requires no dynamics model. Credit: course slides, Lecture 4.
+  From <InlineMath tex={"V"} /> to <InlineMath tex={"Q"} />: conditioning the value on the action absorbs the transition expectation into the learned quantity, so acting requires no dynamics model. Credit: course slides, Lecture 4.
 </Figure>
 
 Note carefully what has _not_ been fixed. <XRef kind="eq" anchor="eq-qstar" number="4.5" /> still contains <InlineMath tex={"\\mathbb{E}_{s'\\sim P}"} />, so computing <InlineMath tex={"Q^*"} /> by iteration still needs the model during training. Removing it there is the next step.

@@ -320,7 +320,11 @@ function buildFigure(image, ctx) {
   const label = attrs.id ? ctx.labels.get(attrs.id) : null;
   const resolved = ctx.resolveImage(image.url);
 
-  const caption = ctx.parseInline(image.alt ?? '');
+  // The caption is one run of prose, so it is wrapped in a paragraph before it becomes
+  // the element's children. Handing the inline nodes over bare makes the serialiser treat
+  // each one as flow content, which breaks a caption containing maths into three blocks.
+  const inline = ctx.parseInline(image.alt ?? '');
+  const caption = inline.length ? [{ type: 'paragraph', children: inline }] : [];
 
   return jsx(
     'Figure',
@@ -390,12 +394,24 @@ export function pandocToMdx(markdown, { chapter, resolveImage }) {
     resolveImage,
     parseInline: (text) => {
       if (!text.trim()) return [];
-      const { source: lifted, store: inner } = liftMath(text);
-      const sub = parser.parse(lifted);
+      // The text arriving here — an image's alt, which is the figure caption — has already
+      // been through the whole-source maths lift, so its `$..$` spans are placeholders
+      // indexed against `store`. Lifting again would build an empty second store and every
+      // placeholder would resolve to nothing, which is how `$V^*$` captions lost their maths.
+      const sub = parser.parse(text);
       const para = sub.children[0];
       const children = para?.type === 'paragraph' ? para.children : [{ type: 'text', value: text }];
-      const innerCtx = { store: inner, labels, resolveImage, parseInline: () => [] };
+      const innerCtx = { store, labels, resolveImage, parseInline: () => [] };
       const holder = { type: 'paragraph', children };
+
+      // A caption quoting a slide can contain angle brackets — RT-2's prompt template
+      // `<task>` is the case that found this. remark parses those as inline *html*, which
+      // serialises raw, and MDX then reads them as an unclosed JSX tag and fails the build.
+      // Nothing in a figure caption is ever meant as markup, so demote html back to text
+      // and let the serialiser escape it.
+      visit(holder, 'html', (n) => {
+        n.type = 'text';
+      });
       visit(holder, 'text', (n, i, p) => {
         if (!p || i == null) return;
         const rep = rewriteText(n.value, innerCtx);

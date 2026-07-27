@@ -153,6 +153,10 @@ problem is trivial; then one step away; then two. Each problem is short-horizon 
 reset distribution does the work that shaping would have done. Their reset states include
 partial assemblies and partial grasps, generated programmatically.
 
+<Figure id="fig-gupta-resets" number="12.2" src="/slides/guest01_gupta/slide_025.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=aG8NPTPhwkE&t=1157s" timecode="19:17" source="Gupta">
+  Standard exploration against reset-driven exploration. On the left the arm must search over the full horizon <InlineMath tex={"H"} /> to find any reward at all; on the right, resets scattered through the state space mean the reward is always a short dither away. The reset distribution is doing the work reward shaping usually does. Credit: reconstructed from the guest-lecture recording, Abhishek Gupta, week 2.
+</Figure>
+
 What comes out is contact-rich behavior learned from **sparse rewards only, with no demonstrations
 and no reward design**: non-prehensile nudging, wiggling, flipping, furniture assembly, using the
 edge of the table as a fixture. Gupta stresses two things about it. The behavior is emergent — none
@@ -174,7 +178,13 @@ response is to spend human time making it less wrong. Gupta's alternative rests 
 simulation is **right about global structure** — pick up the leg, insert it, rotate — and wrong
 about local contact and forces. So keep what it is good at and fix the rest from reality. They
 cast this as world modelling: pre-train a world model in simulation, freeze the long-horizon part,
-and adapt only the short-horizon prediction using real data, autonomously. Transferred policies
+and adapt only the short-horizon prediction using real data, autonomously.
+
+<Figure id="fig-gupta-worldmodel" number="12.3" src="/slides/guest01_gupta/slide_033.jpg" scale="80%" videoUrl="https://www.youtube.com/watch?v=aG8NPTPhwkE&t=1472s" timecode="24:32" source="Gupta">
+  Adapting a simulation-pre-trained world model. The encoder and the latent dynamics that carry global structure are frozen after simulation; only the short-horizon physics is adapted from real data. Credit: reconstructed from the guest-lecture recording, Abhishek Gupta, week 2.
+</Figure>
+
+Transferred policies
 initially get the details wrong and fail to seat the leg; roughly **fifteen minutes** of autonomous
 real-world data turns that into complete furniture assembly, with the same recipe working on other
 manipulation tasks and on quadrupeds, where it corrects the physics errors while inheriting the
@@ -199,6 +209,10 @@ His framing device is the **triangle of robot learning** — data source, learni
 physical system. The claim is that you cannot change one corner in isolation, and that progress
 comes from co-designing all three. He returns to it as a scorecard after each result, which makes
 the talk unusually easy to follow, and it also sets up his diagnosis.
+
+<Figure id="fig-xu-triangle" number="12.4" src="/slides/guest02_xu/slide_002.jpg" scale="76%" videoUrl="https://www.youtube.com/watch?v=qvTP6T5oq1w&t=146s" timecode="2:26" source="Xu">
+  The triangle of robot learning: data source, algorithms and models, and hardware systems. Xu redraws it after each result, filling in the corner that result moved. Credit: reconstructed from the guest-lecture recording, Danfei Xu, week 3.
+</Figure>
 
 Teleoperation, he argues, welds the three corners together. Data exists only when a human acts
 _through a particular robot_; the algorithm learns from that robot's data; the resulting policy
@@ -249,9 +263,15 @@ only in human data. The idealized picture is a domain-invariant latent space in 
 robot data for the same task land together, so that a new task seen only in human data still
 decodes to sensible actions.
 
-In practice it does not happen. Their student Ryan found the human and robot data form two clearly
-separated clusters in the learned latent space. **EgoBridge** is the response: supervise the
-alignment directly with an optimal-transport objective.
+In practice it does not happen. Their student Ryan Punamiya found the human and robot data form two
+clearly separated clusters in the learned latent space.
+
+<Figure id="fig-xu-tsne" number="12.5" src="/slides/guest02_xu/slide_023.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=qvTP6T5oq1w&t=910s" timecode="15:10" source="Xu">
+  Why zero-shot transfer is hard. A t-SNE projection of EgoMimic's policy latent space, human data in one colour and robot data in the other: the two occupy different regions, and the slide's own annotation is "these have low overlap". A latent space that does not mix cannot carry a task from one domain to the other. Credit: reconstructed from the guest-lecture recording, Danfei Xu, week 3.
+</Figure>
+
+**EgoBridge** is the response: supervise the alignment directly with an optimal-transport
+objective.
 
 <BlockMath tex={"\\mathcal{L}_{\\text{OT-joint}}(\\phi) = \\sum_{i,j} \\big(T^*_\\epsilon\\big)_{ij} \\cdot \\mathcal{C}\\Big(\\big(f_\\phi(o^H_i), a^H_i\\big),\\ \\big(f_\\phi(o^R_j), a^R_j\\big)\\Big)"} id="eq-jot" number="12.1" />
 
@@ -278,7 +298,7 @@ compares the _shape_ of action trajectories, on the reasoning that a human and a
 same thing should trace similar curves, and he notes the objective extends to any weak supervision
 you can write as a cost — language descriptions being the obvious candidate.
 
-<Figure id="fig-egobridge" number="12.2" src="/slides/guest02_xu/slide_025.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=qvTP6T5oq1w&t=974s" timecode="16:14" source="Xu">
+<Figure id="fig-egobridge" number="12.6" src="/slides/guest02_xu/slide_025.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=qvTP6T5oq1w&t=974s" timecode="16:14" source="Xu">
   EgoBridge supervises the alignment of human and robot policy latents with a joint optimal-transport objective, leaving each domain's marginal structure intact. Credit: reconstructed from the guest-lecture recording, Danfei Xu, week 3.
 </Figure>
 
@@ -331,6 +351,10 @@ model is explicitly _not_ an optimal policy — it models the distribution of wh
 Mid-training then instils behaviors that pre-training does not supply and the internet does not
 contain: long chains of thought, teaching the model to search across candidate solutions before
 committing. Post-training is reinforcement learning from the model's own autonomous rollouts.
+
+<Figure id="fig-kumar-recipe" number="12.7" src="/slides/guest03_kumar/slide_002.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=fHHLmTu9sFk&t=420s" timecode="7:00" source="Kumar">
+  The language recipe as Kumar says it actually runs: a pre-training corpus, then a mid-training stage whose purpose is exploration, then RL post-training. His annotation on the last stage is the one to hold on to — it is done with autonomous rollouts, and the rollouts are long and diverse, which is what reinforces exploration and adaptation. Credit: reconstructed from the guest-lecture recording, Aviral Kumar, week 4.
+</Figure>
 
 Line the robot recipe up against it and three things are wrong.
 
@@ -399,7 +423,7 @@ order of magnitude better — and beat a **4-billion-parameter ByteDance VLA** t
 pre-training and more data. Data-efficient and parameter-efficient at once, which is what
 reasoning bought in language.
 
-<Figure id="fig-rac" number="12.3" src="/slides/guest03_kumar/slide_007.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=fHHLmTu9sFk&t=1287s" timecode="21:27" source="Kumar">
+<Figure id="fig-rac" number="12.8" src="/slides/guest03_kumar/slide_007.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=fHHLmTu9sFk&t=1287s" timecode="21:27" source="Kumar">
   Three policies on the same long-horizon task. RaC retries and corrects until it succeeds; HG-DAgger makes corrective attempts that do not generalize; behavior cloning gets stuck. Credit: reconstructed from the guest-lecture recording, Aviral Kumar, week 4.
 </Figure>
 
@@ -441,6 +465,17 @@ state-of-the-art VLA had been improved that way on real hardware — with matchi
 diffusion policies. He is careful to date it: the work is a year old, the robot was poor by current
 standards, and he guesses the same result would take ten minutes today.
 
+<Figure id="fig-kumar-openvla" number="12.9" src="/slides/guest03_kumar/slide_009.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=fHHLmTu9sFk&t=1628s" timecode="27:08" source="Kumar">
+  Fine-tuning a 7B-parameter OpenVLA without demonstrations, on "move the vegetable to the sink". Zero-shot OpenVLA succeeds 40% of the time; adding PA-RL on offline data alone reaches 50%; 40 minutes of autonomous online fine-tuning reaches 70%. Credit: reconstructed from the guest-lecture recording, Aviral Kumar, week 4.
+</Figure>
+
+<EditorNote>
+  The book follows the paper and the talk in expanding PA-RL as _policy-agnostic_
+  reinforcement learning. The citation line on Kumar's own slides (<XRef kind="fig" anchor="fig-kumar-openvla" number="12.9" />) reads
+  "Sobol Mark et al., _Parameterization-Agnostic RL_". Both expansions abbreviate to PA-RL and refer
+  to the same work; the difference is recorded here rather than silently resolved.
+</EditorNote>
+
 ## Andrew Wagenmaker: explore in noise space, not action space
 
 Wagenmaker's opening image is learning to iron a shirt. You might watch a video first, but you did
@@ -471,6 +506,10 @@ BC policy, learn a **noise policy** that chooses which noise to feed it and a **
 values noise vectors at states. Training is ordinary: fit the value function, train the noise
 policy to maximize it, and at each step sample a noise, push it through the BC policy, execute the
 resulting action, and record what happened.
+
+<Figure id="fig-dsrl" number="12.10" src="/slides/guest04_wagenmaker/slide_006.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=CPmTpXA5azw&t=924s" timecode="15:24" source="Wagenmaker">
+  Exploring in noise space. A noise vector <InlineMath tex={"w"} /> drawn from the learned noise policy <InlineMath tex={"\\pi^w(s)"} /> enters the frozen behavior-cloning policy <InlineMath tex={"\\pi_{\\text{bc}}"} /> together with the state, and comes out as one of the handful of actions a demonstrator might have taken — the three arrows on the right. Reinforcement learning trains only the box, never <InlineMath tex={"\\pi_{\\text{bc}}"} />. The slide's summary line: uniform exploration over noise space induces "human" exploration over action space. Credit: reconstructed from the guest-lecture recording, Andrew Wagenmaker, week 5.
+</Figure>
 
 Two consequences follow, and the second is the one that makes the method practical beyond its own
 results. Exploration is structured and plausible **from the very first episode**, because every
@@ -506,6 +545,10 @@ performance, because you are deviating from behavior you already know to be righ
 over-exploring in the part of the task the demonstrations cover. Explore less and you keep the
 performance but add no expressivity where you need it.
 
+<Figure id="fig-bc-tradeoff" number="12.11" src="/slides/guest04_wagenmaker/slide_010.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=CPmTpXA5azw&t=1499s" timecode="24:59" source="Wagenmaker">
+  The trade-off, and the theorem that pins it down. Over-exploring buys expressivity at the cost of performance; under-exploring keeps performance and adds nothing. The boxed result states the disjunction: behavior cloning plus exploration either expresses the actions needed for improvement, or matches the pre-trained performance of the BC policy — not both. Credit: reconstructed from the guest-lecture recording, Andrew Wagenmaker, week 5.
+</Figure>
+
 The resolution is to stop treating pre-training as pure imitation and treat it as inference:
 **quantify the uncertainty about what the demonstrator would do, and scale exploration in
 proportion to it.** Lock in tightly where the demonstrator is predictable; stay broad where they
@@ -529,12 +572,8 @@ whole talk: UMI was "much more a hardware project than a software project" — i
 same as Diffusion Policy's — and his life since the PhD has been far more about scaling UMI than
 about scaling Diffusion Policy.
 
-<Figure id="fig-diffpolicy-chi" number="12.4" src="/slides/guest05_chi/slide_005.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=tvFvIEOBKfM&t=43s" timecode="0:43" source="Chi">
-  Diffusion Policy, from Chi's own PhD: an explicit policy regresses one action, an implicit policy minimizes a learned energy, and a diffusion policy denoises an action over 
-
-  <InlineMath tex={""} />
-
-   iterations. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.
+<Figure id="fig-diffpolicy-chi" number="12.12" src="/slides/guest05_chi/slide_005.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=tvFvIEOBKfM&t=43s" timecode="0:43" source="Chi">
+  Diffusion Policy, from Chi's own PhD: an explicit policy regresses one action, an implicit policy minimizes a learned energy, and a diffusion policy denoises an action over <InlineMath tex={"K"} /> iterations. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.
 </Figure>
 
 His framing is that a modern robot system is a policy plus a layer of classical robotics software —
@@ -568,6 +607,10 @@ brutally: if every tier operates on the Amazon model, waiting until it runs out 
 a complex product takes many months. Hence supply-chain management as a full-time job — telling
 your suppliers' suppliers what is coming so the whole tree ramps in sync. His summary analogy is
 `uv` resolving an entire dependency tree rather than `pip` fetching the first layer.
+
+<Figure id="fig-supply-tree" number="12.13" src="/slides/guest05_chi/slide_014.jpg" scale="84%" videoUrl="https://www.youtube.com/watch?v=tvFvIEOBKfM&t=506s" timecode="8:26" source="Chi">
+  The supply tree for a single camera module, expanded one level at a time: a camera is a lens, a PCB, a cable and a screw; the lens is CAD, glass elements and a housing; the PCB is a Gerber file, a sensor, an ISP and connectors. Every leaf is somebody else's procurement problem, and the depth is why the timelines compound. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.
+</Figure>
 
 Why it matters is a decision, not a logistics detail: **the supply chain determines the
 buy-versus-build boundary**, and the common mistake he sees in researchers moving into hardware is
@@ -613,6 +656,10 @@ operations and scaled from twenty to two hundred, formalizing recruitment, quali
 shipping while still knowing every collector personally; Chi observes that this is roughly the
 ceiling for one person's relationships. Perry, who started as a data labeler on Tesla Autopilot and
 grew to lead Tesla's labeling operation, now runs thousands of collectors.
+
+<Figure id="fig-chi-generations" number="12.14" src="/slides/guest05_chi/slide_020.jpg" scale="88%" videoUrl="https://www.youtube.com/watch?v=tvFvIEOBKfM&t=1184s" timecode="19:44" source="Chi">
+  Three generations of the same job, and the background each one came from: a PhD student turned CEO recruiting the first twenty collectors, a campaign manager who took it from twenty to two hundred, and a Tesla labeling lead running thousands. The slide is a hiring argument — each step change in scale needed a different kind of person, and none of them was an engineer. Credit: reconstructed from the guest-lecture recording, Cheng Chi, week 6.
+</Figure>
 
 Chi expected this to be a software problem and says plainly that it is not:
 
@@ -716,9 +763,9 @@ slide.
   book to Chapter 9's complaint that real-robot evaluation is too slow to trust.
 - **Hu et al., "RaC: Robot Learning for Long-Horizon Tasks by Scaling Recovery and Correction"
   (arXiv, 2025).** The recovery-and-correction paper from Kumar's talk, and the source of
-  <XRef kind="fig" anchor="fig-rac" number="12.3" />. Read it for the funnel argument and the recoveries-versus-success-rate plot.
+  <XRef kind="fig" anchor="fig-rac" number="12.8" />. Read it for the funnel argument and the recoveries-versus-success-rate plot.
 - **Punamiya et al., "Domain Adaptation for Generalizable Imitation from Egocentric Human Data"
-  (NeurIPS 2025).** EgoBridge, and the source of <XRef kind="eq" anchor="eq-jot" number="12.1" /> and <XRef kind="fig" anchor="fig-egobridge" number="12.2" />.
+  (NeurIPS 2025).** EgoBridge, and the source of <XRef kind="eq" anchor="eq-jot" number="12.1" /> and <XRef kind="fig" anchor="fig-egobridge" number="12.6" />.
 - **C. Chi et al., "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion".** Developed
   in Chapter 6; listed again here because Chi's talk is partly a retrospective on what building it
   and UMI actually involved.
